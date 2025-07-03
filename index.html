@@ -1,13 +1,14 @@
+<!-- index.html  ·  Menú principal -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Ismael A. Sarmiento | Senior / Lead Data Engineer</title>
+  <title>Ismael A. Sarmiento | Mis proyectos</title>
 
   <!-- Google Fonts + Font Awesome -->
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" integrity="sha512-..." crossorigin="anonymous" referrerpolicy="no-referrer"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" integrity="sha512-…" crossorigin="anonymous" referrerpolicy="no-referrer"/>
 
   <style>
     :root{
@@ -18,143 +19,87 @@
     }
     *{box-sizing:border-box;margin:0;padding:0}
     body{
+      display:flex;justify-content:center;align-items:center;
+      min-height:100vh;
       font-family:'Poppins',sans-serif;
       background:linear-gradient(135deg,var(--dark1),var(--dark3));
-      color:#f4f4f4; line-height:1.6;
+      color:#f4f4f4;
+      overflow:hidden;
     }
-    a{color:var(--primary);text-decoration:none}
-    img{max-width:100%}
-
-    header{
+    h1{position:absolute;top:40px;left:50%;transform:translateX(-50%);
+       font-size:2rem;font-weight:600;letter-spacing:.5px}
+    .grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+      gap:1.8rem;
+      width:90%;max-width:900px;
+      padding:5rem 0 2rem;
+    }
+    .card{
+      background:#ffffff0d;          /* transparente */
+      backdrop-filter:blur(6px);
+      border:1px solid #ffffff1a;
+      border-radius:14px;
+      padding:2.2rem 1.6rem 2.5rem;
       text-align:center;
-      padding:4rem 1rem 3rem;
+      transition:transform .35s ease, box-shadow .35s ease;
+      cursor:pointer;
     }
-    header h1{font-size:2.8rem;font-weight:600;margin-bottom:.4rem}
-    header h2{font-weight:300;font-size:1.2rem;letter-spacing:1px;color:#ccc}
-    .icons a{margin:0 .5rem;font-size:1.4rem}
-
-    section{width:90%;max-width:900px;margin:2.5rem auto}
-    section h3{font-size:1.6rem;margin-bottom:1rem;border-bottom:2px solid var(--primary);display:inline-block;padding-bottom:.3rem}
-
-    .about{background:#ffffff12;padding:1.5rem;border-radius:8px}
-
-    /* Skills & badges */
-    .badges{display:flex;flex-wrap:wrap;gap:.5rem}
-    .badge{
-      background:var(--primary);color:#111;padding:.3rem .7rem;border-radius:15px;
-      font-size:.85rem;font-weight:600
+    .card:hover{
+      transform:translateY(-6px);
+      box-shadow:0 12px 30px -6px #00000070;
     }
-
-    /* Timeline */
-    .timeline{position:relative;padding-left:25px;margin-top:1rem}
-    .timeline::before{
-      content:'';position:absolute;left:7px;top:0;width:3px;height:100%;background:var(--primary)
+    .card i{
+      font-size:2.5rem;margin-bottom:1.1rem;color:var(--primary);
     }
-    .timeline-item{
-      position:relative;margin-bottom:1.8rem
+    .card h2{font-size:1.3rem;margin-bottom:.6rem}
+    .card p{font-size:.92rem;color:#c7c7c7;min-height:40px}
+    a{color:inherit;text-decoration:none;display:block;height:100%}
+    footer{
+      position:absolute;bottom:25px;width:100%;text-align:center;
+      font-size:.8rem;color:#aaa;
     }
-    .timeline-item::before{
-      content:'';position:absolute;left:-18px;top:2px;width:12px;height:12px;border-radius:50%;
-      background:var(--primary)
-    }
-    .timeline-item h4{font-weight:600;font-size:1.1rem}
-    .timeline-item span{font-size:.9rem;color:#b5b5b5}
-
-    /* Responsive */
     @media(min-width:700px){
-      header h1{font-size:3.4rem}
-      header h2{font-size:1.4rem}
+      h1{font-size:2.4rem}
     }
-
-    footer{margin:3rem 0;text-align:center;font-size:.9rem;color:#aaa}
   </style>
 </head>
-
 <body>
-  <!-- ===== HERO ===== -->
-  <header>
-    <h1>Ismael A. Sarmiento</h1>
-    <h2>Senior / Lead Data Engineer</h2>
-    <div class="icons">
-      <a href="mailto:ismaelantonio.sarmiento@gmail.com"><i class="fas fa-envelope"></i></a>
-      <a href="https://www.linkedin.com/in/ismael-sarmiento" target="_blank"><i class="fab fa-linkedin"></i></a>
-      <a href="https://github.com/ismael-sarmiento" target="_blank"><i class="fab fa-github"></i></a>
-    </div>
-  </header>
 
-  <!-- ===== ABOUT ===== -->
-  <section class="about">
-    <h3>Sobre mí</h3>
-    <p>Profesional apasionado por el dato y su valor intrínseco. Comprometido con la gestión, la calidad y la interoperabilidad, busco siempre que mi trabajo tenga un impacto positivo en la sociedad y mejore la vida de las personas.</p>
-    <p class="quote">“Seis honrados servidores me enseñaron cuanto sé; sus nombres son cómo, cuándo, dónde, qué, quién y por qué.” — R. Kipling</p>
-  </section>
+  <h1><span style="color:var(--primary)">Ismael</span> · Portfolio</h1>
 
-  <!-- ===== SKILLS ===== -->
-  <section>
-    <h3>Competencias técnicas</h3>
-    <div class="badges">
-      <div class="badge">Linaje de datos</div>
-      <div class="badge">Gobierno &amp; Seguridad de datos</div>
-      <div class="badge">Apache Spark / Flink</div>
-      <div class="badge">Python &amp; Scala</div>
-      <div class="badge">AWS (Solutions Arch Assoc.)</div>
-      <div class="badge">Data Lakes</div>
-    </div>
-  </section>
+  <div class="grid">
+    <!-- ====== TARJETA CURRÍCULUM ====== -->
+    <a href="cv.html">
+      <div class="card">
+        <i class="fas fa-id-card"></i>
+        <h2>Currículum</h2>
+        <p>Trayectoria profesional y formación.</p>
+      </div>
+    </a>
 
-  <!-- ===== EXPERIENCE ===== -->
-  <section>
-    <h3>Experiencia profesional</h3>
-    <div class="timeline">
-      <div class="timeline-item">
-        <h4>Lead Data Engineer – Savana</h4>
-        <span>Nov 2024 – Actualidad · España</span>
-        <p>Liderazgo de equipo de data management, implementación de DataHub, procesos ETL con Spark y AWS serverless, y plataforma de calidad de datos.</p>
+    <!-- ====== TARJETA ASTROMAP ====== -->
+    <a href="astromap.html">
+      <div class="card">
+        <i class="fas fa-satellite"></i>
+        <h2>AstroMap</h2>
+        <p>Visualizador en tiempo real de órbitas de satélites.</p>
       </div>
-      <div class="timeline-item">
-        <h4>Senior Data Engineer – Savana</h4>
-        <span>Dic 2022 – Nov 2024</span>
-      </div>
-      <div class="timeline-item">
-        <h4>Data Engineer – StratioBD</h4>
-        <span>Oct 2021 – Dic 2022</span>
-        <p>Procesos E2E para Ayto. Logroño y modelos predictivos de bicicletas para Bilbao sobre Spark &amp; Metabase.</p>
-      </div>
-      <div class="timeline-item">
-        <h4>Software Engineer – Santander Global Tech</h4>
-        <span>Oct 2020 – Oct 2021</span>
-      </div>
-      <div class="timeline-item">
-        <h4>Software Developer – BBVA Next Technologies</h4>
-        <span>Mar 2018 – Oct 2020</span>
-      </div>
-      <div class="timeline-item">
-        <h4>Junior Software Developer – Autana Consultores</h4>
-        <span>Dic 2017 – Mar 2018</span>
-      </div>
-    </div>
-  </section>
+    </a>
 
-  <!-- ===== EDUCATION & CERTS ===== -->
-  <section>
-    <h3>Formación y Certificaciones</h3>
-    <ul>
-      <li><strong>Ingeniería Industrial</strong> · Univ. de Las Palmas GC (2023–2025)</li>
-      <li><strong>Ingeniería Automática</strong> · CUJAE (2012–2017)</li>
-      <li><strong>Big Data Management</strong> · Asime (2017–2018)</li>
-      <li>Cert. AWS Solutions Architect – Associate</li>
-      <li>Building Data Lakes on AWS · Stream Processing Patterns in Apache Flink</li>
-    </ul>
-  </section>
-
-  <!-- ===== LANGUAGES ===== -->
-  <section>
-    <h3>Idiomas</h3>
-    <p>Español (Nativo) · Inglés (Básico) · Francés (Básico)</p>
-  </section>
+    <!-- ====== TARJETA DATAWARDEN ====== -->
+    <a href="datawarden.html">
+      <div class="card">
+        <i class="fas fa-shield-alt"></i>
+        <h2>DataWarden</h2>
+        <p>Plataforma open-source de gobierno de datos.</p>
+      </div>
+    </a>
+  </div>
 
   <footer>
     © 2025 Ismael A. Sarmiento · Hecho con 💚 y ⚡ en HTML + CSS
   </footer>
+
 </body>
 </html>
