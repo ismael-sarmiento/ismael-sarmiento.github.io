@@ -1,10 +1,10 @@
-<!-- index.html  ·   Menú principal -->
+<!-- index.html · Portfolio principal -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Ismael A. Sarmiento | Mis proyectos</title>
+  <title>Ismael A. Sarmiento | Portfolio</title>
 
   <!-- Google Fonts + Font Awesome -->
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
@@ -14,88 +14,150 @@
     :root{
       --primary:#1de9b6;
       --dark1:#0f2027;
-      --dark2:#203a43;
       --dark3:#2c5364;
     }
     *{box-sizing:border-box;margin:0;padding:0}
+    html,body{height:100%}
     body{
-      display:flex;justify-content:center;align-items:center;
-      min-height:100vh;
       font-family:'Poppins',sans-serif;
-      background:linear-gradient(135deg,var(--dark1),var(--dark3));
+      background:linear-gradient(135deg,var(--dark1) 0%,var(--dark3) 100%);
+      background-size:150% 150%;
+      animation:bgMove 40s ease-in-out infinite;
       color:#f4f4f4;
-      overflow:hidden;
+      overflow-y:auto;
     }
-    h1{position:absolute;top:40px;left:50%;transform:translateX(-50%);
-       font-size:2rem;font-weight:600;letter-spacing:.5px}
-    .grid{
-      display:grid;
-      grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
-      gap:1.8rem;
-      width:90%;max-width:900px;
-      padding:5rem 0 2rem;
+    @keyframes bgMove{
+      0%{background-position:0 0}
+      50%{background-position:60% 60%}
+      100%{background-position:0 0}
     }
-    .card{
-      background:#ffffff0d;          /* transparente */
-      backdrop-filter:blur(6px);
-      border:1px solid #ffffff1a;
-      border-radius:14px;
-      padding:2.2rem 1.6rem 2.5rem;
-      text-align:center;
-      transition:transform .35s ease, box-shadow .35s ease;
-      cursor:pointer;
-    }
-    .card:hover{
-      transform:translateY(-6px);
-      box-shadow:0 12px 30px -6px #00000070;
-    }
-    .card i{
-      font-size:2.5rem;margin-bottom:1.1rem;color:var(--primary);
-    }
-    .card h2{font-size:1.3rem;margin-bottom:.6rem}
-    .card p{font-size:.92rem;color:#c7c7c7;min-height:40px}
-    a{color:inherit;text-decoration:none;display:block;height:100%}
-    footer{
-      position:absolute;bottom:25px;width:100%;text-align:center;
-      font-size:.8rem;color:#aaa;
-    }
-    @media(min-width:700px){
-      h1{font-size:2.4rem}
+
+    /* ---- GLOBAL LINKS ---- */
+    a{color:inherit;text-decoration:none}
+
+    /* ---- LANGUAGE & NAV ---- */
+    .lang-switch,.nav-icons{position:fixed;top:18px;display:flex;align-items:center;z-index:50}
+    .lang-switch{left:18px;gap:.3rem;font-size:.9rem}
+    .lang-switch a{color:var(--primary);opacity:.85;transition:opacity .25s}
+    .lang-switch a:hover,.lang-switch .active{opacity:1;text-decoration:underline}
+    .nav-icons{right:18px;font-size:1.35rem}
+    .nav-icons a{color:var(--primary);opacity:.85;transition:opacity .25s}
+    .nav-icons a:hover{opacity:1}
+
+    /* ---- HERO ---- */
+    .hero{position:relative;text-align:center;padding:5rem 1rem 2.5rem}
+    .hero__title{font-size:3rem;font-weight:600;letter-spacing:.5px;margin-bottom:.4rem}
+    .gradient-text{background:linear-gradient(90deg,var(--primary),#4ff4d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+    .hero__subtitle{font-size:1.25rem;font-weight:300;opacity:.9;margin-bottom:2rem}
+
+    /* ---- DATA GRAPH ---- */
+    .data-graph{width:100%;max-width:640px;height:150px;margin:0 auto 2rem}
+    .data-graph text{font-family:'Poppins',sans-serif;pointer-events:none;fill:#fff}
+
+    /* ---- QUOTE ---- */
+    .hero blockquote{margin:1.5rem auto 0;max-width:700px;padding-left:1rem;border-left:4px solid var(--primary);font-style:italic;opacity:.9;font-size:1rem}
+
+    /* ---- ABOUT ---- */
+    .about{max-width:900px;margin:2.5rem auto 3rem;background:#ffffff0d;backdrop-filter:blur(6px);border:1px solid #ffffff22;border-radius:14px;padding:2.5rem}
+    .about p{line-height:1.65;margin-bottom:1.2rem;font-size:1rem}
+    .about h3{text-align:center;margin:2rem 0 1.5rem;font-size:1.35rem}
+    .logros{margin-left:1.4rem;font-size:1rem}
+    .logros li{margin-bottom:0.9rem}
+
+    /* ---- GRID ---- */
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:2.5rem;width:90%;max-width:900px;margin:0 auto 4rem;justify-items:center}
+    .card{background:#ffffff0d;backdrop-filter:blur(6px);border:1px solid #ffffff1a;border-radius:14px;padding:2.4rem 1.8rem;text-align:center;transition:transform .3s,box-shadow .3s;width:100%;max-width:260px}
+    .card:hover{transform:translateY(-6px) scale(1.02);box-shadow:0 10px 24px -6px #0000006e}
+    .card i{font-size:2.5rem;margin-bottom:0.9rem;color:var(--primary)}
+    .card h2{font-size:1.2rem;margin-bottom:0.55rem}
+    .card p{font-size:0.9rem;color:#d1d1d1;min-height:40px}
+
+    footer{text-align:center;font-size:.8rem;color:#aaa;padding-bottom:2rem}
+
+    @media(max-width:500px){
+      .hero__title{font-size:2.4rem}
+      .hero__subtitle{font-size:1.05rem}
+      .data-graph{max-width:95%;height:130px}
+      .hero{padding:4rem 1rem 2rem}
     }
   </style>
 </head>
-<body>
+<body id="home">
 
-  <h1><span style="color:var(--primary)">Ismael</span> · Portfolio</h1>
+  <!-- LANGUAGE & NAV -->
+  <nav class="lang-switch" aria-label="Idioma"><a href="#" class="active">ES</a><span>|</span><a href="en/index.html">EN</a></nav>
+  <nav class="nav-icons" aria-label="Navegación"><a href="#home" title="Inicio"><i class="fas fa-home"></i></a></nav>
 
-  <div class="grid">
-    <!-- ====== TARJETA CURRÍCULUM ====== -->
+  <!-- HERO -->
+  <header class="hero">
+    <h1 class="hero__title gradient-text">Ismael A. Sarmiento</h1>
+    <h2 class="hero__subtitle">Lead Data Engineer · Data Governance & Architecture</h2>
+
+    <!-- SVG DATA GRAPH -->
+    <svg class="data-graph" viewBox="0 0 640 150" xmlns="http://www.w3.org/2000/svg">
+      <!-- Definitions -->
+      <defs>
+        <marker id="arr" markerWidth="4" markerHeight="4" refX="3" refY="2" orient="auto">
+          <path d="M0,0 L4,2 L0,4 Z" fill="var(--primary)" />
+        </marker>
+      </defs>
+
+      <!-- Nodes -->
+      <circle cx="100" cy="75" r="20" fill="var(--primary)" />
+      <text x="100" y="79" text-anchor="middle" font-size="0.9rem" font-weight="600" fill="var(--dark1)">A</text>
+
+      <circle cx="320" cy="75" r="20" fill="var(--primary)" />
+      <text x="320" y="79" text-anchor="middle" font-size="0.9rem" font-weight="600" fill="var(--dark1)">A+</text>
+
+      <circle cx="540" cy="75" r="20" fill="var(--primary)" />
+      <text x="540" y="79" text-anchor="middle" font-size="0.9rem" font-weight="600" fill="var(--dark1)">B</text>
+
+      <!-- Lines (fully opaque) -->
+      <line x1="120" y1="75" x2="300" y2="75" stroke="var(--primary)" stroke-width="2" marker-end="url(#arr)" />
+      <line x1="340" y1="75" x2="520" y2="75" stroke="var(--primary)" stroke-width="2" marker-end="url(#arr)" />
+
+      <!-- Labels on lines -->
+      <text x="210" y="60" text-anchor="middle" font-size="0.75rem">Data Quality</text>
+      <text x="430" y="60" text-anchor="middle" font-size="0.75rem">Transformation</text>
+
+      <!-- Pipeline label -->
+      <text x="320" y="25" text-anchor="middle" font-size="0.8rem" font-weight="600">Pipeline de datos</text>
+
+      <!-- External tags -->
+      <text x="210" y="115" text-anchor="middle" font-size="0.75rem">Interoperabilidad</text>
+      <text x="320" y="115" text-anchor="middle" font-size="0.75rem">Lineage</text>
+      <text x="430" y="115" text-anchor="middle" font-size="0.75rem">Metadatos</text>
+    </svg>
+
+    <!-- Quote -->
+    <blockquote>“Seis honrados servidores me enseñaron cuanto sé: cómo, cuándo, dónde, qué, quién y por qué.” — <em>R. Kipling</em></blockquote>
+  </header>
+
+  <!-- ABOUT -->
+  <section class="about">
+    <p>Con más de ocho años diseñando y explotando plataformas de datos en banca, administraciones públicas y—en los últimos tres años—salud, he comprobado que la tecnología solo crea valor cuando conecta personas, procesos y métricas verificables. Estos entornos manejan información altamente sensible: PHI (Protected Health Information) en el ámbito sanitario y PII (Personally Identifiable Information) regulada por GDPR/PSD2 en banca y AA.PP.</p>
+    <p>Como Lead Data Engineer, coordino un equipo multidisciplinar y orquesto soluciones de data management end-to-end que convierten la teoría del marco DAMA en resultados tangibles. Mi liderazgo es cercano: refuerzo las fortalezas individuales y acompaño las áreas de mejora para maximizar el rendimiento colectivo.</p>
+    <h3>Logros destacados</h3>
+    <ul class="logros">
+      <li>Implanté un catálogo de metadatos open source (DataHub) que cubre lineage, ingesta y descubrimiento, reduciendo en ≈ 35 % el time-to-data de los equipos de analítica.</li>
+      <li>Desarrollé un framework in‑house de calidad basado en Python + PySpark sobre AWS, que elevó la confiabilidad de los datasets críticos y automatizó las validaciones en cada pipeline. <em>“Lo que no se puede medir, no se puede mejorar” · data quality first</em></li>
+      <li>Diseñé e implanté arquitecturas de datos escalables (batch y streaming) que soportan casos de uso clínico y financiero de alta concurrencia.</li>
+      <li>Formalicé políticas y herramientas de Gobierno del Dato alineadas con DAMA, superando auditorías externas sin observaciones y demostrando cómo llevar la teoría a la práctica.</li>
+    </ul>
+  </section>
+
+  <!-- GRID -->
+  <section class="grid">
     <a href="cv.html">
-      <div class="card">
-        <i class="fas fa-id-card"></i>
-        <h2>Currículum</h2>
-        <p>Trayectoria profesional y formación.</p>
-      </div>
+      <div class="card"><i class="fas fa-id-card"></i><h2>Currículum</h2><p>Trayectoria profesional y formación.</p></div>
     </a>
-
-    <!-- ====== TARJETA ASTROMAP ====== -->
-    <a href="benderhub.html">
-      <div class="card">
-        <i class="fas fa-satellite"></i>
-        <h2>BenderHub</h2>
-        <p>Visualizador  en  tiempo real de órbitas de satélites.</p>
-      </div>
+    <a href="proyectos.html">
+      <div class="card"><i class="fas fa-project-diagram"></i><h2>Proyectos</h2><p>Compartiendo el conocimiento.</p></div>
     </a>
-
-    <!-- ====== TARJETA DATAWARDEN ====== -->
-    <a href="datawarden.html">
-      <div class="card">
-        <i class="fas fa-shield-alt"></i>
-        <h2>DataWarden</h2>
-        <p>Plataforma open-source de gobierno de datos.</p>
-      </div>
+    <a href="regalo.html">
+      <div class="card"><i class="fas fa-gift"></i><h2>Un regalo para ti</h2><p>Descarga mi plantilla exclusiva.</p></div>
     </a>
-  </div>
+  </section>
 
   <footer>
     © 2025 Ismael A. Sarmiento · Hecho con 💚 y ⚡ en HTML + CSS
