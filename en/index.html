@@ -1,0 +1,75 @@
+<!-- en/index.html · Main Portfolio (English) -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ismael A. Sarmiento | Portfolio</title>
+
+  <!-- Google Fonts + Font Awesome -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" integrity="sha512-…" crossorigin="anonymous" referrerpolicy="no-referrer"/>
+
+  <!-- Same core styles as ES version (imported) -->
+  <link rel="stylesheet" href="../style/core.css">
+</head>
+<body id="home">
+
+  <!-- LANGUAGE & NAV -->
+  <nav class="lang-switch" aria-label="Language"><a href="../index.html">ES</a><span>|</span><a href="#" class="active">EN</a></nav>
+  <nav class="nav-icons" aria-label="Navigation"><a href="#home" title="Home"><i class="fas fa-home"></i></a></nav>
+
+  <!-- HERO -->
+  <header class="hero">
+    <h1 class="hero__title gradient-text">Ismael A. Sarmiento</h1>
+    <h2 class="hero__subtitle">Lead Data Engineer · Data Governance & Architecture</h2>
+
+    <!-- SVG DATA GRAPH (identical, texts already in English) -->
+    <svg class="data-graph" viewBox="0 0 640 150" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id="arr" markerWidth="4" markerHeight="4" refX="3" refY="2" orient="auto"><path d="M0,0 L4,2 L0,4 Z" fill="var(--primary)" /></marker>
+      </defs>
+      <circle cx="100" cy="75" r="20" fill="var(--primary)" />
+      <text x="100" y="79" text-anchor="middle" font-size="0.9rem" font-weight="600" fill="var(--dark1)">A</text>
+      <circle cx="320" cy="75" r="20" fill="var(--primary)" />
+      <text x="320" y="79" text-anchor="middle" font-size="0.9rem" font-weight="600" fill="var(--dark1)">A+</text>
+      <circle cx="540" cy="75" r="20" fill="var(--primary)" />
+      <text x="540" y="79" text-anchor="middle" font-size="0.9rem" font-weight="600" fill="var(--dark1)">B</text>
+      <line x1="120" y1="75" x2="300" y2="75" stroke="var(--primary)" stroke-width="2" marker-end="url(#arr)" />
+      <line x1="340" y1="75" x2="520" y2="75" stroke="var(--primary)" stroke-width="2" marker-end="url(#arr)" />
+      <text x="210" y="60" text-anchor="middle" font-size="0.75rem">Data Quality</text>
+      <text x="430" y="60" text-anchor="middle" font-size="0.75rem">Transformation</text>
+      <text x="320" y="25" text-anchor="middle" font-size="0.8rem" font-weight="600">Data pipeline</text>
+      <text x="210" y="115" text-anchor="middle" font-size="0.75rem">Interoperability</text>
+      <text x="320" y="115" text-anchor="middle" font-size="0.75rem">Lineage</text>
+      <text x="430" y="115" text-anchor="middle" font-size="0.75rem">Metadata</text>
+    </svg>
+
+    <!-- Quote (same) -->
+    <blockquote>“Six honest serving‑men taught me all I knew: their names are What and Why and When, and How and Where and Who.” — <em>R. Kipling</em></blockquote>
+  </header>
+
+  <!-- ABOUT -->
+  <section class="about">
+    <p>With more than eight years of designing and operating data platforms in banking, public administrations and—over the last three years—healthcare, I have learned that technology only creates value when it connects people, processes and verifiable metrics. These environments handle highly sensitive information: PHI (Protected Health Information) in healthcare and GDPR/PSD2‑regulated PII (Personally Identifiable Information) in banking and government.</p>
+    <p>As a Lead Data Engineer, I coordinate a multidisciplinary team and orchestrate end‑to‑end data‑management solutions that turn the DAMA framework into tangible results. My leadership style is close: I reinforce individual strengths and guide improvement areas to maximise collective performance.</p>
+    <h3>Highlighted achievements</h3>
+    <ul class="logros">
+      <li>Implemented an open‑source metadata catalogue (DataHub) covering lineage, ingestion and discovery, reducing analytics teams’ time‑to‑data by ≈ 35 %.</li>
+      <li>Developed an in‑house quality framework based on Python + PySpark on AWS, boosting the reliability of critical datasets and automating validations in every pipeline. <em>“What cannot be measured cannot be improved” · data quality first</em></li>
+      <li>Designed and deployed scalable data architectures (batch and streaming) that support high‑concurrency clinical and financial use‑cases.</li>
+      <li>Formalised data‑governance policies and tools aligned with DAMA, passing external audits with zero findings and demonstrating how to bring theory into practice.</li>
+    </ul>
+  </section>
+
+  <!-- GRID -->
+  <section class="grid">
+    <a href="cv.html"><div class="card"><i class="fas fa-id-card"></i><h2>Résumé</h2><p>Professional experience & education.</p></div></a>
+    <a href="projects.html"><div class="card"><i class="fas fa-project-diagram"></i><h2>Projects</h2><p>Sharing knowledge.</p></div></a>
+    <a href="gift.html"><div class="card"><i class="fas fa-gift"></i><h2>A gift for you</h2><p>Download my exclusive template.</p></div></a>
+  </section>
+
+  <footer>© 2025 Ismael A. Sarmiento · Made with 💚 & ⚡ in HTML + CSS</footer>
+
+</body>
+</html>
