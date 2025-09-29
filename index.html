@@ -1,167 +1,592 @@
-<!-- index.html · Portfolio principal -->
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Ismael A. Sarmiento | Portfolio</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Ismael A. Sarmiento — Data Journey CV</title>
+<meta name="description" content="CV interactivo de Ismael A. Sarmiento — Lead Data Engineer. Viaje lateral con pantallas a pantalla completa, transiciones fluidas y portada inmersiva." />
+<meta name="theme-color" content="#0b1020" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 128'%3E%3Ctext y='1em' font-size='96'%3E🧭%3C/text%3E%3C/svg%3E">
+<link rel="alternate" hreflang="en" href="./index_en.html" />
+<style>
+/* ===================== THEME & TOKENS ===================== */
+:root{
+  --bg:#0b1020; --fg:#e6e9ef; --muted:#a4adbb;
+  --card:#101731; --border:#1e2748; --shadow:0 16px 50px rgba(0,0,0,.35);
+  --accent:#6aa3ff; --accent2:#2fe6c7;
+  --radius:22px; --maxw:1180px;
+}
+[data-theme="light"]{
+  --bg:#f5f7ff; --fg:#0b1020; --muted:#4e5d78; --card:#ffffff; --border:#dfe7ff; --shadow:0 14px 40px rgba(5,10,30,.08);
+  --accent:#2f68ff; --accent2:#00baa1;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0; font-family:Inter, -apple-system, Segoe UI, Roboto, system-ui, Arial; background:var(--bg); color:var(--fg); line-height:1.6; overflow-x:hidden}
+a{color:var(--accent); text-decoration:none}
+a:hover{text-decoration:none}
 
-  <!-- Google Fonts + Font Awesome -->
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" integrity="sha512-…" crossorigin="anonymous" referrerpolicy="no-referrer"/>
+/* ===================== BACKGROUND WOW (más vivo) ===================== */
+.bg{position:fixed; inset:-12vmax; z-index:-3; filter:blur(60px) saturate(140%);
+  background:
+    radial-gradient(36vmax 36vmax at 12% 25%, rgba(106,163,255,.35), transparent 60%),
+    radial-gradient(36vmax 36vmax at 88% 20%, rgba(47,104,255,.35), transparent 60%),
+    radial-gradient(36vmax 36vmax at 82% 86%, rgba(47,230,199,.30), transparent 60%),
+    radial-gradient(36vmax 36vmax at 18% 78%, rgba(0,186,161,.28), transparent 60%);
+  animation:float 24s ease-in-out infinite alternate}
+/* segunda capa para sensación viva */
+.bg2{position:fixed; inset:-14vmax; z-index:-2; pointer-events:none; filter:blur(70px) saturate(140%);
+  background:
+    radial-gradient(28vmax 28vmax at 20% 30%, rgba(106,163,255,.20), transparent 60%),
+    radial-gradient(28vmax 28vmax at 80% 75%, rgba(47,230,199,.18), transparent 60%);
+  animation:float2 38s ease-in-out infinite alternate}
+@keyframes float{0%{transform:translate(-1%,-1%) scale(1)}100%{transform:translate(1%,1%) scale(1.03)}}
+@keyframes float2{0%{transform:translate(-1%,1%) rotate(0.2deg)}100%{transform:translate(1%,-1%) rotate(-0.2deg)}}
+@media (prefers-reduced-motion:reduce){.bg,.bg2{animation:none}}
 
-  <style>
-    :root{
-      --primary:#1de9b6;
-      --dark1:#0f2027;
-      --dark3:#2c5364;
-    }
-    *{box-sizing:border-box;margin:0;padding:0}
-    html,body{height:100%}
-    body{
-      font-family:'Poppins',sans-serif;
-      background:linear-gradient(135deg,var(--dark1) 0%,var(--dark3) 100%);
-      background-size:150% 150%;
-      animation:bgMove 40s ease-in-out infinite;
-      color:#f4f4f4;
-      overflow-y:auto;
-    }
-    @keyframes bgMove{
-      0%{background-position:0 0}
-      50%{background-position:60% 60%}
-      100%{background-position:0 0}
-    }
+/* ===================== LOADER (WELCOME) ===================== */
+#loader{position:fixed; inset:0; z-index:999; display:grid; place-items:center; background:radial-gradient(120vmax 120vmax at 50% 50%, #0b1020 20%, #050911 100%); color:#e6e9ef}
+.loader__inner{display:grid; gap:14px; place-items:center}
+.loader__ring{width:96px; height:96px; border-radius:999px; border:3px solid color-mix(in oklab, var(--accent) 40%, #ffffff10); border-top-color:var(--accent); animation:spin 1.15s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loader__title{font-size:clamp(20px,3.6vw,36px); letter-spacing:.3px; background:conic-gradient(from 210deg, var(--accent), var(--accent2)); -webkit-background-clip:text; background-clip:text; color:transparent; text-align:center}
+.loader__sub{color:var(--muted)}
+.loader__bar{width:min(520px, 74vw); height:6px; background:#101731; border:1px solid #1e2748; border-radius:999px; overflow:hidden}
+.loader__bar > i{display:block; width:0; height:100%; background:linear-gradient(90deg, var(--accent), var(--accent2)); animation:loadbar 3.8s ease forwards}
+@keyframes loadbar{to{width:100%}}
+.fade-out{animation:fadeout .7s ease forwards}
+@keyframes fadeout{to{opacity:0; visibility:hidden}}
 
-    /* ---- GLOBAL LINKS ---- */
-    a{color:inherit;text-decoration:none}
+/* ===================== NAV (overlay, sin barra visible) ===================== */
+.nav{position:sticky; top:0; z-index:50; background:transparent; backdrop-filter:none; border:none}
+.nav__inner{max-width:var(--maxw); margin:0 auto; padding:14px 12px 0 12px; display:grid; grid-template-columns:1fr auto 1fr; align-items:center; gap:8px}
 
-    /* ---- LANGUAGE & NAV ---- */
-    .lang-switch,.nav-icons{position:fixed;top:18px;display:flex;align-items:center;z-index:50}
-    .lang-switch{left:18px;gap:.3rem;font-size:.9rem}
-    .lang-switch a{color:var(--primary);opacity:.85;transition:opacity .25s}
-    .lang-switch a:hover,.lang-switch .active{opacity:1;text-decoration:underline}
-    .nav-icons{right:18px;font-size:1.35rem}
-    .nav-icons a{color:var(--primary);opacity:.85;transition:opacity .25s}
-    .nav-icons a:hover{opacity:1}
+/* Marca centrada en dos líneas + animación tipo título */
+.brand-wrap{justify-self:center; position:relative; display:grid; place-items:center}
+.brand{display:grid; gap:2px; text-align:center; color:var(--fg)}
+.brand__l1{font-weight:900; font-size:clamp(24px,3vw,34px); letter-spacing:.2px; color:var(--accent); text-shadow:0 8px 24px rgba(0,0,0,.28); transition:text-shadow .35s ease, filter .35s ease}
+.brand__l2{font-weight:700; font-size:clamp(14px,1.6vw,18px); color:var(--fg); opacity:.9}
+.brand-wrap:hover .brand__l1{filter:brightness(1.08); text-shadow:0 14px 36px rgba(0,0,0,.38)}
+@keyframes titleBreath{0%,100%{text-shadow:0 8px 24px rgba(0,0,0,.28)}50%{text-shadow:0 10px 30px rgba(0,0,0,.34)}}
+.brand .brand__l1{animation:titleBreath 5s ease-in-out infinite}
+/* eliminar subrayados/focus agresivos */
+.brand:focus{outline:none}
 
-    /* ---- HERO ---- */
-    .hero{position:relative;text-align:center;padding:5rem 1rem 2.5rem}
-    .hero__title{font-size:3rem;font-weight:600;letter-spacing:.5px;margin-bottom:.4rem}
-    .gradient-text{background:linear-gradient(90deg,var(--primary),#4ff4d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-    .hero__subtitle{font-size:1.25rem;font-weight:300;opacity:.9;margin-bottom:2rem}
+/* Hint discreto junto a la marca (izquierda) */
+.brand-hint{position:absolute; left:-18px; top:50%; transform:translate(-100%,-50%); max-width:360px; padding:10px 12px; border-radius:12px; border:1px dashed color-mix(in oklab, var(--accent) 25%, var(--border)); background:color-mix(in oklab, var(--card) 85%, transparent); color:var(--muted); font-size:13px; line-height:1.4; box-shadow:var(--shadow); opacity:0; pointer-events:none; transition:opacity .18s ease, transform .18s ease}
+.brand-wrap:hover .brand-hint{opacity:1; transform:translate(-100%,-50%) scale(1.02)}
 
-    /* ---- DATA GRAPH ---- */
-    .data-graph{width:100%;max-width:640px;height:150px;margin:0 auto 2rem}
-    .data-graph text{font-family:'Poppins',sans-serif;pointer-events:none;fill:#fff}
+.nav__actions{justify-self:end; display:flex; gap:8px; align-items:center; margin-right:2px}
 
-    /* ---- QUOTE ---- */
-    .hero blockquote{margin:1.5rem auto 0;max-width:700px;padding-left:1rem;border-left:4px solid var(--primary);font-style:italic;opacity:.9;font-size:1rem}
+/* icon buttons derecha pegados al borde */
+.icon-btn{width:44px; height:44px; border-radius:999px; border:1px solid var(--border); background:color-mix(in oklab, var(--card) 85%, transparent); color:var(--fg); box-shadow:var(--shadow); display:grid; place-items:center}
+.ico{font-size:18px}
+.ico-globe{width:22px; height:22px; background:conic-gradient(from 0deg, var(--accent), var(--accent2)); -webkit-mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23000"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm7.94 9h-3.09a16.6 16.6 0 0 0-1.15-5.03A8.02 8.02 0 0 1 19.94 11ZM8.3 13h7.4a14.9 14.9 0 0 1-1.05 4.37A14.9 14.9 0 0 1 12 20a14.9 14.9 0 0 1-2.65-2.63A14.9 14.9 0 0 1 8.3 13Zm0-2a14.9 14.9 0 0 1 1.05-4.37A14.9 14.9 0 0 1 12 4c.98 0 1.92.19 2.65.63A14.9 14.9 0 0 1 15.7 11H8.3ZM7.3 5.97A16.6 16.6 0 0 0 6.15 11H3.06a8.02 8.02 0 0 1 4.24-5.03ZM4.06 13h3.09c.24 1.79.67 3.47 1.15 5.03A8.02 8.02 0 0 1 4.06 13Zm15.88 0a8.02 8.02 0 0 1-4.24 5.03c.48-1.56.91-3.24 1.15-5.03h3.09Z"/></svg>') center/contain no-repeat; mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23000"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm7.94 9h-3.09a16.6 16.6 0 0 0-1.15-5.03A8.02 8.02 0 0 1 19.94 11ZM8.3 13h7.4a14.9 14.9 0 0 1-1.05 4.37A14.9 14.9 0 0 1 12 20a14.9 14.9 0 0 1-2.65-2.63A14.9 14.9 0 0 1 8.3 13Zm0-2a14.9 14.9 0 0 1 1.05-4.37A14.9 14.9 0 0 1 12 4c.98 0 1.92.19 2.65.63A14.9 14.9 0 0 1 15.7 11H8.3ZM7.3 5.97A16.6 16.6 0 0 0 6.15 11H3.06a8.02 8.02 0 0 1 4.24-5.03ZM4.06 13h3.09c.24 1.79.67 3.47 1.15 5.03A8.02 8.02 0 0 1 4.06 13Zm15.88 0a8.02 8.02 0 0 1-4.24 5.03c.48-1.56.91-3.24 1.15-5.03h3.09Z"/></svg>') center/contain no-repeat}
+/* theme icon (sun/moon) */
+.ico-theme{width:22px; height:22px;}
+[data-theme="light"] .ico-theme{background:#ffb400; -webkit-mask:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23000"><path d="M6.76 4.84l-1.8-1.79-1.41 1.41 1.79 1.8 1.42-1.42Zm10.45 0 1.79-1.79 1.41 1.41-1.79 1.8-1.41-1.42ZM12 4h0V1h0v3Zm0 19h0v-3h0v3Zm8-8h3v0h-3v0ZM1 12H4v0H1v0Zm2.54 6.36-1.41 1.41 1.8 1.79 1.41-1.41-1.8-1.79Zm15.92 0 1.41 1.41-1.79 1.8-1.41-1.41 1.79-1.8ZM12 7a5 5 0 1 0 .001 10.001A5 5 0 0 0 12 7Z"/></svg>') center/contain no-repeat}
+[data-theme="dark"] .ico-theme{background:#e6e9ef; -webkit-mask:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23000"><path d="M20.742 13.045A8 8 0 1 1 10.955 3.258 7 7 0 1 0 20.742 13.045Z"/></svg>') center/contain no-repeat}
+/* gear/tools icon */
+.ico-gear{width:22px; height:22px; background:#e6e9ef; -webkit-mask:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23000"><path d="M19.14,12.94a7.46,7.46,0,0,0,.05-1,7.46,7.46,0,0,0-.05-1l2.11-1.65a.5.5,0,0,0,.12-.64l-2-3.46a.5.5,0,0,0-.6-.22l-2.49,1a7.28,7.28,0,0,0-1.73-1l-.38-2.65A.5.5,0,0,0,12,1H8a.5.5,0,0,0-.5.42L7.12,4.07a7.28,7.28,0,0,0-1.73,1l-2.49-1a.5.5,0,0,0-.6.22l-2,3.46a.5.5,0,0,0,.12.64L2.53,10a7.46,7.46,0,0,0-.05,1,7.46,7.46,0,0,0,.05,1L.42,13.65a.5.5,0,0,0-.12.64l2,3.46a.5.5,0,0,0,.6.22l2.49-1a7.28,7.28,0,0,0,1.73,1l.38,2.65A.5.5,0,0,0,8,23h4a.5.5,0,0,0,.5-.42l.38-2.65a7.28,7.28,0,0,0,1.73-1l2.49,1a.5.5,0,0,0,.6-.22l2-3.46a.5.5,0,0,0-.12-.64ZM10,15a3,3,0,1,1,3-3A3,3,0,0,1,10,15Z"/></svg>') center/contain no-repeat}
 
-    /* ---- ABOUT ---- */
-    .about{max-width:900px;margin:2.5rem auto 3rem;background:#ffffff0d;backdrop-filter:blur(6px);border:1px solid #ffffff22;border-radius:14px;padding:2.5rem}
-    .about p{line-height:1.65;margin-bottom:1.2rem;font-size:1rem}
-    .about h3{text-align:center;margin:2rem 0 1.5rem;font-size:1.35rem}
-    .logros{margin-left:1.4rem;font-size:1rem}
-    .logros li{margin-bottom:0.9rem}
+/* dropdown menus */
+.menu{position:relative}
+.menu__list{position:absolute; right:0; top:calc(100% + 8px); min-width:190px; background:color-mix(in oklab, var(--card) 92%, transparent); border:1px solid var(--border); border-radius:14px; box-shadow:var(--shadow); padding:6px; display:none}
+.menu__list a, .menu__list button{display:block; padding:10px 12px; border-radius:10px; color:var(--fg); text-decoration:none; background:none; border:none; width:100%; text-align:left; cursor:pointer}
+.menu__list a:hover, .menu__list button:hover{background:color-mix(in oklab, var(--card) 80%, transparent)}
+.menu[aria-expanded="true"] .menu__list{display:block}
 
-    /* ---- GRID ---- */
-    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:2.5rem;width:90%;max-width:900px;margin:0 auto 4rem;justify-items:center}
-    .card{background:#ffffff0d;backdrop-filter:blur(6px);border:1px solid #ffffff1a;border-radius:14px;padding:2.4rem 1.8rem;text-align:center;transition:transform .3s,box-shadow .3s;width:100%;max-width:260px}
-    .card:hover{transform:translateY(-6px) scale(1.02);box-shadow:0 10px 24px -6px #0000006e}
-    .card i{font-size:2.5rem;margin-bottom:0.9rem;color:var(--primary)}
-    .card h2{font-size:1.2rem;margin-bottom:0.55rem}
-    .card p{font-size:0.9rem;color:#d1d1d1;min-height:40px}
+/* ===================== RAIL (HORIZONTAL PAGES) ===================== */
+.wrap{position:relative}
+#rail{display:flex; gap:0; align-items:stretch; overflow-x:auto; overscroll-behavior-x:contain; scroll-snap-type:x mandatory; scrollbar-width:none}
+#rail::-webkit-scrollbar{display:none}
+.page{flex:0 0 100vw; max-width:100vw; min-height:100svh; display:grid; place-items:center; position:relative; scroll-snap-align:start; scroll-snap-stop:always}
+.page__inner{width:min(100%, var(--maxw)); padding:36px 22px; display:grid; gap:20px; opacity:.6; transform:translateY(6px); transition:opacity 1.35s ease, transform 1.35s ease}
+.page.active .page__inner{opacity:1; transform:none}
 
-    footer{text-align:center;font-size:.8rem;color:#aaa;padding-bottom:2rem}
+/* titles */
+.title, .kicker{margin:0; text-align:center}
+.title{font-size:clamp(32px, 5vw, 56px); font-weight:900; letter-spacing:.2px; color:var(--accent); text-shadow:0 8px 24px rgba(0,0,0,.28); transition:text-shadow .35s ease, filter .35s ease}
+.title:hover{filter:brightness(1.08); text-shadow:0 14px 36px rgba(0,0,0,.38)}
+.page.active .title{animation:titleBreath 5s ease-in-out infinite}
 
-    @media(max-width:500px){
-      .hero__title{font-size:2.4rem}
-      .hero__subtitle{font-size:1.05rem}
-      .data-graph{max-width:95%;height:130px}
-      .hero{padding:4rem 1rem 2rem}
-    }
-  </style>
+/* unique page moods */
+.page--about .page__inner{grid-template-rows:auto auto auto 1fr}
+.page--about .intro{font-size:18px; color:var(--muted); text-align:center; margin:0 auto; max-width:820px}
+
+.card{background:transparent; border:1px dashed color-mix(in oklab, var(--accent) 25%, var(--border)); border-radius:var(--radius); padding:20px; backdrop-filter:blur(8px); box-shadow:0 0 0 1px rgba(255,255,255,.03) inset}
+
+/* metadata chips */
+.meta-cloud{display:flex; gap:10px; flex-wrap:wrap; justify-content:center}
+.meta-chip{position:relative; font-size:13px; padding:10px 12px; border-radius:14px; background:color-mix(in oklab, var(--card) 65%, transparent); border:1px solid var(--border); transform:translateZ(0); transition:transform .18s ease, box-shadow .18s ease}
+.meta-chip:hover{transform:scale(1.08); box-shadow:0 10px 30px rgba(0,0,0,.35)}
+.meta-chip::after{content:attr(data-desc); position:absolute; left:50%; transform:translateX(-50%); bottom:calc(100% + 10px); white-space:nowrap; font-size:12px; color:var(--fg); background:color-mix(in oklab, var(--card) 85%, transparent); border:1px solid var(--border); padding:6px 8px; border-radius:10px; opacity:0; pointer-events:none; transition:opacity .18s ease}
+.meta-chip:hover::after{opacity:1}
+
+/* acordeones */
+.exp-grid,.proj-grid,.edu-grid,.cert-grid{display:grid; gap:16px; max-width:980px; margin:0 auto}
+.accordion{border:1px dashed color-mix(in oklab, var(--accent) 25%, var(--border)); border-radius:16px; overflow:hidden; background:transparent}
+.accordion summary{list-style:none; cursor:pointer; display:flex; align-items:center; justify-content:space-between; padding:14px 18px}
+.accordion summary::-webkit-details-marker{display:none}
+.acc-title{font-weight:700}
+.chev{width:10px; height:10px; border-right:2px solid var(--fg); border-bottom:2px solid var(--fg); transform:rotate(-45deg); transition:transform .25s ease}
+.accordion[open] .chev{transform:rotate(45deg)}
+.acc-body{padding:0 18px 14px}
+
+/* prev/next con hover direccional */
+.controls{position:fixed; left:50%; transform:translateX(-50%); bottom:22px; z-index:60; display:flex; gap:12px; align-items:center}
+.ctrl{width:46px; height:46px; border-radius:999px; border:1px solid var(--border); background:color-mix(in oklab, var(--card) 85%, transparent); color:var(--fg); box-shadow:var(--shadow); transition:transform .18s ease, box-shadow .18s ease, outline-color .18s ease}
+.ctrl--prev:hover{transform:translateX(-6px)}
+.ctrl--next:hover{transform:translateX(6px)}
+.ctrl:hover{box-shadow:0 12px 34px rgba(0,0,0,.4), 0 0 0 3px color-mix(in oklab, var(--accent) 35%, transparent)}
+
+/* Left-side markers */
+.rail-markers{position:fixed; left:10px; top:50%; transform:translateY(-50%); z-index:61; display:flex; flex-direction:column; gap:10px}
+.marker{width:14px; height:14px; border-radius:999px; border:1px solid var(--border); background:color-mix(in oklab, var(--card) 85%, transparent); position:relative; cursor:pointer}
+.marker.is-active{background:linear-gradient(135deg, var(--accent), var(--accent2)); transform:scale(1.15)}
+.marker:hover::after, .marker:focus::after{content:attr(data-tip); position:absolute; left:160%; top:50%; transform:translateY(-50%); background:color-mix(in oklab, var(--card) 92%, transparent); border:1px solid var(--border); color:var(--fg); padding:8px 10px; border-radius:10px; white-space:nowrap; box-shadow:var(--shadow)}
+
+/* progress oculto */
+.progress{display:none}
+
+/* View Transitions — direccional + fallback curtain más larga */
+.dir-right ::view-transition-old(root){ animation: slideOldR 1.6s ease both; }
+.dir-right ::view-transition-new(root){ animation: slideNewR 1.6s ease both; }
+.dir-left  ::view-transition-old(root){ animation: slideOldL 1.6s ease both; }
+.dir-left  ::view-transition-new(root){ animation: slideNewL 1.6s ease both; }
+@keyframes slideOldR{ from{opacity:1; transform:none} to{opacity:0; transform:translateX(-6%); filter:blur(2px)} }
+@keyframes slideNewR{ from{opacity:0; transform:translateX(6%); filter:blur(3px)} to{opacity:1; transform:none; filter:none} }
+@keyframes slideOldL{ from{opacity:1; transform:none} to{opacity:0; transform:translateX(6%); filter:blur(2px)} }
+@keyframes slideNewL{ from{opacity:0; transform:translateX(-6%); filter:blur(3px)} to{opacity:1; transform:none; filter:none} }
+.curtain{position:fixed; inset:0; pointer-events:none; z-index:80; background:radial-gradient(80vmax 80vmax at 50% 50%, rgba(255,255,255,.12), transparent 60%); clip-path:inset(0 100% 0 0); transition:clip-path 1.6s cubic-bezier(.2,.8,.2,1)}
+.curtain.show{clip-path:inset(0 0 0 0)}
+
+/* Chat drawer (UI local, sin backend aún) */
+#chatDock{position:fixed; right:18px; bottom:18px; width:min(420px, 92vw); height:min(66vh, 720px); display:grid; grid-template-rows:auto 1fr auto; background:color-mix(in oklab, var(--card) 92%, transparent); border:1px solid var(--border); border-radius:18px; box-shadow:var(--shadow); overflow:hidden; transform:translateY(16px) scale(.98); opacity:0; pointer-events:none; transition:opacity .2s ease, transform .2s ease; z-index:70}
+#chatDock.show{opacity:1; transform:none; pointer-events:auto}
+.chatHead{display:flex; align-items:center; justify-content:space-between; padding:10px 12px; border-bottom:1px solid var(--border)}
+.chatBody{padding:12px; overflow:auto; display:grid; gap:10px}
+.msg{max-width:86%; padding:10px 12px; border:1px solid var(--border); border-radius:12px; background:color-mix(in oklab, var(--card) 85%, transparent)}
+.msg.me{justify-self:end; background:linear-gradient(135deg, var(--accent), var(--accent2)); color:#07121c}
+.chatFoot{padding:10px; display:flex; gap:8px}
+.chatFoot input{flex:1; padding:12px; border-radius:12px; border:1px solid var(--border); background:color-mix(in oklab, var(--card) 80%, transparent); color:var(--fg)}
+.chatFoot button{padding:12px 14px; border-radius:12px; border:1px solid var(--border); background:linear-gradient(135deg, var(--accent), var(--accent2)); color:#07121c; font-weight:700}
+
+/* Modal sencillo para métricas */
+#metrics{position:fixed; inset:0; display:none; place-items:center; z-index:71;}
+#metrics.show{display:grid}
+.metrics__panel{width:min(380px, 92vw); background:color-mix(in oklab, var(--card) 92%, transparent); border:1px solid var(--border); border-radius:16px; box-shadow:var(--shadow); padding:16px}
+.metrics__panel h3{margin:0 0 8px 0}
+.metrics__panel .row{display:flex; align-items:center; justify-content:space-between; border:1px dashed color-mix(in oklab, var(--accent) 25%, var(--border)); padding:10px 12px; border-radius:12px}
+
+/* print */
+@media print{.bg,.bg2, .nav, .controls, .fab, #loader, .rail-markers, #chatDock, #metrics{display:none!important} #rail{overflow:visible; display:block} .page{flex:none; max-width:unset} .card{border:1px solid #ccc}}
+</style>
 </head>
-<body id="home">
+<body>
+<div id="loader" role="status" aria-live="polite">
+  <div class="loader__inner">
+    <div class="loader__ring" aria-hidden="true"></div>
+    <div class="loader__title">Welcome to <strong>Isarmiento</strong> Journey</div>
+    <div class="loader__sub">Cargando experiencia inmersiva…</div>
+    <div class="loader__bar"><i></i></div>
+  </div>
+</div>
 
-  <!-- LANGUAGE & NAV -->
-  <nav class="lang-switch" aria-label="Idioma"><a href="#" class="active">ES</a><span>|</span><a href="en/index.html">EN</a></nav>
-  <nav class="nav-icons" aria-label="Navegación"><a href="#home" title="Inicio"><i class="fas fa-home"></i></a></nav>
+<div class="bg" aria-hidden="true"></div>
+<div class="bg2" aria-hidden="true"></div>
 
-  <!-- HERO -->
-  <header class="hero">
-    <h1 class="hero__title gradient-text">Ismael A. Sarmiento</h1>
-    <h2 class="hero__subtitle">Lead Data Engineer · Data Governance & Architecture</h2>
+<nav class="nav" aria-label="Navegación principal">
+  <div class="nav__inner">
+    <div></div>
+    <div class="brand-wrap">
+      <a class="brand" id="brandLink" href="https://www.linkedin.com/in/ismael-sarmiento" target="_blank" rel="noopener">
+        <span class="brand__l1">Ismael A. Sarmiento</span>
+        <span class="brand__l2">Lead Data Engineer</span>
+      </a>
+      <div class="brand-hint" id="brandHint">“Seis honrados servidores me enseñaron cuanto sé; sus nombres son cómo, cuándo, dónde, qué, quién y por qué”.<br/><small>— Rudyard Kipling</small></div>
+    </div>
+    <div class="nav__actions">
+      <div class="menu" id="toolsMenuWrap" aria-expanded="false">
+        <button id="toolsBtn" class="icon-btn" aria-haspopup="true" aria-expanded="false" aria-controls="toolsMenu" title="Herramientas"><span class="ico ico-gear" aria-hidden="true"></span></button>
+        <div id="toolsMenu" class="menu__list" role="menu" aria-label="Herramientas">
+          <button role="menuitem" id="openChat">Chat</button>
+          <a role="menuitem" href="./assets/Ismael_Sarmiento_CV.pdf" download>Download PDF</a>
+          <button role="menuitem" id="openMetrics">Métricas</button>
+          <a role="menuitem" href="#p3">Resources</a>
+        </div>
+      </div>
+      <div class="menu" id="langMenuWrap" aria-expanded="false">
+        <button id="langBtn" class="icon-btn" aria-haspopup="true" aria-expanded="false" aria-controls="langMenu" title="Idiomas"><span class="ico ico-globe" aria-hidden="true"></span></button>
+        <div id="langMenu" class="menu__list" role="menu" aria-label="Idiomas disponibles"></div>
+      </div>
+      <button id="theme" class="icon-btn" aria-label="Cambiar tema" title="Tema"><span class="ico ico-theme" aria-hidden="true"></span></button>
+    </div>
+  </div>
+</nav>
 
-    <!-- SVG DATA GRAPH -->
-    <svg class="data-graph" viewBox="0 0 640 150" xmlns="http://www.w3.org/2000/svg">
-      <!-- Definitions -->
-      <defs>
-        <marker id="arr" markerWidth="4" markerHeight="4" refX="3" refY="2" orient="auto">
-          <path d="M0,0 L4,2 L0,4 Z" fill="var(--primary)" />
-        </marker>
-      </defs>
+<!-- Left side markers (sin etiqueta fija) -->
+<nav class="rail-markers" id="railMarkers" aria-label="Mapa de secciones"></nav>
 
-      <!-- Nodes -->
-      <circle cx="100" cy="75" r="20" fill="var(--primary)" />
-      <text x="100" y="79" text-anchor="middle" font-size="0.9rem" font-weight="600" fill="var(--dark1)">A</text>
+<main id="rail" tabindex="0" role="region" aria-label="Data Journey (secciones horizontales)">
+  <!-- ORDEN: SOBRE MÍ → EXPERIENCIA → PROYECTOS → EDUCACIÓN → CERTIFICACIONES → CONTACTO → EASTER -->
 
-      <circle cx="320" cy="75" r="20" fill="var(--primary)" />
-      <text x="320" y="79" text-anchor="middle" font-size="0.9rem" font-weight="600" fill="var(--dark1)">A+</text>
-
-      <circle cx="540" cy="75" r="20" fill="var(--primary)" />
-      <text x="540" y="79" text-anchor="middle" font-size="0.9rem" font-weight="600" fill="var(--dark1)">B</text>
-
-      <!-- Lines (fully opaque) -->
-      <line x1="120" y1="75" x2="300" y2="75" stroke="var(--primary)" stroke-width="2" marker-end="url(#arr)" />
-      <line x1="340" y1="75" x2="520" y2="75" stroke="var(--primary)" stroke-width="2" marker-end="url(#arr)" />
-
-      <!-- Labels on lines -->
-      <text x="210" y="60" text-anchor="middle" font-size="0.75rem">Data Quality</text>
-      <text x="430" y="60" text-anchor="middle" font-size="0.75rem">Transformation</text>
-
-      <!-- Pipeline label -->
-      <text x="320" y="25" text-anchor="middle" font-size="0.8rem" font-weight="600">Pipeline de datos</text>
-
-      <!-- External tags -->
-      <text x="210" y="115" text-anchor="middle" font-size="0.75rem">Interoperabilidad</text>
-      <text x="320" y="115" text-anchor="middle" font-size="0.75rem">Lineage</text>
-      <text x="430" y="115" text-anchor="middle" font-size="0.75rem">Metadatos</text>
-    </svg>
-
-    <!-- Quote -->
-    <blockquote>“Seis honrados servidores me enseñaron cuanto sé: cómo, cuándo, dónde, qué, quién y por qué.” — <em>R. Kipling</em></blockquote>
-  </header>
-
-  <!-- ABOUT -->
-  <section class="about">
-    <p>Con más de ocho años diseñando y explotando plataformas de datos en banca, administraciones públicas y—en los últimos tres años—salud, he comprobado que la tecnología solo crea valor cuando conecta personas, procesos y métricas verificables. Estos entornos manejan información altamente sensible: PHI (Protected Health Information) en el ámbito sanitario y PII (Personally Identifiable Information) regulada por GDPR/PSD2 en banca y AA.PP.</p>
-    <p>Como Lead Data Engineer, coordino un equipo multidisciplinar y orquesto soluciones de data management end-to-end que convierten la teoría del marco DAMA en resultados tangibles. Mi liderazgo es cercano: refuerzo las fortalezas individuales y acompaño las áreas de mejora para maximizar el rendimiento colectivo.</p>
-    <h3>Logros destacados</h3>
-    <ul class="logros">
-      <li>Implanté un catálogo de metadatos open source (DataHub) que cubre lineage, ingesta y descubrimiento, reduciendo en ≈ 35 % el time-to-data de los equipos de analítica.</li>
-      <li>Desarrollé un framework in‑house de calidad basado en Python + PySpark sobre AWS, que elevó la confiabilidad de los datasets críticos y automatizó las validaciones en cada pipeline. <em>“Lo que no se puede medir, no se puede mejorar” · data quality first</em></li>
-      <li>Diseñé e implanté arquitecturas de datos escalables (batch y streaming) que soportan casos de uso clínico y financiero de alta concurrencia.</li>
-      <li>Formalicé políticas y herramientas de Gobierno del Dato alineadas con DAMA, superando auditorías externas sin observaciones y demostrando cómo llevar la teoría a la práctica.</li>
-    </ul>
+  <!-- P1 · SOBRE MÍ -->
+  <section class="page page--about active" id="p1" data-tip="Quién soy, enfoque y stack base">
+    <div class="page__inner">
+      <h1 class="title">Sobre mí</h1>
+      <p class="intro">Ingeniero de datos centrado en <strong>calidad</strong>, <strong>gobernanza</strong> e <strong>interoperabilidad</strong>. Lidero equipos y plataformas end-to-end en cloud y EHR con <strong>Apache Spark</strong>, <strong>AWS</strong> y <strong>Airflow</strong>, buscando impacto medible y seguridad por diseño.</p>
+      <div class="card" aria-label="Metadatos profesionales">
+        <div class="meta-cloud">
+          <span class="meta-chip" data-desc="Spark (Py/Scala): +6 años; batch y streaming, tuning y optimización.">Apache Spark</span>
+          <span class="meta-chip" data-desc="Airflow: orquestación de pipelines EHR, sensores, SLAs y DAGs modulares.">Airflow</span>
+          <span class="meta-chip" data-desc="AWS: EMR, S3, Glue, Lambda; IaC y costes controlados.">AWS (EMR/S3/Glue/Lambda)</span>
+          <span class="meta-chip" data-desc="DataHub: linaje extremo a extremo, catálogo y metadatos empresariales.">DataHub</span>
+          <span class="meta-chip" data-desc="ClickHouse: almacén analítico columnar, reporting de calidad.">ClickHouse</span>
+          <span class="meta-chip" data-desc="Liderazgo: estándares, mentoring y priorización por valor.">Liderazgo</span>
+          <span class="meta-chip" data-desc="Seguridad y cumplimiento de dato en entornos sanitarios.">Seguridad del dato</span>
+        </div>
+      </div>
+    </div>
   </section>
 
-  <!-- GRID -->
-  <section class="grid">
-    <a href="cv.html">
-      <div class="card"><i class="fas fa-id-card"></i><h2>Currículum</h2><p>Trayectoria profesional y formación.</p></div>
-    </a>
-    <a href="proyectos.html">
-      <div class="card"><i class="fas fa-project-diagram"></i><h2>Proyectos</h2><p>Compartiendo el conocimiento.</p></div>
-    </a>
-    <a href="regalo.html">
-      <div class="card"><i class="fas fa-gift"></i><h2>Un regalo para ti</h2><p>Descarga mi plantilla exclusiva.</p></div>
-    </a>
+  <!-- P2 · EXPERIENCIA -->
+  <section class="page page--experience" id="p2" data-tip="Trayectoria y logros por rol">
+    <div class="page__inner">
+      <h2 class="title">Experiencia</h2>
+      <div class="exp-grid">
+        <details class="accordion" open>
+          <summary><span class="acc-title">Savana — Lead Data Engineer</span><span class="chev" aria-hidden="true"></span></summary>
+          <div class="acc-body">
+            <p class="meta">nov 2024 – Presente · ES · DataHub · Data Quality en Spark · Airflow · AWS · ClickHouse</p>
+            <ul>
+              <li>Implantación de <strong>DataHub</strong> y linaje/metadatos a escala.</li>
+              <li>Arquitectura de <strong>Data Quality</strong> sobre Spark + AWS serverless.</li>
+              <li>Pipelines EHR orquestados con <strong>Airflow</strong> y EMR (profiling/limpieza).</li>
+            </ul>
+          </div>
+        </details>
+        <details class="accordion">
+          <summary><span class="acc-title">Savana — Senior Data Engineer</span><span class="chev" aria-hidden="true"></span></summary>
+          <div class="acc-body">
+            <p class="meta">dic 2022 – nov 2024 · ES</p>
+            <ul>
+              <li>Pipelines críticos con <strong>Spark</strong> y controles automáticos de calidad.</li>
+              <li>Mejoras de confiabilidad y observabilidad de datos.</li>
+            </ul>
+          </div>
+        </details>
+        <details class="accordion">
+          <summary><span class="acc-title">StratioBD — Data Engineer</span><span class="chev" aria-hidden="true"></span></summary>
+          <div class="acc-body">
+            <p class="meta">oct 2021 – dic 2022 · ES</p>
+            <ul>
+              <li>Flujo E2E con <strong>Spark</strong> y modelado gobernado (Logroño).</li>
+              <li>Predicción de uso de bicicletas eléctricas con PySpark (Bilbao).</li>
+            </ul>
+          </div>
+        </details>
+        <details class="accordion">
+          <summary><span class="acc-title">Santander Global Tech — Software Engineer</span><span class="chev" aria-hidden="true"></span></summary>
+          <div class="acc-body">
+            <p class="meta">oct 2020 – oct 2021 · ES</p>
+            <ul>
+              <li>Plataforma de transacciones batch/streaming con Spark, Flink, Kafka, Hazelcast; CI/CD.</li>
+            </ul>
+          </div>
+        </details>
+        <details class="accordion">
+          <summary><span class="acc-title">BBVA Next Technologies — Software Developer</span><span class="chev" aria-hidden="true"></span></summary>
+          <div class="acc-body">
+            <p class="meta">mar 2018 – oct 2020 · Madrid</p>
+            <ul>
+              <li>Helena (datos fondos/pensiones), migración on‑prem→AWS; procesos serverless.</li>
+              <li>HappyNext (análisis de sentimiento) y DataCloud (estadísticas TPV).</li>
+            </ul>
+          </div>
+        </details>
+        <details class="accordion">
+          <summary><span class="acc-title">Autana Consultores — Junior Software Developer</span><span class="chev" aria-hidden="true"></span></summary>
+          <div class="acc-body">
+            <p class="meta">dic 2017 – mar 2018 · Madrid</p>
+            <ul><li>Analítica social y geográfica (RED.es). Primera experiencia profesional.</li></ul>
+          </div>
+        </details>
+      </div>
+    </div>
   </section>
 
-  <footer>
-    © 2025 Ismael A. Sarmiento · Hecho con 💚 y ⚡ en HTML + CSS
+  <!-- P3 · PROYECTOS (acordeones) -->
+  <section class="page page--projects" id="p3" data-tip="Casos destacados con métricas y stack">
+    <div class="page__inner">
+      <h2 class="title">Proyectos</h2>
+      <div class="proj-grid">
+        <details class="accordion" open>
+          <summary><span class="acc-title">Plataforma de Data Quality (Savana)</span><span class="chev" aria-hidden="true"></span></summary>
+          <div class="acc-body">
+            <p class="meta">Spark + AWS serverless + DataHub + ClickHouse</p>
+            <ul>
+              <li>Airflow + EMR para <em>profiling</em>/limpieza; reporting de KPIs.</li>
+              <li>Linaje & metadatos para trazabilidad end‑to‑end.</li>
+            </ul>
+          </div>
+        </details>
+        <details class="accordion">
+          <summary><span class="acc-title">Predicción de bicis eléctricas (Bilbao)</span><span class="chev" aria-hidden="true"></span></summary>
+          <div class="acc-body">
+            <p class="meta">StratioBD · PySpark · Grafana/Prometheus · Mesos</p>
+            <ul><li>Modelo de demanda y pipelines productivos con Spark.</li></ul>
+          </div>
+        </details>
+        <details class="accordion">
+          <summary><span class="acc-title">Helena — datos fondos/pensiones (BBVA Next)</span><span class="chev" aria-hidden="true"></span></summary>
+          <div class="acc-body">
+            <p class="meta">AWS serverless · automatización · gobierno</p>
+            <ul><li>Migración on‑prem→AWS y estandarización de procesos de datos.</li></ul>
+          </div>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- P4 · EDUCACIÓN (acordeones) -->
+  <section class="page page--education" id="p4" data-tip="Formación académica relevante">
+    <div class="page__inner">
+      <h2 class="title">Educación</h2>
+      <div class="edu-grid">
+        <details class="accordion" open>
+          <summary><span class="acc-title">ULPGC — Ingeniero Técnico Industrial</span><span class="chev" aria-hidden="true"></span></summary>
+          <div class="acc-body"><p class="meta">feb 2023 – abr 2025</p></div>
+        </details>
+        <details class="accordion">
+          <summary><span class="acc-title">CUJAE (La Habana) — Ingeniero Automático</span><span class="chev" aria-hidden="true"></span></summary>
+          <div class="acc-body"><p class="meta">2012 – 2017</p></div>
+        </details>
+        <details class="accordion">
+          <summary><span class="acc-title">ASIME — Big Data Management, Technologies and Analytics</span><span class="chev" aria-hidden="true"></span></summary>
+          <div class="acc-body"><p class="meta">2017 – 2018</p></div>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- P5 · CERTIFICACIONES y CURSOS (acordeones) -->
+  <section class="page page--certs" id="p5" data-tip="Certificaciones oficiales y formación complementaria">
+    <div class="page__inner">
+      <h2 class="title">Certificaciones & Cursos</h2>
+      <div class="cert-grid">
+        <details class="accordion" open>
+          <summary><span class="acc-title">AWS Certified Solutions Architect – Associate</span><span class="chev" aria-hidden="true"></span></summary>
+          <div class="acc-body"><p class="meta">Arquitectura en AWS, buenas prácticas y resiliencia.</p></div>
+        </details>
+        <details class="accordion">
+          <summary><span class="acc-title">Building Data Lakes on AWS</span><span class="chev" aria-hidden="true"></span></summary>
+          <div class="acc-body"><p class="meta">Diseño y operación de data lakes en AWS.</p></div>
+        </details>
+        <details class="accordion">
+          <summary><span class="acc-title">Stream Processing Patterns in Apache Flink</span><span class="chev" aria-hidden="true"></span></summary>
+          <div class="acc-body"><p class="meta">Patrones de procesamiento en tiempo real.</p></div>
+        </details>
+        <details class="accordion">
+          <summary><span class="acc-title">AWS Solutions Training for Partners: Machine Learning on AWS</span><span class="chev" aria-hidden="true"></span></summary>
+          <div class="acc-body"><p class="meta">Servicios ML en AWS, integración y despliegue.</p></div>
+        </details>
+        <details class="accordion">
+          <summary><span class="acc-title">Data Centric Basics Exam</span><span class="chev" aria-hidden="true"></span></summary>
+          <div class="acc-body"><p class="meta">Principios de diseño centrado en los datos.</p></div>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- P6 · CONTACTO -->
+  <section class="page page--contact" id="p6" data-tip="Vías de contacto y enlaces">
+    <div class="page__inner">
+      <h2 class="title">Contacto</h2>
+      <div class="card" style="max-width:760px; margin:0 auto; text-align:center">
+        <p><strong>Email:</strong> <a href="mailto:ismaelantonio.sarmiento@gmail.com">ismaelantonio.sarmiento@gmail.com</a></p>
+        <p><strong>LinkedIn:</strong> <a href="https://www.linkedin.com/in/ismael-sarmiento" target="_blank" rel="noopener">linkedin.com/in/ismael-sarmiento</a></p>
+        <p><strong>Portfolio:</strong> <a href="https://ismael-sarmiento.github.io/" target="_blank" rel="noopener">ismael-sarmiento.github.io</a></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- P7 · EASTER EGG -->
+  <section class="page page--easter" id="p7" data-tip="¡Un regalo al final del viaje!">
+    <div class="page__inner">
+      <h2 class="title">¡Gracias por llegar hasta el final!</h2>
+      <div class="card" style="max-width:760px; margin:0 auto; text-align:center">
+        <p>🎁 <strong>Regalo:</strong> Conecta conmigo aquí → <a href="https://www.linkedin.com/in/ismael-sarmiento" target="_blank" rel="noopener">Mi LinkedIn</a></p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- PREV/NEXT + FAB Home -->
+<div class="controls" aria-hidden="false">
+  <button class="ctrl ctrl--prev" id="prev" aria-label="Página anterior">⇦</button>
+  <button class="ctrl ctrl--next" id="next" aria-label="Página siguiente">⇨</button>
+</div>
+<div class="fab fab--home"><a href="#p1" title="Ir a inicio">Home</a></div>
+<div class="curtain" id="curtain" aria-hidden="true"></div>
+
+<!-- Chat Drawer (UI) -->
+<section id="chatDock" aria-label="Chat del CV" aria-live="polite">
+  <header class="chatHead"><strong>Asistente del CV</strong> <button id="closeChat" title="Cerrar">✕</button></header>
+  <div class="chatBody" id="chatBody" role="log" aria-live="polite"></div>
+  <footer class="chatFoot">
+    <input id="chatInput" type="text" placeholder="Escribe tu pregunta…" />
+    <button id="chatSend">Enviar</button>
   </footer>
+</section>
 
+<!-- Métricas (demo local) -->
+<div id="metrics" role="dialog" aria-modal="true" aria-labelledby="metricsTitle">
+  <div class="metrics__panel">
+    <h3 id="metricsTitle">Métricas (demo local)</h3>
+    <div class="row"><span>Vistas locales</span> <b id="viewsNumModal">0</b></div>
+    <p style="margin:10px 0 0; color:var(--muted); font-size:13px">Para analítica real, integra Cloudflare Web Analytics o GA4.</p>
+    <div style="text-align:right; margin-top:10px"><button id="closeMetrics">Cerrar</button></div>
+  </div>
+</div>
+
+<script>
+/* ===== Loader ===== */
+(function(){
+  const loader=document.getElementById('loader');
+  const hide=()=> loader.classList.add('fade-out');
+  window.addEventListener('load', ()=> setTimeout(hide, 3200));
+  setTimeout(hide, 4400); // respaldo
+})();
+
+/* ===== Tema persistente + icono ===== */
+(function(){
+  const root=document.documentElement,key='theme-preference',btn=document.getElementById('theme');
+  const get=()=>localStorage.getItem(key), set=v=>localStorage.setItem(key,v), apply=v=>root.setAttribute('data-theme',v);
+  const stored=get(); if(stored) apply(stored);
+  btn?.addEventListener('click',()=>{const cur=root.getAttribute('data-theme')|| (matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'); const next=cur==='dark'?'light':'dark'; apply(next); set(next);});
+})();
+
+/* ===== Menú de idiomas ===== */
+(function(){
+  const wrap=document.getElementById('langMenuWrap');
+  const btn=document.getElementById('langBtn');
+  const list=document.getElementById('langMenu');
+  const current=document.documentElement.lang || 'es';
+  const all=[{code:'es', label:'Español', href:'./index.html'}, {code:'en', label:'English', href:'./index_en.html'}];
+  const items=all.filter(x=>x.code!==current);
+  list.innerHTML = items.map(x=>`<a role="menuitem" href="${x.href}" lang="${x.code}" hreflang="${x.code}">${x.label}</a>`).join('');
+  const open=(v)=>{wrap.setAttribute('aria-expanded', v); btn.setAttribute('aria-expanded', v);};
+  btn.addEventListener('click', (e)=>{ e.stopPropagation(); const v=wrap.getAttribute('aria-expanded')==='true'? 'false':'true'; open(v); });
+  document.addEventListener('click', ()=> open('false'));
+})();
+
+/* ===== Menú de herramientas ===== */
+(function(){
+  const wrap=document.getElementById('toolsMenuWrap');
+  const btn=document.getElementById('toolsBtn');
+  const open=(v)=>{wrap.setAttribute('aria-expanded', v); btn.setAttribute('aria-expanded', v);};
+  btn.addEventListener('click', (e)=>{ e.stopPropagation(); const v=wrap.getAttribute('aria-expanded')==='true'? 'false':'true'; open(v); });
+  document.addEventListener('click', ()=> open('false'));
+  // acciones del menú
+  document.getElementById('openChat').addEventListener('click', ()=>{ open('false'); toggleChat(true); });
+  document.getElementById('openMetrics').addEventListener('click', ()=>{ open('false'); toggleMetrics(true); });
+})();
+
+/* ===== Chat Drawer (UI local) ===== */
+(function(){
+  const dock=document.getElementById('chatDock');
+  const body=document.getElementById('chatBody');
+  const input=document.getElementById('chatInput');
+  const send=document.getElementById('chatSend');
+  const close=document.getElementById('closeChat');
+  window.toggleChat=function(show){ dock.classList.toggle('show', !!show); if(show) input?.focus(); };
+  const add=(text, me=false)=>{ const el=document.createElement('div'); el.className='msg'+(me?' me':''); el.textContent=text; body.appendChild(el); body.scrollTop=body.scrollHeight; };
+  send.addEventListener('click', ()=>{ if(!input.value.trim()) return; const q=input.value.trim(); add(q, true); input.value=''; // demo: respuesta estática
+    setTimeout(()=> add('¡Hola! Soy un demo local. Pronto me conectaré a un LLM seguro para responder sobre Ismael y su trayectoria.', false), 300);
+  });
+  input.addEventListener('keydown', (e)=>{ if(e.key==='Enter') send.click(); });
+  close.addEventListener('click', ()=> toggleChat(false));
+})();
+
+/* ===== Métricas (demo local con localStorage) ===== */
+(function(){
+  const modal=document.getElementById('metrics');
+  const close=document.getElementById('closeMetrics');
+  window.toggleMetrics=function(show){ modal.classList.toggle('show', !!show); };
+  close.addEventListener('click', ()=>toggleMetrics(false));
+})();
+
+/* ===== Views (localStorage-based placeholder counter) ===== */
+(function(){
+  const key='isarmiento_total_views';
+  const sess='isarmiento_session_seen';
+  let n=parseInt(localStorage.getItem(key)||'0',10);
+  if(!sessionStorage.getItem(sess)){ n++; localStorage.setItem(key,String(n)); sessionStorage.setItem(sess,'1'); }
+  const el=document.getElementById('viewsNumModal'); if(el) el.textContent=n;
+})();
+
+/* ===== Journey nav + markers + transitions ===== */
+(function(){
+  const rail=document.getElementById('rail');
+  const pages=[...rail.querySelectorAll('.page')];
+  const next=document.getElementById('next'), prev=document.getElementById('prev');
+  const curtain=document.getElementById('curtain');
+  const markers=document.getElementById('railMarkers');
+  const dirClass=(d)=>{ document.documentElement.classList.remove('dir-left','dir-right'); document.documentElement.classList.add(d>0?'dir-right':'dir-left'); };
+  let idx=0, locked=false;
+
+  // build left markers
+  pages.forEach((p,i)=>{
+    const m=document.createElement('button'); m.className='marker'+(i===0?' is-active':''); m.dataset.i=i; m.setAttribute('data-tip', p.getAttribute('data-tip')||('Sección '+(i+1))); m.addEventListener('click',()=>go(i)); markers.appendChild(m);
+  });
+
+  function setActive(i){
+    markers.querySelectorAll('.marker').forEach((m,j)=>m.classList.toggle('is-active', j===i));
+    pages.forEach((p,j)=>p.classList.toggle('active', j===i));
+  }
+
+  function transition(doStep, dir){
+    dirClass(dir);
+    if (document.startViewTransition){
+      const vt = document.startViewTransition(()=>{ doStep(); });
+      vt.finished.finally(()=> {locked=false;});
+    } else {
+      curtain.classList.add('show');
+      setTimeout(()=>{ doStep(); setTimeout(()=>{ curtain.classList.remove('show'); locked=false; }, 520); }, 480);
+    }
+  }
+
+  function go(i){
+    if (locked || i===idx || i<0 || i>=pages.length) return; locked=true;
+    const dir = i>idx ? 1 : -1;
+    transition(()=>{
+      idx=i; pages[i].scrollIntoView({behavior:'instant', inline:'start', block:'nearest'}); setActive(i); history.replaceState({}, '', '#'+pages[i].id);
+    }, dir);
+  }
+
+  next.onclick=()=>go(Math.min(idx+1, pages.length-1));
+  prev.onclick=()=>go(Math.max(idx-1, 0));
+
+  // teclado: ← →
+  rail.addEventListener('keydown', (e)=>{ if(e.key==='ArrowRight'){e.preventDefault(); next.click();} if(e.key==='ArrowLeft'){e.preventDefault(); prev.click();} });
+
+  // rueda
+  let wheelTO=null;
+  rail.addEventListener('wheel', (e)=>{
+    if (locked) return; if (Math.abs(e.deltaX)+Math.abs(e.deltaY) < 10) return; e.preventDefault();
+    clearTimeout(wheelTO); wheelTO=setTimeout(()=>{ (e.deltaY>0||e.deltaX>0) ? next.click() : prev.click(); }, 24);
+  }, {passive:false});
+
+  // touch/drag básico
+  let startX=null; rail.addEventListener('pointerdown', (e)=>{ startX=e.clientX; });
+  rail.addEventListener('pointerup', (e)=>{ if(startX==null) return; const dx=e.clientX-startX; if (Math.abs(dx)>50){ dx<0? next.click(): prev.click(); } startX=null; });
+
+  // sincronizar índice
+  function syncIdx(){ const vw = rail.clientWidth; idx = Math.round(rail.scrollLeft / vw); setActive(idx); }
+  rail.addEventListener('scroll', syncIdx, {passive:true});
+  window.addEventListener('resize', syncIdx); syncIdx();
+})();
+</script>
 </body>
 </html>
