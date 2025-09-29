@@ -15,6 +15,7 @@
   --card:#101731; --border:#1e2748; --shadow:0 16px 50px rgba(0,0,0,.35);
   --accent:#6aa3ff; --accent2:#2fe6c7;
   --radius:22px; --maxw:1180px;
+  --menu-fz:14.5px;
 }
 [data-theme="light"]{
   --bg:#f5f7ff; --fg:#0b1020; --muted:#4e5d78; --card:#ffffff; --border:#dfe7ff; --shadow:0 14px 40px rgba(5,10,30,.08);
@@ -26,7 +27,7 @@ body{margin:0; font-family:Inter, -apple-system, Segoe UI, Roboto, system-ui, Ar
 a{color:var(--accent); text-decoration:none}
 a:hover{text-decoration:none}
 
-/* ===================== BACKGROUND WOW (más vivo) ===================== */
+/* ===================== BACKGROUND WOW ===================== */
 .bg{position:fixed; inset:-12vmax; z-index:-3; filter:blur(60px) saturate(140%);
   background:
     radial-gradient(36vmax 36vmax at 12% 25%, rgba(106,163,255,.35), transparent 60%),
@@ -34,7 +35,6 @@ a:hover{text-decoration:none}
     radial-gradient(36vmax 36vmax at 82% 86%, rgba(47,230,199,.30), transparent 60%),
     radial-gradient(36vmax 36vmax at 18% 78%, rgba(0,186,161,.28), transparent 60%);
   animation:float 24s ease-in-out infinite alternate}
-/* segunda capa para sensación viva */
 .bg2{position:fixed; inset:-14vmax; z-index:-2; pointer-events:none; filter:blur(70px) saturate(140%);
   background:
     radial-gradient(28vmax 28vmax at 20% 30%, rgba(106,163,255,.20), transparent 60%),
@@ -44,7 +44,7 @@ a:hover{text-decoration:none}
 @keyframes float2{0%{transform:translate(-1%,1%) rotate(0.2deg)}100%{transform:translate(1%,-1%) rotate(-0.2deg)}}
 @media (prefers-reduced-motion:reduce){.bg,.bg2{animation:none}}
 
-/* ===================== LOADER (WELCOME) ===================== */
+/* ===================== LOADER ===================== */
 #loader{position:fixed; inset:0; z-index:999; display:grid; place-items:center; background:radial-gradient(120vmax 120vmax at 50% 50%, #0b1020 20%, #050911 100%); color:#e6e9ef}
 .loader__inner{display:grid; gap:14px; place-items:center}
 .loader__ring{width:96px; height:96px; border-radius:999px; border:3px solid color-mix(in oklab, var(--accent) 40%, #ffffff10); border-top-color:var(--accent); animation:spin 1.15s linear infinite}
@@ -57,66 +57,74 @@ a:hover{text-decoration:none}
 .fade-out{animation:fadeout .7s ease forwards}
 @keyframes fadeout{to{opacity:0; visibility:hidden}}
 
-/* ===================== NAV (overlay, sin barra visible) ===================== */
-.nav{position:sticky; top:0; z-index:50; background:transparent; backdrop-filter:none; border:none}
+/* ===================== NAV (sin barra visible) ===================== */
+.nav{position:sticky; top:0; z-index:50; background:transparent; border:none}
 .nav__inner{max-width:var(--maxw); margin:0 auto; padding:14px 12px 0 12px; display:grid; grid-template-columns:1fr auto 1fr; align-items:center; gap:8px}
+@media (max-width: 640px){ .nav__inner{padding:12px 8px 0 8px} }
 
-/* Marca centrada en dos líneas + animación tipo título */
+/* Marca */
 .brand-wrap{justify-self:center; position:relative; display:grid; place-items:center}
 .brand{display:grid; gap:2px; text-align:center; color:var(--fg)}
-.brand__l1{font-weight:900; font-size:clamp(24px,3vw,34px); letter-spacing:.2px; color:var(--accent); text-shadow:0 8px 24px rgba(0,0,0,.28); transition:text-shadow .35s ease, filter .35s ease}
-.brand__l2{font-weight:700; font-size:clamp(14px,1.6vw,18px); color:var(--fg); opacity:.9}
+.brand__l1{font-weight:900; font-size:clamp(24px,3.3vw,36px); letter-spacing:.2px; color:var(--accent); text-shadow:0 8px 24px rgba(0,0,0,.28); transition:text-shadow .35s ease, filter .35s ease}
+.brand__l2{font-weight:700; font-size:clamp(14px,1.7vw,18px); color:var(--fg); opacity:.9}
 .brand-wrap:hover .brand__l1{filter:brightness(1.08); text-shadow:0 14px 36px rgba(0,0,0,.38)}
 @keyframes titleBreath{0%,100%{text-shadow:0 8px 24px rgba(0,0,0,.28)}50%{text-shadow:0 10px 30px rgba(0,0,0,.34)}}
 .brand .brand__l1{animation:titleBreath 5s ease-in-out infinite}
-/* eliminar subrayados/focus agresivos */
 .brand:focus{outline:none}
-
-/* Hint discreto junto a la marca (izquierda) */
+/* Hint (solo desktop) */
 .brand-hint{position:absolute; left:-18px; top:50%; transform:translate(-100%,-50%); max-width:360px; padding:10px 12px; border-radius:12px; border:1px dashed color-mix(in oklab, var(--accent) 25%, var(--border)); background:color-mix(in oklab, var(--card) 85%, transparent); color:var(--muted); font-size:13px; line-height:1.4; box-shadow:var(--shadow); opacity:0; pointer-events:none; transition:opacity .18s ease, transform .18s ease}
-.brand-wrap:hover .brand-hint{opacity:1; transform:translate(-100%,-50%) scale(1.02)}
+@media (hover:hover){ .brand-wrap:hover .brand-hint{opacity:1; transform:translate(-100%,-50%) scale(1.02)} }
+@media (max-width: 800px){ .brand-hint{display:none} }
 
-.nav__actions{justify-self:end; display:flex; gap:8px; align-items:center; margin-right:2px}
+.nav__actions{justify-self:end; display:flex; gap:8px; align-items:center; margin-right:calc(env(safe-area-inset-right) + 6px)}
 
-/* icon buttons derecha pegados al borde */
+/* Icon buttons */
 .icon-btn{width:44px; height:44px; border-radius:999px; border:1px solid var(--border); background:color-mix(in oklab, var(--card) 85%, transparent); color:var(--fg); box-shadow:var(--shadow); display:grid; place-items:center}
+@media (max-width: 640px){ .icon-btn{width:46px; height:46px} }
 .ico{font-size:18px}
 .ico-globe{width:22px; height:22px; background:conic-gradient(from 0deg, var(--accent), var(--accent2)); -webkit-mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23000"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm7.94 9h-3.09a16.6 16.6 0 0 0-1.15-5.03A8.02 8.02 0 0 1 19.94 11ZM8.3 13h7.4a14.9 14.9 0 0 1-1.05 4.37A14.9 14.9 0 0 1 12 20a14.9 14.9 0 0 1-2.65-2.63A14.9 14.9 0 0 1 8.3 13Zm0-2a14.9 14.9 0 0 1 1.05-4.37A14.9 14.9 0 0 1 12 4c.98 0 1.92.19 2.65.63A14.9 14.9 0 0 1 15.7 11H8.3ZM7.3 5.97A16.6 16.6 0 0 0 6.15 11H3.06a8.02 8.02 0 0 1 4.24-5.03ZM4.06 13h3.09c.24 1.79.67 3.47 1.15 5.03A8.02 8.02 0 0 1 4.06 13Zm15.88 0a8.02 8.02 0 0 1-4.24 5.03c.48-1.56.91-3.24 1.15-5.03h3.09Z"/></svg>') center/contain no-repeat; mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23000"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm7.94 9h-3.09a16.6 16.6 0 0 0-1.15-5.03A8.02 8.02 0 0 1 19.94 11ZM8.3 13h7.4a14.9 14.9 0 0 1-1.05 4.37A14.9 14.9 0 0 1 12 20a14.9 14.9 0 0 1-2.65-2.63A14.9 14.9 0 0 1 8.3 13Zm0-2a14.9 14.9 0 0 1 1.05-4.37A14.9 14.9 0 0 1 12 4c.98 0 1.92.19 2.65.63A14.9 14.9 0 0 1 15.7 11H8.3ZM7.3 5.97A16.6 16.6 0 0 0 6.15 11H3.06a8.02 8.02 0 0 1 4.24-5.03ZM4.06 13h3.09c.24 1.79.67 3.47 1.15 5.03A8.02 8.02 0 0 1 4.06 13Zm15.88 0a8.02 8.02 0 0 1-4.24 5.03c.48-1.56.91-3.24 1.15-5.03h3.09Z"/></svg>') center/contain no-repeat}
-/* theme icon (sun/moon) */
-.ico-theme{width:22px; height:22px;}
+.ico-theme{width:22px; height:22px}
 [data-theme="light"] .ico-theme{background:#ffb400; -webkit-mask:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23000"><path d="M6.76 4.84l-1.8-1.79-1.41 1.41 1.79 1.8 1.42-1.42Zm10.45 0 1.79-1.79 1.41 1.41-1.79 1.8-1.41-1.42ZM12 4h0V1h0v3Zm0 19h0v-3h0v3Zm8-8h3v0h-3v0ZM1 12H4v0H1v0Zm2.54 6.36-1.41 1.41 1.8 1.79 1.41-1.41-1.8-1.79Zm15.92 0 1.41 1.41-1.79 1.8-1.41-1.41 1.79-1.8ZM12 7a5 5 0 1 0 .001 10.001A5 5 0 0 0 12 7Z"/></svg>') center/contain no-repeat}
 [data-theme="dark"] .ico-theme{background:#e6e9ef; -webkit-mask:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23000"><path d="M20.742 13.045A8 8 0 1 1 10.955 3.258 7 7 0 1 0 20.742 13.045Z"/></svg>') center/contain no-repeat}
-/* gear/tools icon */
-.ico-gear{width:22px; height:22px; background:#e6e9ef; -webkit-mask:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23000"><path d="M19.14,12.94a7.46,7.46,0,0,0,.05-1,7.46,7.46,0,0,0-.05-1l2.11-1.65a.5.5,0,0,0,.12-.64l-2-3.46a.5.5,0,0,0-.6-.22l-2.49,1a7.28,7.28,0,0,0-1.73-1l-.38-2.65A.5.5,0,0,0,12,1H8a.5.5,0,0,0-.5.42L7.12,4.07a7.28,7.28,0,0,0-1.73,1l-2.49-1a.5.5,0,0,0-.6.22l-2,3.46a.5.5,0,0,0,.12.64L2.53,10a7.46,7.46,0,0,0-.05,1,7.46,7.46,0,0,0,.05,1L.42,13.65a.5.5,0,0,0-.12.64l2,3.46a.5.5,0,0,0,.6.22l2.49-1a7.28,7.28,0,0,0,1.73,1l.38,2.65A.5.5,0,0,0,8,23h4a.5.5,0,0,0,.5-.42l.38-2.65a7.28,7.28,0,0,0,1.73-1l2.49,1a.5.5,0,0,0,.6-.22l2-3.46a.5.5,0,0,0-.12-.64ZM10,15a3,3,0,1,1,3-3A3,3,0,0,1,10,15Z"/></svg>') center/contain no-repeat}
+.ico-gear{width:22px; height:22px; background:#e6e9ef; -webkit-mask:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23000"><path d="M19.14,12.94a7.46,7.46,0,0,0,.05-1,7.46,7.46,0,0,0-.05-1l2.11-1.65a.5.5,0,0,0,.12-.64l-2-3.46a.5.5,0,0,0-.6-.22l-2.49,1a7.28,7.28,0,0,0-1.73-1l-.38-2.65A.5.5,0,0,0,12,1H8a.5.5,0,0,0-.5.42L7.12,4.07a7.28,7.28,0,0,0-1.73,1l-2.49-1a.5.5,0,0,0-.6.22l-2,3.46a.5.5,0,0,0,.12.64L2.53,10a7.46,7.46,0,0,0-.05,1,7.46,7.46,0,0,0,.05,1L.42,13.65a.5.5,0,0,0-.12.64l2,3.46a.5.5,0,0,0,.6.22l2.49-1a7.28,7.28,0,0,0,1.73,1l.38,2.65A.5.5,0,0,0,8,23h4a.5.5,0,0,0,.5-.42l.38-2.65a7.28,7.28,0,0,0,1.73-1l2.49,1a.5.5,0,0,0,.6-.22l2-3.46a.5.5,0,0,0,.12-.64ZM10,15a3,3,0,1,1,3-3A3,3,0,0,1,10,15Z"/></svg>') center/contain no-repeat}
 
-/* dropdown menus */
+/* Dropdown menus: raíz + subcarpetas que abren a la derecha */
 .menu{position:relative}
-.menu__list{position:absolute; right:0; top:calc(100% + 8px); min-width:190px; background:color-mix(in oklab, var(--card) 92%, transparent); border:1px solid var(--border); border-radius:14px; box-shadow:var(--shadow); padding:6px; display:none}
-.menu__list a, .menu__list button{display:block; padding:10px 12px; border-radius:10px; color:var(--fg); text-decoration:none; background:none; border:none; width:100%; text-align:left; cursor:pointer}
-.menu__list a:hover, .menu__list button:hover{background:color-mix(in oklab, var(--card) 80%, transparent)}
-.menu[aria-expanded="true"] .menu__list{display:block}
+.menu__list{position:absolute; right:0; top:calc(100% + 8px); min-width:230px; background:color-mix(in oklab, var(--card) 92%, transparent); border:1px solid var(--border); border-radius:14px; box-shadow:var(--shadow); padding:8px; display:none; font-size:var(--menu-fz)}
+.menu[aria-expanded="true"] > .menu__list{display:block}
+.menu__row{position:relative; display:block; padding:0; margin:0}
+.menu__parent, .menu__item{display:block; width:100%; padding:10px 12px; border-radius:10px; color:var(--fg); background:none; border:none; text-align:left; cursor:pointer; font:inherit}
+.menu__item:hover, .menu__parent:hover{background:color-mix(in oklab, var(--card) 80%, transparent)}
+.menu__parent{display:flex; align-items:center; justify-content:space-between}
+.menu__parent::after{content:"▸"; opacity:.7}
+.menu__row[aria-expanded="true"] > .menu__parent::after{content:"▾"}
+.submenu{position:absolute; left:calc(100% + 8px); top:-8px; min-width:220px; background:color-mix(in oklab, var(--card) 96%, transparent); border:1px solid var(--border); border-radius:12px; box-shadow:var(--shadow); padding:8px; display:none}
+.menu__row[aria-expanded="true"] > .submenu{display:block}
+@media (max-width: 640px){
+  .submenu{position:relative; left:0; top:0; margin-top:6px}
+}
 
 /* ===================== RAIL (HORIZONTAL PAGES) ===================== */
-.wrap{position:relative}
 #rail{display:flex; gap:0; align-items:stretch; overflow-x:auto; overscroll-behavior-x:contain; scroll-snap-type:x mandatory; scrollbar-width:none}
 #rail::-webkit-scrollbar{display:none}
 .page{flex:0 0 100vw; max-width:100vw; min-height:100svh; display:grid; place-items:center; position:relative; scroll-snap-align:start; scroll-snap-stop:always}
 .page__inner{width:min(100%, var(--maxw)); padding:36px 22px; display:grid; gap:20px; opacity:.6; transform:translateY(6px); transition:opacity 1.35s ease, transform 1.35s ease}
 .page.active .page__inner{opacity:1; transform:none}
+@media (max-width: 640px){ .page__inner{padding:22px 14px} }
 
 /* titles */
-.title, .kicker{margin:0; text-align:center}
-.title{font-size:clamp(32px, 5vw, 56px); font-weight:900; letter-spacing:.2px; color:var(--accent); text-shadow:0 8px 24px rgba(0,0,0,.28); transition:text-shadow .35s ease, filter .35s ease}
+.title{margin:0; text-align:center; font-size:clamp(32px, 5vw, 56px); font-weight:900; letter-spacing:.2px; color:var(--accent); text-shadow:0 8px 24px rgba(0,0,0,.28); transition:text-shadow .35s ease, filter .35s ease}
 .title:hover{filter:brightness(1.08); text-shadow:0 14px 36px rgba(0,0,0,.38)}
 .page.active .title{animation:titleBreath 5s ease-in-out infinite}
 
-/* unique page moods */
+/* about */
 .page--about .page__inner{grid-template-rows:auto auto auto 1fr}
 .page--about .intro{font-size:18px; color:var(--muted); text-align:center; margin:0 auto; max-width:820px}
 
+/* cards */
 .card{background:transparent; border:1px dashed color-mix(in oklab, var(--accent) 25%, var(--border)); border-radius:var(--radius); padding:20px; backdrop-filter:blur(8px); box-shadow:0 0 0 1px rgba(255,255,255,.03) inset}
 
-/* metadata chips */
+/* chips */
 .meta-cloud{display:flex; gap:10px; flex-wrap:wrap; justify-content:center}
 .meta-chip{position:relative; font-size:13px; padding:10px 12px; border-radius:14px; background:color-mix(in oklab, var(--card) 65%, transparent); border:1px solid var(--border); transform:translateZ(0); transition:transform .18s ease, box-shadow .18s ease}
 .meta-chip:hover{transform:scale(1.08); box-shadow:0 10px 30px rgba(0,0,0,.35)}
@@ -133,36 +141,42 @@ a:hover{text-decoration:none}
 .accordion[open] .chev{transform:rotate(45deg)}
 .acc-body{padding:0 18px 14px}
 
-/* prev/next con hover direccional */
+/* prev/next */
 .controls{position:fixed; left:50%; transform:translateX(-50%); bottom:22px; z-index:60; display:flex; gap:12px; align-items:center}
 .ctrl{width:46px; height:46px; border-radius:999px; border:1px solid var(--border); background:color-mix(in oklab, var(--card) 85%, transparent); color:var(--fg); box-shadow:var(--shadow); transition:transform .18s ease, box-shadow .18s ease, outline-color .18s ease}
 .ctrl--prev:hover{transform:translateX(-6px)}
 .ctrl--next:hover{transform:translateX(6px)}
 .ctrl:hover{box-shadow:0 12px 34px rgba(0,0,0,.4), 0 0 0 3px color-mix(in oklab, var(--accent) 35%, transparent)}
+@media (max-width: 640px){ .controls{bottom:calc(14px + env(safe-area-inset-bottom))} }
 
-/* Left-side markers */
-.rail-markers{position:fixed; left:10px; top:50%; transform:translateY(-50%); z-index:61; display:flex; flex-direction:column; gap:10px}
+/* Marcadores (izq / abajo en móvil) */
+.rail-markers{position:fixed; left:12px; top:50%; transform:translateY(-50%); z-index:61; display:flex; flex-direction:column; gap:10px}
 .marker{width:14px; height:14px; border-radius:999px; border:1px solid var(--border); background:color-mix(in oklab, var(--card) 85%, transparent); position:relative; cursor:pointer}
 .marker.is-active{background:linear-gradient(135deg, var(--accent), var(--accent2)); transform:scale(1.15)}
 .marker:hover::after, .marker:focus::after{content:attr(data-tip); position:absolute; left:160%; top:50%; transform:translateY(-50%); background:color-mix(in oklab, var(--card) 92%, transparent); border:1px solid var(--border); color:var(--fg); padding:8px 10px; border-radius:10px; white-space:nowrap; box-shadow:var(--shadow)}
+@media (max-width: 900px){
+  .rail-markers{left:50%; top:auto; bottom:calc(78px + env(safe-area-inset-bottom)); transform:translateX(-50%); flex-direction:row; gap:12px}
+  .marker{width:16px; height:16px}
+  .marker:hover::after, .marker:focus::after{left:50%; top:-10px; transform:translate(-50%, -100%)}
+}
 
-/* progress oculto */
-.progress{display:none}
-
-/* View Transitions — direccional + fallback curtain más larga */
-.dir-right ::view-transition-old(root){ animation: slideOldR 1.6s ease both; }
-.dir-right ::view-transition-new(root){ animation: slideNewR 1.6s ease both; }
-.dir-left  ::view-transition-old(root){ animation: slideOldL 1.6s ease both; }
-.dir-left  ::view-transition-new(root){ animation: slideNewL 1.6s ease both; }
+/* View Transitions — más lentas (1.9s) */
+.dir-right ::view-transition-old(root){ animation: slideOldR 1.9s ease both; }
+.dir-right ::view-transition-new(root){ animation: slideNewR 1.9s ease both; }
+.dir-left  ::view-transition-old(root){ animation: slideOldL 1.9s ease both; }
+.dir-left  ::view-transition-new(root){ animation: slideNewL 1.9s ease both; }
 @keyframes slideOldR{ from{opacity:1; transform:none} to{opacity:0; transform:translateX(-6%); filter:blur(2px)} }
 @keyframes slideNewR{ from{opacity:0; transform:translateX(6%); filter:blur(3px)} to{opacity:1; transform:none; filter:none} }
 @keyframes slideOldL{ from{opacity:1; transform:none} to{opacity:0; transform:translateX(6%); filter:blur(2px)} }
 @keyframes slideNewL{ from{opacity:0; transform:translateX(-6%); filter:blur(3px)} to{opacity:1; transform:none; filter:none} }
-.curtain{position:fixed; inset:0; pointer-events:none; z-index:80; background:radial-gradient(80vmax 80vmax at 50% 50%, rgba(255,255,255,.12), transparent 60%); clip-path:inset(0 100% 0 0); transition:clip-path 1.6s cubic-bezier(.2,.8,.2,1)}
+.curtain{position:fixed; inset:0; pointer-events:none; z-index:80; background:radial-gradient(80vmax 80vmax at 50% 50%, rgba(255,255,255,.12), transparent 60%); clip-path:inset(0 100% 0 0); transition:clip-path 1.9s cubic-bezier(.2,.8,.2,1)}
 .curtain.show{clip-path:inset(0 0 0 0)}
 
-/* Chat drawer (UI local, sin backend aún) */
-#chatDock{position:fixed; right:18px; bottom:18px; width:min(420px, 92vw); height:min(66vh, 720px); display:grid; grid-template-rows:auto 1fr auto; background:color-mix(in oklab, var(--card) 92%, transparent); border:1px solid var(--border); border-radius:18px; box-shadow:var(--shadow); overflow:hidden; transform:translateY(16px) scale(.98); opacity:0; pointer-events:none; transition:opacity .2s ease, transform .2s ease; z-index:70}
+/* Botón cerrar uniforme */
+.btn-x{width:34px; height:34px; border-radius:10px; border:1px solid var(--border); background:color-mix(in oklab, var(--card) 85%, transparent); color:var(--fg)}
+
+/* Chat drawer */
+#chatDock{position:fixed; right:calc(18px + env(safe-area-inset-right)); bottom:calc(18px + env(safe-area-inset-bottom)); width:min(440px, 96vw); height:min(66vh, 720px); display:grid; grid-template-rows:auto 1fr auto; background:color-mix(in oklab, var(--card) 92%, transparent); border:1px solid var(--border); border-radius:18px; box-shadow:var(--shadow); overflow:hidden; transform:translateY(16px) scale(.98); opacity:0; pointer-events:none; transition:opacity .2s ease, transform .2s ease; z-index:70}
 #chatDock.show{opacity:1; transform:none; pointer-events:auto}
 .chatHead{display:flex; align-items:center; justify-content:space-between; padding:10px 12px; border-bottom:1px solid var(--border)}
 .chatBody{padding:12px; overflow:auto; display:grid; gap:10px}
@@ -172,15 +186,28 @@ a:hover{text-decoration:none}
 .chatFoot input{flex:1; padding:12px; border-radius:12px; border:1px solid var(--border); background:color-mix(in oklab, var(--card) 80%, transparent); color:var(--fg)}
 .chatFoot button{padding:12px 14px; border-radius:12px; border:1px solid var(--border); background:linear-gradient(135deg, var(--accent), var(--accent2)); color:#07121c; font-weight:700}
 
-/* Modal sencillo para métricas */
-#metrics{position:fixed; inset:0; display:none; place-items:center; z-index:71;}
-#metrics.show{display:grid}
-.metrics__panel{width:min(380px, 92vw); background:color-mix(in oklab, var(--card) 92%, transparent); border:1px solid var(--border); border-radius:16px; box-shadow:var(--shadow); padding:16px}
-.metrics__panel h3{margin:0 0 8px 0}
+/* Métricas — barra lateral */
+#metricsDock{position:fixed; right:0; top:0; bottom:0; width:min(380px, 92vw); transform:translateX(100%); transition:transform .25s ease; z-index:71}
+#metricsDock.show{transform:none}
+.metrics__panel{height:100%; display:grid; grid-template-rows:auto 1fr auto; gap:0; background:color-mix(in oklab, var(--card) 92%, transparent); border-left:1px solid var(--border); box-shadow:var(--shadow)}
+.metrics__panel header{display:flex; align-items:center; justify-content:space-between; padding:14px 14px; border-bottom:1px solid var(--border)}
+.metrics__panel h3{margin:0}
+.metrics__panel .body{padding:12px; display:grid; gap:10px; overflow:auto}
 .metrics__panel .row{display:flex; align-items:center; justify-content:space-between; border:1px dashed color-mix(in oklab, var(--accent) 25%, var(--border)); padding:10px 12px; border-radius:12px}
+.metrics__panel footer{padding:12px; color:var(--muted); font-size:12px}
+
+/* Podcast — barra lateral delgada */
+#podcastDock{position:fixed; right:0; top:0; bottom:0; width:min(360px, 92vw); transform:translateX(100%); transition:transform .25s ease; z-index:72}
+#podcastDock.show{transform:none}
+.podcast__panel{height:100%; display:grid; grid-template-rows:auto 1fr auto; background:color-mix(in oklab, var(--card) 94%, transparent); border-left:1px solid var(--border); box-shadow:var(--shadow)}
+.podcast__panel header{display:flex; align-items:center; justify-content:space-between; padding:14px; border-bottom:1px solid var(--border)}
+.podcast__panel .body{padding:14px; overflow:auto; color:var(--muted); font-size:14px}
+.podcast__panel footer{padding:12px; border-top:1px solid var(--border); display:flex; gap:8px; align-items:center}
+.podcast__panel button{padding:10px 12px; border-radius:12px; border:1px solid var(--border); background:color-mix(in oklab, var(--card) 85%, transparent); color:var(--fg)}
+.podcast__panel .act{background:linear-gradient(135deg, var(--accent), var(--accent2)); color:#07121c; font-weight:700}
 
 /* print */
-@media print{.bg,.bg2, .nav, .controls, .fab, #loader, .rail-markers, #chatDock, #metrics{display:none!important} #rail{overflow:visible; display:block} .page{flex:none; max-width:unset} .card{border:1px solid #ccc}}
+@media print{.bg,.bg2, .nav, .controls, #loader, .rail-markers, #chatDock, #metricsDock, #podcastDock{display:none!important} #rail{overflow:visible; display:block} .page{flex:none; max-width:unset} .card{border:1px solid #ccc}}
 </style>
 </head>
 <body>
@@ -204,33 +231,60 @@ a:hover{text-decoration:none}
         <span class="brand__l1">Ismael A. Sarmiento</span>
         <span class="brand__l2">Lead Data Engineer</span>
       </a>
-      <div class="brand-hint" id="brandHint">“Seis honrados servidores me enseñaron cuanto sé; sus nombres son cómo, cuándo, dónde, qué, quién y por qué”.<br/><small>— Rudyard Kipling</small></div>
+      <div class="brand-hint" id="brandHint">“Seis honrados servidores me enseñaron cuanto sé; sus nombres son cómo, cuándo, dónde, qué, quién y por qué”.<br><small>— Rudyard Kipling</small></div>
     </div>
     <div class="nav__actions">
+      <!-- Herramientas con subcarpetas -->
       <div class="menu" id="toolsMenuWrap" aria-expanded="false">
         <button id="toolsBtn" class="icon-btn" aria-haspopup="true" aria-expanded="false" aria-controls="toolsMenu" title="Herramientas"><span class="ico ico-gear" aria-hidden="true"></span></button>
-        <div id="toolsMenu" class="menu__list" role="menu" aria-label="Herramientas">
-          <button role="menuitem" id="openChat">Chat</button>
-          <a role="menuitem" href="./assets/Ismael_Sarmiento_CV.pdf" download>Download PDF</a>
-          <button role="menuitem" id="openMetrics">Métricas</button>
-          <a role="menuitem" href="#p3">Resources</a>
+        <div id="toolsMenu" class="menu__list root" role="menu" aria-label="Herramientas">
+          <div class="menu__row has-sub" aria-expanded="false">
+            <button class="menu__parent" type="button" aria-haspopup="true" aria-expanded="false">IA</button>
+            <div class="submenu" role="menu">
+              <button role="menuitem" class="menu__item" id="openChat">Chat</button>
+              <button role="menuitem" class="menu__item" id="openPodcast">Podcast CV</button>
+            </div>
+          </div>
+          <div class="menu__row has-sub" aria-expanded="false">
+            <button class="menu__parent" type="button" aria-haspopup="true" aria-expanded="false">Métricas</button>
+            <div class="submenu" role="menu">
+              <button role="menuitem" class="menu__item" id="openMetrics">Panel</button>
+            </div>
+          </div>
+          <div class="menu__row has-sub" aria-expanded="false">
+            <button class="menu__parent" type="button" aria-haspopup="true" aria-expanded="false">Resources</button>
+            <div class="submenu" role="menu">
+              <a role="menuitem" class="menu__item" href="./assets/Ismael_Sarmiento_CV.pdf" download>Download PDF</a>
+              <a role="menuitem" class="menu__item" href="#p3">DAMA</a>
+              <a role="menuitem" class="menu__item" href="#p3">Courses</a>
+              <a role="menuitem" class="menu__item" href="#p3">Normative</a>
+            </div>
+          </div>
+          <div class="menu__row has-sub" aria-expanded="false">
+            <button class="menu__parent" type="button" aria-haspopup="true" aria-expanded="false">Navegación</button>
+            <div class="submenu" role="menu">
+              <button role="menuitem" class="menu__item" id="goStart">Volver al inicio</button>
+            </div>
+          </div>
         </div>
       </div>
+
+      <!-- Idioma -->
       <div class="menu" id="langMenuWrap" aria-expanded="false">
         <button id="langBtn" class="icon-btn" aria-haspopup="true" aria-expanded="false" aria-controls="langMenu" title="Idiomas"><span class="ico ico-globe" aria-hidden="true"></span></button>
         <div id="langMenu" class="menu__list" role="menu" aria-label="Idiomas disponibles"></div>
       </div>
+
+      <!-- Tema -->
       <button id="theme" class="icon-btn" aria-label="Cambiar tema" title="Tema"><span class="ico ico-theme" aria-hidden="true"></span></button>
     </div>
   </div>
 </nav>
 
-<!-- Left side markers (sin etiqueta fija) -->
+<!-- Marcadores -->
 <nav class="rail-markers" id="railMarkers" aria-label="Mapa de secciones"></nav>
 
 <main id="rail" tabindex="0" role="region" aria-label="Data Journey (secciones horizontales)">
-  <!-- ORDEN: SOBRE MÍ → EXPERIENCIA → PROYECTOS → EDUCACIÓN → CERTIFICACIONES → CONTACTO → EASTER -->
-
   <!-- P1 · SOBRE MÍ -->
   <section class="page page--about active" id="p1" data-tip="Quién soy, enfoque y stack base">
     <div class="page__inner">
@@ -300,7 +354,7 @@ a:hover{text-decoration:none}
           <div class="acc-body">
             <p class="meta">mar 2018 – oct 2020 · Madrid</p>
             <ul>
-              <li>Helena (datos fondos/pensiones), migración on‑prem→AWS; procesos serverless.</li>
+              <li>Helena (datos fondos/pensiones), migración on-prem→AWS; procesos serverless.</li>
               <li>HappyNext (análisis de sentimiento) y DataCloud (estadísticas TPV).</li>
             </ul>
           </div>
@@ -316,7 +370,7 @@ a:hover{text-decoration:none}
     </div>
   </section>
 
-  <!-- P3 · PROYECTOS (acordeones) -->
+  <!-- P3 · PROYECTOS -->
   <section class="page page--projects" id="p3" data-tip="Casos destacados con métricas y stack">
     <div class="page__inner">
       <h2 class="title">Proyectos</h2>
@@ -327,7 +381,7 @@ a:hover{text-decoration:none}
             <p class="meta">Spark + AWS serverless + DataHub + ClickHouse</p>
             <ul>
               <li>Airflow + EMR para <em>profiling</em>/limpieza; reporting de KPIs.</li>
-              <li>Linaje & metadatos para trazabilidad end‑to‑end.</li>
+              <li>Linaje & metadatos para trazabilidad end-to-end.</li>
             </ul>
           </div>
         </details>
@@ -342,14 +396,14 @@ a:hover{text-decoration:none}
           <summary><span class="acc-title">Helena — datos fondos/pensiones (BBVA Next)</span><span class="chev" aria-hidden="true"></span></summary>
           <div class="acc-body">
             <p class="meta">AWS serverless · automatización · gobierno</p>
-            <ul><li>Migración on‑prem→AWS y estandarización de procesos de datos.</li></ul>
+            <ul><li>Migración on-prem→AWS y estandarización de procesos de datos.</li></ul>
           </div>
         </details>
       </div>
     </div>
   </section>
 
-  <!-- P4 · EDUCACIÓN (acordeones) -->
+  <!-- P4 · EDUCACIÓN -->
   <section class="page page--education" id="p4" data-tip="Formación académica relevante">
     <div class="page__inner">
       <h2 class="title">Educación</h2>
@@ -370,7 +424,7 @@ a:hover{text-decoration:none}
     </div>
   </section>
 
-  <!-- P5 · CERTIFICACIONES y CURSOS (acordeones) -->
+  <!-- P5 · CERTIFICACIONES -->
   <section class="page page--certs" id="p5" data-tip="Certificaciones oficiales y formación complementaria">
     <div class="page__inner">
       <h2 class="title">Certificaciones & Cursos</h2>
@@ -411,7 +465,7 @@ a:hover{text-decoration:none}
     </div>
   </section>
 
-  <!-- P7 · EASTER EGG -->
+  <!-- P7 · EASTER -->
   <section class="page page--easter" id="p7" data-tip="¡Un regalo al final del viaje!">
     <div class="page__inner">
       <h2 class="title">¡Gracias por llegar hasta el final!</h2>
@@ -422,17 +476,16 @@ a:hover{text-decoration:none}
   </section>
 </main>
 
-<!-- PREV/NEXT + FAB Home -->
+<!-- PREV/NEXT -->
 <div class="controls" aria-hidden="false">
   <button class="ctrl ctrl--prev" id="prev" aria-label="Página anterior">⇦</button>
   <button class="ctrl ctrl--next" id="next" aria-label="Página siguiente">⇨</button>
 </div>
-<div class="fab fab--home"><a href="#p1" title="Ir a inicio">Home</a></div>
 <div class="curtain" id="curtain" aria-hidden="true"></div>
 
-<!-- Chat Drawer (UI) -->
+<!-- Chat -->
 <section id="chatDock" aria-label="Chat del CV" aria-live="polite">
-  <header class="chatHead"><strong>Asistente del CV</strong> <button id="closeChat" title="Cerrar">✕</button></header>
+  <header class="chatHead"><strong>Asistente del CV</strong> <button class="btn-x" id="closeChat" title="Cerrar" aria-label="Cerrar chat">✕</button></header>
   <div class="chatBody" id="chatBody" role="log" aria-live="polite"></div>
   <footer class="chatFoot">
     <input id="chatInput" type="text" placeholder="Escribe tu pregunta…" />
@@ -440,15 +493,33 @@ a:hover{text-decoration:none}
   </footer>
 </section>
 
-<!-- Métricas (demo local) -->
-<div id="metrics" role="dialog" aria-modal="true" aria-labelledby="metricsTitle">
+<!-- Métricas -->
+<aside id="metricsDock" role="dialog" aria-modal="false" aria-labelledby="metricsTitle">
   <div class="metrics__panel">
-    <h3 id="metricsTitle">Métricas (demo local)</h3>
-    <div class="row"><span>Vistas locales</span> <b id="viewsNumModal">0</b></div>
-    <p style="margin:10px 0 0; color:var(--muted); font-size:13px">Para analítica real, integra Cloudflare Web Analytics o GA4.</p>
-    <div style="text-align:right; margin-top:10px"><button id="closeMetrics">Cerrar</button></div>
+    <header><h3 id="metricsTitle">Métricas</h3> <button class="btn-x" id="closeMetrics" aria-label="Cerrar métricas">✕</button></header>
+    <div class="body">
+      <div class="row"><span>Vistas (local)</span> <b id="viewsNum">0</b></div>
+      <div class="row"><span>Secciones visitadas</span> <b id="visitedNum">0</b></div>
+      <div class="row"><span>Tiempo en sesión</span> <b id="sessTime">00:00</b></div>
+      <div class="row"><span>Última visita</span> <b id="lastVisit">—</b></div>
+      <div class="row"><span>Dispositivo</span> <b id="uaShort">—</b></div>
+    </div>
+    <footer>Para analítica real, integra Cloudflare Web Analytics o GA4 desde tu dominio.</footer>
   </div>
-</div>
+</aside>
+
+<!-- Podcast -->
+<aside id="podcastDock" role="dialog" aria-modal="false" aria-labelledby="podcastTitle">
+  <div class="podcast__panel">
+    <header><h3 id="podcastTitle">Podcast del CV</h3> <button class="btn-x" id="closePodcast" aria-label="Cerrar podcast">✕</button></header>
+    <div class="body" id="podcastPreview">Generando resumen…</div>
+    <footer>
+      <button id="podPlay" class="act">▶ Reproducir</button>
+      <button id="podPause">⏸ Pausa</button>
+      <button id="podStop">⏹ Detener</button>
+    </footer>
+  </div>
+</aside>
 
 <script>
 /* ===== Loader ===== */
@@ -456,10 +527,10 @@ a:hover{text-decoration:none}
   const loader=document.getElementById('loader');
   const hide=()=> loader.classList.add('fade-out');
   window.addEventListener('load', ()=> setTimeout(hide, 3200));
-  setTimeout(hide, 4400); // respaldo
+  setTimeout(hide, 4400);
 })();
 
-/* ===== Tema persistente + icono ===== */
+/* ===== Tema persistente ===== */
 (function(){
   const root=document.documentElement,key='theme-preference',btn=document.getElementById('theme');
   const get=()=>localStorage.getItem(key), set=v=>localStorage.setItem(key,v), apply=v=>root.setAttribute('data-theme',v);
@@ -467,7 +538,7 @@ a:hover{text-decoration:none}
   btn?.addEventListener('click',()=>{const cur=root.getAttribute('data-theme')|| (matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'); const next=cur==='dark'?'light':'dark'; apply(next); set(next);});
 })();
 
-/* ===== Menú de idiomas ===== */
+/* ===== Idiomas ===== */
 (function(){
   const wrap=document.getElementById('langMenuWrap');
   const btn=document.getElementById('langBtn');
@@ -475,22 +546,38 @@ a:hover{text-decoration:none}
   const current=document.documentElement.lang || 'es';
   const all=[{code:'es', label:'Español', href:'./index.html'}, {code:'en', label:'English', href:'./index_en.html'}];
   const items=all.filter(x=>x.code!==current);
-  list.innerHTML = items.map(x=>`<a role="menuitem" href="${x.href}" lang="${x.code}" hreflang="${x.code}">${x.label}</a>`).join('');
+  list.innerHTML = items.map(x=>`<a role="menuitem" class="menu__item" href="${x.href}" lang="${x.code}" hreflang="${x.code}">${x.label}</a>`).join('');
   const open=(v)=>{wrap.setAttribute('aria-expanded', v); btn.setAttribute('aria-expanded', v);};
   btn.addEventListener('click', (e)=>{ e.stopPropagation(); const v=wrap.getAttribute('aria-expanded')==='true'? 'false':'true'; open(v); });
   document.addEventListener('click', ()=> open('false'));
 })();
 
-/* ===== Menú de herramientas ===== */
+/* ===== Herramientas (menú con subcarpetas) ===== */
 (function(){
   const wrap=document.getElementById('toolsMenuWrap');
   const btn=document.getElementById('toolsBtn');
   const open=(v)=>{wrap.setAttribute('aria-expanded', v); btn.setAttribute('aria-expanded', v);};
   btn.addEventListener('click', (e)=>{ e.stopPropagation(); const v=wrap.getAttribute('aria-expanded')==='true'? 'false':'true'; open(v); });
   document.addEventListener('click', ()=> open('false'));
-  // acciones del menú
-  document.getElementById('openChat').addEventListener('click', ()=>{ open('false'); toggleChat(true); });
+
+  // Subcarpetas
+  wrap.querySelectorAll('.has-sub').forEach(row=>{
+    const parent=row.querySelector('.menu__parent');
+    parent.addEventListener('click', (e)=>{
+      e.stopPropagation();
+      const cur=row.getAttribute('aria-expanded')==='true';
+      // Cierra hermanas
+      row.parentElement.querySelectorAll('.has-sub').forEach(r=>{ if(r!==row) r.setAttribute('aria-expanded','false'); });
+      row.setAttribute('aria-expanded', String(!cur));
+      parent.setAttribute('aria-expanded', String(!cur));
+    });
+  });
+
+  // Acciones
+  document.getElementById('openChat').addEventListener('click', ()=>{ open('false'); toggleChat(true, true); });
   document.getElementById('openMetrics').addEventListener('click', ()=>{ open('false'); toggleMetrics(true); });
+  document.getElementById('openPodcast').addEventListener('click', ()=>{ open('false'); togglePodcast(true, true); });
+  document.getElementById('goStart').addEventListener('click', ()=>{ open('false'); if(window.goToIdx) window.goToIdx(0); });
 })();
 
 /* ===== Chat Drawer (UI local) ===== */
@@ -500,30 +587,112 @@ a:hover{text-decoration:none}
   const input=document.getElementById('chatInput');
   const send=document.getElementById('chatSend');
   const close=document.getElementById('closeChat');
-  window.toggleChat=function(show){ dock.classList.toggle('show', !!show); if(show) input?.focus(); };
-  const add=(text, me=false)=>{ const el=document.createElement('div'); el.className='msg'+(me?' me':''); el.textContent=text; body.appendChild(el); body.scrollTop=body.scrollHeight; };
-  send.addEventListener('click', ()=>{ if(!input.value.trim()) return; const q=input.value.trim(); add(q, true); input.value=''; // demo: respuesta estática
-    setTimeout(()=> add('¡Hola! Soy un demo local. Pronto me conectaré a un LLM seguro para responder sobre Ismael y su trayectoria.', false), 300);
+  window.toggleChat=function(show, reset){
+    dock.classList.toggle('show', !!show);
+    if(show){
+      input?.focus();
+      if(reset){ body.innerHTML=''; add('👋 ¡Hola! Soy el asistente del CV. Pregúntame sobre la experiencia, proyectos o skills de Ismael.'); }
+    }
+  };
+  function add(text, me=false){ const el=document.createElement('div'); el.className='msg'+(me?' me':''); el.textContent=text; body.appendChild(el); body.scrollTop=body.scrollHeight; }
+  send.addEventListener('click', ()=>{ if(!input.value.trim()) return; const q=input.value.trim(); add(q, true); input.value='';
+    setTimeout(()=> add('Demo local. Integra un endpoint (Workers AI) para respuestas reales.', false), 300);
   });
   input.addEventListener('keydown', (e)=>{ if(e.key==='Enter') send.click(); });
   close.addEventListener('click', ()=> toggleChat(false));
 })();
 
-/* ===== Métricas (demo local con localStorage) ===== */
+/* ===== Podcast (Web Speech API, texto dinámico del DOM) ===== */
 (function(){
-  const modal=document.getElementById('metrics');
-  const close=document.getElementById('closeMetrics');
-  window.toggleMetrics=function(show){ modal.classList.toggle('show', !!show); };
-  close.addEventListener('click', ()=>toggleMetrics(false));
+  const dock=document.getElementById('podcastDock');
+  const prev=document.getElementById('podcastPreview');
+  const btnPlay=document.getElementById('podPlay');
+  const btnPause=document.getElementById('podPause');
+  const btnStop=document.getElementById('podStop');
+  const btnClose=document.getElementById('closePodcast');
+
+  let utter=null, speaking=false, paused=false;
+
+  function buildPodcastText(){
+    // Nombre & rol
+    const name=document.querySelector('.brand__l1')?.textContent?.trim()||'Ismael A. Sarmiento';
+    const role=document.querySelector('.brand__l2')?.textContent?.trim()||'Lead Data Engineer';
+    // Sobre mí
+    const about=document.querySelector('.page--about .intro')?.textContent?.trim()||'';
+    // Experiencia (primeras 2)
+    const exps=[...document.querySelectorAll('.page--experience .accordion summary .acc-title')].slice(0,2).map(e=>e.textContent.trim());
+    const expTxt = exps.length ? `Experiencias clave: ${exps.join('; ')}.` : '';
+    return `${name}, ${role}. ${about} ${expTxt}`;
+  }
+
+  function speak(text){
+    const s = window.speechSynthesis;
+    if(!s){ prev.textContent='Tu navegador no soporta síntesis de voz.'; return; }
+    s.cancel();
+    utter = new SpeechSynthesisUtterance(text);
+    const voices = s.getVoices();
+    const esVoice = voices.find(v=>/Spanish|Español/i.test(v.name)) || voices[0];
+    if(esVoice) utter.voice = esVoice;
+    utter.rate = 1.03; utter.pitch = 1; utter.volume = 1;
+    utter.onend = ()=>{ speaking=false; paused=false; };
+    s.speak(utter);
+    speaking=true; paused=false;
+  }
+
+  function refreshPreview(){
+    const t = buildPodcastText();
+    prev.textContent = t;
+    return t;
+  }
+
+  window.togglePodcast=function(show, reset){
+    dock.classList.toggle('show', !!show);
+    if(show){ const t=refreshPreview(); if(reset) speak(t); }
+    else { window.speechSynthesis?.cancel(); speaking=false; paused=false; }
+  };
+
+  btnPlay.addEventListener('click', ()=>{
+    const s=window.speechSynthesis;
+    if(paused){ s.resume(); paused=false; return; }
+    if(!speaking){ speak(refreshPreview()); }
+  });
+  btnPause.addEventListener('click', ()=>{ window.speechSynthesis?.pause(); paused=true; });
+  btnStop.addEventListener('click', ()=>{ window.speechSynthesis?.cancel(); speaking=false; paused=false; });
+  btnClose.addEventListener('click', ()=> togglePodcast(false));
 })();
 
-/* ===== Views (localStorage-based placeholder counter) ===== */
+/* ===== Métricas (demo local con localStorage) ===== */
 (function(){
+  const dock=document.getElementById('metricsDock');
+  const close=document.getElementById('closeMetrics');
+  window.toggleMetrics=function(show){ updateMetrics(); dock.classList.toggle('show', !!show); };
+  close.addEventListener('click', ()=>toggleMetrics(false));
   const key='isarmiento_total_views';
   const sess='isarmiento_session_seen';
   let n=parseInt(localStorage.getItem(key)||'0',10);
-  if(!sessionStorage.getItem(sess)){ n++; localStorage.setItem(key,String(n)); sessionStorage.setItem(sess,'1'); }
-  const el=document.getElementById('viewsNumModal'); if(el) el.textContent=n;
+  if(!sessionStorage.getItem(sess)){
+    n++;
+    localStorage.setItem(key,String(n));
+    sessionStorage.setItem(sess,'1');
+    localStorage.setItem('isarmiento_last_visit', new Date().toISOString());
+  }
+  const t0 = Date.now();
+  const visited = new Set(JSON.parse(sessionStorage.getItem('isarmiento_visited')||'[]'));
+
+  function fmt(ms){ const s=Math.floor(ms/1000); const m=String(Math.floor(s/60)).padStart(2,'0'); const ss=String(s%60).padStart(2,'0'); return `${m}:${ss}`; }
+
+  function updateMetrics(){
+    document.getElementById('viewsNum').textContent = parseInt(localStorage.getItem(key)||'0',10);
+    document.getElementById('visitedNum').textContent = visited.size;
+    document.getElementById('sessTime').textContent = fmt(Date.now()-t0);
+    const last = localStorage.getItem('isarmiento_last_visit');
+    document.getElementById('lastVisit').textContent = last ? new Date(last).toLocaleString() : '—';
+    const ua = navigator.userAgent.replace(/(\(.*?\))/g,'');
+    document.getElementById('uaShort').textContent = ua.slice(0, 50) + (ua.length>50?'…':'');
+  }
+
+  setInterval(()=>{ if(dock.classList.contains('show')) updateMetrics(); }, 1000);
+  window.__metricsVisited = visited;
 })();
 
 /* ===== Journey nav + markers + transitions ===== */
@@ -536,14 +705,20 @@ a:hover{text-decoration:none}
   const dirClass=(d)=>{ document.documentElement.classList.remove('dir-left','dir-right'); document.documentElement.classList.add(d>0?'dir-right':'dir-left'); };
   let idx=0, locked=false;
 
-  // build left markers
+  // build markers
   pages.forEach((p,i)=>{
-    const m=document.createElement('button'); m.className='marker'+(i===0?' is-active':''); m.dataset.i=i; m.setAttribute('data-tip', p.getAttribute('data-tip')||('Sección '+(i+1))); m.addEventListener('click',()=>go(i)); markers.appendChild(m);
+    const m=document.createElement('button');
+    m.className='marker'+(i===0?' is-active':'');
+    m.dataset.i=i;
+    m.setAttribute('data-tip', p.getAttribute('data-tip')||('Sección '+(i+1)));
+    m.addEventListener('click',()=>go(i));
+    markers.appendChild(m);
   });
 
   function setActive(i){
     markers.querySelectorAll('.marker').forEach((m,j)=>m.classList.toggle('is-active', j===i));
     pages.forEach((p,j)=>p.classList.toggle('active', j===i));
+    const v = window.__metricsVisited; v.add(i); sessionStorage.setItem('isarmiento_visited', JSON.stringify([...v]));
   }
 
   function transition(doStep, dir){
@@ -565,6 +740,9 @@ a:hover{text-decoration:none}
     }, dir);
   }
 
+  // expón “volver al inicio”
+  window.goToIdx = (i)=>go(i);
+
   next.onclick=()=>go(Math.min(idx+1, pages.length-1));
   prev.onclick=()=>go(Math.max(idx-1, 0));
 
@@ -578,14 +756,12 @@ a:hover{text-decoration:none}
     clearTimeout(wheelTO); wheelTO=setTimeout(()=>{ (e.deltaY>0||e.deltaX>0) ? next.click() : prev.click(); }, 24);
   }, {passive:false});
 
-  // touch/drag básico
+  // touch/drag
   let startX=null; rail.addEventListener('pointerdown', (e)=>{ startX=e.clientX; });
   rail.addEventListener('pointerup', (e)=>{ if(startX==null) return; const dx=e.clientX-startX; if (Math.abs(dx)>50){ dx<0? next.click(): prev.click(); } startX=null; });
 
-  // sincronizar índice
   function syncIdx(){ const vw = rail.clientWidth; idx = Math.round(rail.scrollLeft / vw); setActive(idx); }
-  rail.addEventListener('scroll', syncIdx, {passive:true});
-  window.addEventListener('resize', syncIdx); syncIdx();
+  rail.addEventListener('scroll', syncIdx, {passive:true}); window.addEventListener('resize', syncIdx); syncIdx();
 })();
 </script>
 </body>
