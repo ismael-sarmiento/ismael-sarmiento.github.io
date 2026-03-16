@@ -1,0 +1,186 @@
+@page {
+  margin: 16mm 14mm;
+  size: A4;
+}
+
+body[data-view="print"] {
+  color: #10203a;
+  background: #ffffff;
+}
+
+body[data-view="print"]::before,
+body[data-view="print"]::after,
+body[data-view="print"] .ambient {
+  display: none !important;
+}
+
+body[data-view="print"] .reveal {
+  opacity: 1 !important;
+  transform: none !important;
+}
+
+body[data-view="print"] .section {
+  padding: 12px 0;
+  break-inside: avoid-page;
+  page-break-inside: avoid;
+}
+
+body[data-view="print"] .section__eyebrow {
+  color: #5d6f90;
+}
+
+body[data-view="print"] .section__title,
+body[data-view="print"] .hero__headline,
+body[data-view="print"] .hero__headline-primary,
+body[data-view="print"] .hero__headline-secondary,
+body[data-view="print"] .case-card__title,
+body[data-view="print"] .timeline-card__company,
+body[data-view="print"] .architecture-card__title {
+  color: #10203a;
+}
+
+body[data-view="print"] .hero__subtitle,
+body[data-view="print"] .hero__message,
+body[data-view="print"] p,
+body[data-view="print"] li,
+body[data-view="print"] .section__intro {
+  color: #364865 !important;
+}
+
+body[data-view="print"] .hero__copy,
+body[data-view="print"] .hero__panel,
+body[data-view="print"] .glass-card,
+body[data-view="print"] .timeline-card,
+body[data-view="print"] .credential-card,
+body[data-view="print"] .contact-card,
+body[data-view="print"] .case-card,
+body[data-view="print"] .architecture-card,
+body[data-view="print"] .platform-layer {
+  border: 1px solid rgba(24, 48, 86, 0.12);
+  box-shadow: none;
+  background: #ffffff;
+}
+
+body[data-view="print"] .primary-button,
+body[data-view="print"] .secondary-button,
+body[data-view="print"] .ghost-button,
+body[data-view="print"] .icon-button,
+body[data-view="print"] .mobile-menu-button,
+body[data-view="print"] .loader,
+body[data-view="print"] .assistant-fab,
+body[data-view="print"] .assistant-section {
+  display: none !important;
+}
+
+body[data-view="print"] .hero__panel::before {
+  display: none !important;
+}
+
+body[data-view="print"] .chip-link,
+body[data-view="print"] .hero__facts li {
+  color: #4b5f80;
+  background: #f4f7fb;
+  border-color: rgba(24, 48, 86, 0.12);
+}
+
+body[data-view="print"] .hero__headline {
+  gap: 4px;
+}
+
+body[data-view="print"] .hero__headline-primary {
+  font-size: 34px;
+}
+
+body[data-view="print"] .hero__headline-secondary {
+  font-size: 20px;
+  line-height: 1.15;
+}
+
+body[data-view="print"] .hero__subtitle {
+  font-size: 18px;
+}
+
+body[data-view="print"] .hero__message {
+  font-size: 15px;
+}
+
+body[data-view="print"] .summary-grid,
+body[data-view="print"] .credentials-grid,
+body[data-view="print"] .cases-grid,
+body[data-view="print"] .pillars,
+body[data-view="print"] .contact-grid,
+body[data-view="print"] .about-grid,
+body[data-view="print"] .spotlight,
+body[data-view="print"] .hero__grid {
+  gap: 12px;
+}
+
+body[data-view="print"] .cases-grid {
+  grid-template-columns: 1fr;
+}
+
+body[data-view="print"] .timeline-grid {
+  gap: 10px;
+}
+
+body[data-view="print"] .print-meta {
+  display: flex;
+}
+
+body[data-view="print"] .print-watermark {
+  display: block;
+}
+
+body[data-view="print"] .case-card,
+body[data-view="print"] .timeline-card,
+body[data-view="print"] .credential-card,
+body[data-view="print"] .contact-card,
+body[data-view="print"] .platform-layer {
+  break-inside: avoid-page;
+  page-break-inside: avoid;
+}
+
+body[data-view="print"] .site-footer {
+  display: none !important;
+}
+
+@media print {
+  body {
+    background: #ffffff !important;
+  }
+
+  .site-header,
+  .loader,
+  .assistant-fab,
+  .assistant-section,
+  .site-footer,
+  .mobile-sheet {
+    display: none !important;
+  }
+
+  .reveal {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  .main {
+    width: 100% !important;
+    max-width: none !important;
+    padding: 0 !important;
+  }
+
+  .section {
+    padding: 10px 0 !important;
+  }
+
+  .hero {
+    min-height: auto !important;
+    padding-top: 0 !important;
+  }
+
+  p,
+  li {
+    orphans: 3;
+    widows: 3;
+  }
+}

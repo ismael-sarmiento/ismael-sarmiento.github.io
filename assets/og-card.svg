@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
+  <title id="title">Ismael Sarmiento | CV</title>
+  <desc id="desc">Governance, interoperability and data quality for data products and platforms.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0%" x2="100%" y1="0%" y2="100%">
+      <stop offset="0%" stop-color="#07111f"/>
+      <stop offset="100%" stop-color="#0d1730"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0%" x2="100%" y1="0%" y2="100%">
+      <stop offset="0%" stop-color="#5b88ff"/>
+      <stop offset="100%" stop-color="#ff9d63"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <g opacity=".18">
+    <path d="M90 120h1020M90 220h1020M90 320h1020M90 420h1020M90 520h1020" stroke="#7f96bb"/>
+    <path d="M160 70v490M340 70v490M520 70v490M700 70v490M880 70v490M1060 70v490" stroke="#7f96bb"/>
+  </g>
+  <circle cx="1030" cy="144" r="110" fill="#5b88ff" opacity=".12"/>
+  <circle cx="176" cy="486" r="144" fill="#ff9d63" opacity=".11"/>
+  <g transform="translate(104 92)">
+    <rect width="82" height="82" rx="24" fill="url(#accent)" opacity=".2"/>
+    <rect x="11" y="11" width="60" height="60" rx="19" fill="none" stroke="#eef4ff" stroke-opacity=".3"/>
+    <circle cx="23" cy="23" r="6" fill="#eef4ff"/>
+    <circle cx="59" cy="23" r="6" fill="#ff9d63"/>
+    <circle cx="23" cy="59" r="6" fill="#5b88ff"/>
+    <circle cx="59" cy="59" r="6" fill="#eef4ff"/>
+    <path d="M23 23h36M23 59h36M23 23v36M59 23v36" stroke="#eef4ff" stroke-opacity=".25" stroke-width="2"/>
+  </g>
+  <text x="104" y="250" fill="#eef4ff" font-family="Sora, Arial, sans-serif" font-size="72" font-weight="700" letter-spacing="-2">
+    Ismael Sarmiento
+  </text>
+  <text x="104" y="330" fill="#c7d7f5" font-family="IBM Plex Sans, Arial, sans-serif" font-size="34">
+    Lead Data Engineer | Governance, Interoperability &amp; Data Quality
+  </text>
+  <text x="104" y="396" fill="#9fb4da" font-family="IBM Plex Sans, Arial, sans-serif" font-size="28">
+    Data engineering for governed, interoperable products and platforms
+  </text>
+  <text x="104" y="438" fill="#9fb4da" font-family="IBM Plex Sans, Arial, sans-serif" font-size="28">
+    built around data quality.
+  </text>
+  <rect x="104" y="500" width="430" height="8" rx="999" fill="url(#accent)"/>
+</svg>
