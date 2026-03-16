@@ -29,6 +29,9 @@
     mobileOpen: false,
     assistantDockOpen: false,
     isSpeaking: false,
+    audioLang: null,
+    audioMode: null,
+    audioStatus: "",
     loaderVisible: window.sessionStorage.getItem("cv-loader-seen") !== "1",
     activeSection: "summary",
     assistantMessages: [],
@@ -40,6 +43,7 @@
   let revealObserver = null;
   let assistantVisibilityObserver = null;
   let activeUtterance = null;
+  let activeAudioElement = null;
 
   const icons = {
     moon:
@@ -81,12 +85,12 @@
     return `${content.hero.headlinePrimary[state.lang]} | ${content.hero.headlineSecondary[state.lang]}`;
   }
 
-  function getNarrationText() {
+  function getNarrationText(lang = state.lang) {
     return [
-      content.hero.message[state.lang],
-      content.summary.lead[state.lang],
-      ...content.summary.paragraphs[state.lang],
-      content.about.paragraphs[state.lang][0],
+      content.hero.message[lang],
+      content.summary.lead[lang],
+      ...content.summary.paragraphs[lang],
+      content.about.paragraphs[lang][0],
     ].join(" ");
   }
 
@@ -175,7 +179,7 @@
     };
   }
 
-  function chooseNarrationVoice() {
+  function chooseNarrationVoice(lang = state.lang) {
     if (!("speechSynthesis" in window)) return null;
     const voices = window.speechSynthesis.getVoices();
     if (!voices.length) return null;
@@ -202,9 +206,9 @@
       "oliver",
     ];
 
-    const localePattern = state.lang === "es" ? /es[-_]ES/i : /en[-_]US/i;
-    const preferredNames = state.lang === "es" ? spanishPreferred : englishPreferred;
-    const localeFallback = state.lang === "es" ? /^es/i : /^en/i;
+    const localePattern = lang === "es" ? /es[-_]ES/i : /en[-_]US/i;
+    const preferredNames = lang === "es" ? spanishPreferred : englishPreferred;
+    const localeFallback = lang === "es" ? /^es/i : /^en/i;
 
     const exact = voices.find(
       (voice) =>
@@ -642,6 +646,36 @@
               <p class="section__intro">${copy.assistant.note}</p>
             </div>
             <article class="assistant-card reveal">
+              <div class="assistant-audio">
+                <div class="assistant-audio__copy">
+                  <span class="micro-label">${copy.assistant.audioTitle}</span>
+                  <p>${copy.assistant.audioNote}</p>
+                  ${
+                    state.audioStatus
+                      ? `<p class="assistant-audio__status">${state.audioStatus}</p>`
+                      : ""
+                  }
+                </div>
+                <div class="assistant-audio__actions">
+                  <button
+                    type="button"
+                    class="${state.isSpeaking && state.audioLang === "es" ? "primary-button" : "secondary-button"}"
+                    data-summary-audio="es"
+                    aria-pressed="${state.isSpeaking && state.audioLang === "es"}"
+                  >${copy.assistant.summaryEs}</button>
+                  <button
+                    type="button"
+                    class="${state.isSpeaking && state.audioLang === "en" ? "primary-button" : "secondary-button"}"
+                    data-summary-audio="en"
+                    aria-pressed="${state.isSpeaking && state.audioLang === "en"}"
+                  >${copy.assistant.summaryEn}</button>
+                  ${
+                    state.isSpeaking
+                      ? `<button type="button" class="ghost-button" data-summary-audio-stop>${copy.assistant.stopAudio}</button>`
+                      : ""
+                  }
+                </div>
+              </div>
               <div class="assistant-toolbar">
                 <div class="assistant-chips">
                 ${prompts
@@ -670,9 +704,30 @@
               <div class="assistant-fab__panel">
                 <span class="micro-label">${copy.assistant.launcherTitle}</span>
                 <p>${copy.assistant.launcherQuestion}</p>
+                ${
+                  state.audioStatus
+                    ? `<p class="assistant-fab__status">${state.audioStatus}</p>`
+                    : ""
+                }
                 <div class="assistant-fab__actions">
-                  <button type="button" class="secondary-button" data-assistant-listen>${state.isSpeaking ? copy.assistant.stopAudio : copy.assistant.listenSummary}</button>
+                  <button
+                    type="button"
+                    class="${state.isSpeaking && state.audioLang === "es" ? "primary-button" : "secondary-button"}"
+                    data-summary-audio="es"
+                    aria-pressed="${state.isSpeaking && state.audioLang === "es"}"
+                  >${copy.assistant.summaryEs}</button>
+                  <button
+                    type="button"
+                    class="${state.isSpeaking && state.audioLang === "en" ? "primary-button" : "secondary-button"}"
+                    data-summary-audio="en"
+                    aria-pressed="${state.isSpeaking && state.audioLang === "en"}"
+                  >${copy.assistant.summaryEn}</button>
                   <button type="button" class="primary-button" data-assistant-open-chat>${copy.assistant.openChat}</button>
+                  ${
+                    state.isSpeaking
+                      ? `<button type="button" class="ghost-button" data-summary-audio-stop>${copy.assistant.stopAudio}</button>`
+                      : ""
+                  }
                 </div>
               </div>
             `
@@ -824,10 +879,18 @@
       });
     }
 
-    const assistantListen = root.querySelector("[data-assistant-listen]");
-    if (assistantListen) {
-      assistantListen.addEventListener("click", toggleSummaryAudio);
-    }
+    root.querySelectorAll("[data-summary-audio]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const targetLang = button.getAttribute("data-summary-audio");
+        if (!validLangs.has(targetLang)) return;
+        playSummaryAudio(targetLang);
+      });
+    });
+
+    const stopAudio = root.querySelectorAll("[data-summary-audio-stop]");
+    stopAudio.forEach((button) => {
+      button.addEventListener("click", stopAudioPlayback);
+    });
 
     const loaderSkip = root.querySelector("[data-loader-skip]");
     if (loaderSkip) {
@@ -879,38 +942,159 @@
     }
   }
 
-  function toggleSummaryAudio() {
+  function getAudioStatus(lang, mode) {
+    const assistantCopy = content.ui[state.lang].assistant;
+    if (mode === "static") {
+      return lang === "es" ? assistantCopy.audioStaticEs : assistantCopy.audioStaticEn;
+    }
+    if (mode === "fallback") {
+      return lang === "es" ? assistantCopy.audioFallbackEs : assistantCopy.audioFallbackEn;
+    }
+    return assistantCopy.audioLoading;
+  }
+
+  function stopAudioPlayback() {
+    if (activeAudioElement) {
+      activeAudioElement.pause();
+      activeAudioElement.src = "";
+      activeAudioElement = null;
+    }
+
+    if ("speechSynthesis" in window) {
+      window.speechSynthesis.cancel();
+    }
+
+    activeUtterance = null;
+    state.isSpeaking = false;
+    state.audioLang = null;
+    state.audioMode = null;
+    state.audioStatus = "";
+    render();
+  }
+
+  function playSummaryAudio(lang) {
+    if (!validLangs.has(lang)) return;
+
+    if (state.isSpeaking && state.audioLang === lang) {
+      stopAudioPlayback();
+      return;
+    }
+
+    if (activeAudioElement) {
+      activeAudioElement.pause();
+      activeAudioElement.src = "";
+      activeAudioElement = null;
+    }
+    if ("speechSynthesis" in window) {
+      window.speechSynthesis.cancel();
+    }
+
+    activeUtterance = null;
+    state.isSpeaking = false;
+    state.audioLang = lang;
+    state.audioMode = "loading";
+    state.audioStatus = getAudioStatus(lang, "loading");
+    render();
+
+    const audioConfig = content.audio?.[lang];
+    if (!audioConfig?.src) {
+      playSummaryFallback(lang);
+      return;
+    }
+
+    const audio = new Audio(audioConfig.src);
+    activeAudioElement = audio;
+    audio.preload = "auto";
+
+    const cleanup = () => {
+      audio.oncanplaythrough = null;
+      audio.onerror = null;
+      audio.onended = null;
+      audio.onpause = null;
+    };
+
+    audio.oncanplaythrough = () => {
+      if (activeAudioElement !== audio) return;
+      cleanup();
+      state.isSpeaking = true;
+      state.audioMode = "static";
+      state.audioStatus = getAudioStatus(lang, "static");
+      render();
+      audio.play().catch(() => {
+        if (activeAudioElement === audio) {
+          activeAudioElement = null;
+          playSummaryFallback(lang);
+        }
+      });
+      audio.onended = () => {
+        if (activeAudioElement !== audio) return;
+        activeAudioElement = null;
+        state.isSpeaking = false;
+        state.audioLang = null;
+        state.audioMode = null;
+        state.audioStatus = "";
+        render();
+      };
+      audio.onpause = () => {
+        if (!audio.ended && activeAudioElement === audio) {
+          activeAudioElement = null;
+          state.isSpeaking = false;
+          state.audioLang = null;
+          state.audioMode = null;
+          state.audioStatus = "";
+          render();
+        }
+      };
+    };
+
+    audio.onerror = () => {
+      if (activeAudioElement !== audio) return;
+      cleanup();
+      activeAudioElement = null;
+      playSummaryFallback(lang);
+    };
+
+    audio.load();
+  }
+
+  function playSummaryFallback(lang) {
     if (!("speechSynthesis" in window)) {
+      state.isSpeaking = false;
+      state.audioLang = lang;
+      state.audioMode = "fallback";
+      state.audioStatus = getAudioStatus(lang, "fallback");
+      render();
       jumpToSection("assistant");
       return;
     }
 
-    if (state.isSpeaking) {
-      window.speechSynthesis.cancel();
-      activeUtterance = null;
-      state.isSpeaking = false;
-      render();
-      return;
-    }
-
     window.speechSynthesis.cancel();
-    activeUtterance = new SpeechSynthesisUtterance(getNarrationText());
-    const preferredVoice = chooseNarrationVoice();
-    activeUtterance.lang = preferredVoice?.lang || (state.lang === "es" ? "es-ES" : "en-US");
+    activeUtterance = new SpeechSynthesisUtterance(getNarrationText(lang));
+    const preferredVoice = chooseNarrationVoice(lang);
+    activeUtterance.lang = preferredVoice?.lang || (lang === "es" ? "es-ES" : "en-US");
     if (preferredVoice) activeUtterance.voice = preferredVoice;
     activeUtterance.rate = 0.98;
     activeUtterance.pitch = 0.94;
     activeUtterance.onend = () => {
       activeUtterance = null;
       state.isSpeaking = false;
+      state.audioLang = null;
+      state.audioMode = null;
+      state.audioStatus = "";
       render();
     };
     activeUtterance.onerror = () => {
       activeUtterance = null;
       state.isSpeaking = false;
+      state.audioLang = null;
+      state.audioMode = null;
+      state.audioStatus = "";
       render();
     };
     state.isSpeaking = true;
+    state.audioLang = lang;
+    state.audioMode = "fallback";
+    state.audioStatus = getAudioStatus(lang, "fallback");
     render();
     window.speechSynthesis.speak(activeUtterance);
   }

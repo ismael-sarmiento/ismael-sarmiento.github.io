@@ -55,13 +55,22 @@ window.CV_CONTENT = {
       assistant: {
         note:
           "Asistente local del CV. Responde a partir del contenido público de esta página y no utiliza datos privados ni conexión a modelos externos.",
+        audioTitle: "Resumen en audio",
+        audioNote:
+          "Puedes reproducir un resumen corto en español o en inglés. Si no existe un audio estático todavía, la web usará la voz disponible del navegador como fallback.",
         inputPlaceholder: "Pregunta por experiencia, capacidades o proyectos...",
         send: "Enviar",
         launcherTitle: "Asistente",
         launcherQuestion: "¿Qué quieres hacer?",
-        listenSummary: "Escuchar resumen",
+        summaryEs: "Resumen ES",
+        summaryEn: "Summary EN",
         openChat: "Abrir chat",
         stopAudio: "Detener audio",
+        audioLoading: "Preparando audio...",
+        audioStaticEs: "Reproduciendo audio estático en español.",
+        audioStaticEn: "Reproduciendo audio estático en inglés.",
+        audioFallbackEs: "Usando la voz del navegador para el resumen en español.",
+        audioFallbackEn: "Using browser voice for the English summary.",
         empty:
           "Puedo resumir experiencia en Savana, interoperabilidad con FHIR y OMOP, calidad del dato, DataHub, trayectoria, seguridad del asistente o forma de trabajo.",
         noMatch:
@@ -107,13 +116,22 @@ window.CV_CONTENT = {
       assistant: {
         note:
           "Local CV assistant. It answers from the public content on this page and does not use private data or any external model connection.",
+        audioTitle: "Audio summary",
+        audioNote:
+          "You can play a short summary in Spanish or English. If a static audio file is not available yet, the site will fall back to the browser voice.",
         inputPlaceholder: "Ask about experience, capabilities, or projects...",
         send: "Send",
         launcherTitle: "Assistant",
         launcherQuestion: "What do you want to do?",
-        listenSummary: "Listen to summary",
+        summaryEs: "Resumen ES",
+        summaryEn: "Summary EN",
         openChat: "Open chat",
         stopAudio: "Stop audio",
+        audioLoading: "Preparing audio...",
+        audioStaticEs: "Playing static Spanish audio.",
+        audioStaticEn: "Playing static English audio.",
+        audioFallbackEs: "Using browser voice for the Spanish summary.",
+        audioFallbackEn: "Using browser voice for the English summary.",
         empty:
           "I can summarize Savana experience, FHIR and OMOP interoperability, Data Quality, DataHub, career path, assistant safety, or working style.",
         noMatch:
@@ -133,6 +151,16 @@ window.CV_CONTENT = {
     { label: "Savana", href: "https://savanamed.com/about-us/" },
     { label: "Stratio", href: "https://www.stratio.com/" },
   ],
+  audio: {
+    es: {
+      label: "Resumen ES",
+      src: "./assets/audio/resumen-es.mp3",
+    },
+    en: {
+      label: "Summary EN",
+      src: "./assets/audio/summary-en.mp3",
+    },
+  },
   loader_milestones: {
     es: [
       "Modernización cloud de soluciones de datos",
