@@ -154,11 +154,11 @@ window.CV_CONTENT = {
   audio: {
     es: {
       label: "Resumen ES",
-      src: "./assets/audio/resumen-es.mp3",
+      src: "./assets/audio/resumen-es.wav",
     },
     en: {
       label: "Summary EN",
-      src: "./assets/audio/summary-en.mp3",
+      src: "./assets/audio/summary-en.wav",
     },
   },
   loader_milestones: {
