@@ -4,7 +4,7 @@ window.CV_CONTENT = {
     siteUrl: "https://ismael-sarmiento.github.io/",
     email: "ismaelantonio.professional@gmail.com",
     linkedin: "https://www.linkedin.com/in/ismael-sarmiento",
-    github: "https://github.com/isarmiento",
+    github: "https://github.com/ismael-sarmiento",
     currentCompany: "https://savanamed.com/about-us/",
     title: {
       es: "Ismael Sarmiento | Lead Data Engineer en Savana",
@@ -606,13 +606,13 @@ window.CV_CONTENT = {
       es: [
         { label: "Email", value: "ismaelantonio.professional@gmail.com", href: "mailto:ismaelantonio.professional@gmail.com" },
         { label: "LinkedIn", value: "linkedin.com/in/ismael-sarmiento", href: "https://www.linkedin.com/in/ismael-sarmiento" },
-        { label: "GitHub", value: "github.com/isarmiento", href: "https://github.com/isarmiento" },
+        { label: "GitHub", value: "github.com/ismael-sarmiento", href: "https://github.com/ismael-sarmiento" },
         { label: "Web", value: "ismael-sarmiento.github.io", href: "https://ismael-sarmiento.github.io/" },
       ],
       en: [
         { label: "Email", value: "ismaelantonio.professional@gmail.com", href: "mailto:ismaelantonio.professional@gmail.com" },
         { label: "LinkedIn", value: "linkedin.com/in/ismael-sarmiento", href: "https://www.linkedin.com/in/ismael-sarmiento" },
-        { label: "GitHub", value: "github.com/isarmiento", href: "https://github.com/isarmiento" },
+        { label: "GitHub", value: "github.com/ismael-sarmiento", href: "https://github.com/ismael-sarmiento" },
         { label: "Website", value: "ismael-sarmiento.github.io", href: "https://ismael-sarmiento.github.io/" },
       ],
     },
