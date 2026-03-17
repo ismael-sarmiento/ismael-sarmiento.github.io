@@ -202,8 +202,8 @@ window.CV_CONTENT = {
       en: "Data engineering for governed, interoperable products and platforms built around data quality.",
     },
     message: {
-      es: "En Savana convierto problemas complejos del dato en plataformas confiables e interoperables que ayudan a tomar decisiones con impacto real.",
-      en: "At Savana, I turn complex data problems into reliable, interoperable platforms that help teams make real-world decisions.",
+      es: "Transformo problemas complejos del dato en plataformas confiables e interoperables que ayudan a tomar decisiones con impacto real.",
+      en: "I transform complex data problems into reliable, interoperable platforms that help teams make real-world decisions.",
     },
     trajectoryHeading: {
       es: "Resumen de trayectoria",

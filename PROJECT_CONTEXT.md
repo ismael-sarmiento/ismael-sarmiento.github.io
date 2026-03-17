@@ -176,7 +176,7 @@ Versión española:
 - Subtítulo:
   - `Construyo productos y plataformas de datos gobernados, interoperables y confiables, con foco en calidad del dato.`
 - Mensaje principal:
-  - `En Savana convierto problemas complejos del dato en plataformas confiables e interoperables que ayudan a tomar decisiones con impacto real.`
+  - `Transformo problemas complejos del dato en plataformas confiables e interoperables que ayudan a tomar decisiones con impacto real.`
 
 Versión inglesa:
 
@@ -187,7 +187,7 @@ Versión inglesa:
 - Subtítulo:
   - `Data engineering for governed, interoperable products and platforms built around data quality.`
 - Mensaje principal:
-  - `At Savana, I turn complex data problems into reliable, interoperable platforms that help teams make real-world decisions.`
+  - `I transform complex data problems into reliable, interoperable platforms that help teams make real-world decisions.`
 
 ### Cabecera
 
