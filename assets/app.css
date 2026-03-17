@@ -453,7 +453,7 @@ svg {
   display: grid;
   grid-template-columns: minmax(0, 1.02fr) minmax(360px, 0.98fr);
   gap: 24px;
-  align-items: stretch;
+  align-items: start;
 }
 
 .hero__copy,
@@ -585,6 +585,7 @@ svg {
   padding: 28px;
   display: grid;
   gap: 10px;
+  align-content: start;
 }
 
 .hero__panel::before {
@@ -640,7 +641,7 @@ svg {
 }
 
 .layers-title {
-  margin: 2px 0 -2px;
+  margin: 4px 0 2px;
   text-align: center;
   font-family: "Sora", sans-serif;
   font-size: 1.12rem;

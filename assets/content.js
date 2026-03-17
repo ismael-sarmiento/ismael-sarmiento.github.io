@@ -7,12 +7,12 @@ window.CV_CONTENT = {
     github: "https://github.com/isarmiento",
     currentCompany: "https://savanamed.com/about-us/",
     title: {
-      es: "Ismael Sarmiento | CV",
-      en: "Ismael Sarmiento | CV",
+      es: "Ismael Sarmiento | Lead Data Engineer en Savana",
+      en: "Ismael Sarmiento | Lead Data Engineer at Savana",
     },
     description: {
-      es: "CV interactivo de Ismael Sarmiento. Perfil especializado en gobierno del dato, interoperabilidad y calidad del dato para productos y plataformas de datos.",
-      en: "Interactive CV of Ismael Sarmiento. Profile focused on data governance, interoperability, and data quality for data products and platforms.",
+      es: "Ismael Sarmiento, Lead Data Engineer en Savana. Gobierno del dato, interoperabilidad clínica, calidad del dato, HL7 FHIR, OMOP, DataHub y GitHub.",
+      en: "Ismael Sarmiento, Lead Data Engineer at Savana. Data governance, clinical interoperability, data quality, HL7 FHIR, OMOP, DataHub, AWS, and GitHub.",
     },
   },
   ui: {
@@ -72,7 +72,7 @@ window.CV_CONTENT = {
         audioFallbackEs: "Usando la voz del navegador para el resumen en español.",
         audioFallbackEn: "Using browser voice for the English summary.",
         empty:
-          "Puedo resumir experiencia en Savana, interoperabilidad con FHIR y OMOP, calidad del dato, DataHub, trayectoria, seguridad del asistente o forma de trabajo.",
+          "Puedo resumir la experiencia en Savana, explicar FHIR y OMOP, hablar de calidad del dato, DataHub, trayectoria, seguridad del asistente o forma de trabajo.",
         noMatch:
           "No tengo una respuesta exacta para eso en esta versión beta. Puedo responder sobre experiencia, capacidades, seguridad del asistente, docencia, contacto o límites de privacidad.",
       },
@@ -133,7 +133,7 @@ window.CV_CONTENT = {
         audioFallbackEs: "Using browser voice for the Spanish summary.",
         audioFallbackEn: "Using browser voice for the English summary.",
         empty:
-          "I can summarize Savana experience, FHIR and OMOP interoperability, Data Quality, DataHub, career path, assistant safety, or working style.",
+          "I can summarize Savana experience, FHIR and OMOP interoperability, data quality, DataHub, career path, assistant safety, or working style.",
         noMatch:
           "I do not have an exact answer for that in this beta version. I can answer about experience, capabilities, assistant safety, teaching, contact, or privacy limits.",
       },
@@ -154,11 +154,22 @@ window.CV_CONTENT = {
   audio: {
     es: {
       label: "Resumen ES",
-      src: "./assets/audio/resumen-es.wav",
+      preferStatic: true,
+      sources: [
+        { src: "./assets/audio/resumen-es.wav", type: "audio/wav" },
+      ],
+      script:
+        "Hola, soy Ismael Sarmiento. En Savana trabajo en productos y plataformas de datos con foco en gobierno del dato, interoperabilidad y calidad del dato. Mi trabajo conecta necesidades complejas con soluciones confiables, trazables y útiles para decisiones reales. Combino ejecución práctica, criterio arquitectónico y liderazgo técnico.",
     },
     en: {
       label: "Summary EN",
-      src: "./assets/audio/summary-en.wav",
+      preferStatic: true,
+      sources: [
+        { src: "./assets/audio/summary-en.m4a", type: "audio/mp4" },
+        { src: "./assets/audio/summary-en.wav", type: "audio/wav" },
+      ],
+      script:
+        "Hi, I'm Ismael Sarmiento. I work as a Lead Data Engineer at Savana, building reliable data products and platforms focused on governance, interoperability, and data quality. I help turn complex data problems into trustworthy and scalable capabilities that teams can actually use. My work combines hands-on execution, architectural judgment, and technical leadership to make data easier to operate and more useful for real decisions.",
     },
   },
   loader_milestones: {
@@ -179,20 +190,20 @@ window.CV_CONTENT = {
   },
   hero: {
     headlinePrimary: {
-      es: "Líder de Ingeniería de Datos",
+      es: "Lead Data Engineer",
       en: "Lead Data Engineer",
     },
     headlineSecondary: {
-      es: "Gobierno, Interoperabilidad y Calidad del Dato",
+      es: "Gobierno del dato, interoperabilidad y calidad del dato",
       en: "Governance, Interoperability & Data Quality",
     },
     subtitle: {
-      es: "Ingeniería de datos para productos y plataformas gobernadas, interoperables y orientadas a la calidad del dato.",
+      es: "Construyo productos y plataformas de datos gobernados, interoperables y confiables, con foco en calidad del dato.",
       en: "Data engineering for governed, interoperable products and platforms built around data quality.",
     },
     message: {
-      es: "Transformo datos complejos en plataformas confiables e interoperables para que datos de calidad se traduzcan en decisiones de impacto real.",
-      en: "I transform complex data into reliable, interoperable platforms so that quality data can become decisions with real impact.",
+      es: "En Savana convierto problemas complejos del dato en plataformas confiables e interoperables que ayudan a tomar decisiones con impacto real.",
+      en: "At Savana, I turn complex data problems into reliable, interoperable platforms that help teams make real-world decisions.",
     },
     trajectoryHeading: {
       es: "Resumen de trayectoria",
@@ -200,12 +211,12 @@ window.CV_CONTENT = {
     },
     trajectoryIntro: {
       es: [
-        "Mi trayectoria parte de una base sólida en desarrollo de software e ingeniería de datos y evoluciona hacia un perfil más completo, donde plataforma, gobierno del dato, interoperabilidad clínica y calidad end-to-end trabajan como una misma capacidad. He pasado por entornos de banca, producto y salud digital construyendo soluciones que debían ser fiables, operables y útiles para decisiones reales.",
-        "Ese recorrido me ha permitido consolidar una propuesta de valor poco común: combinar ejecución técnica, criterio arquitectónico y visión de producto para convertir problemas complejos del dato en capacidades reutilizables. Hoy no aporto solo pipelines o integraciones, sino estructuras de confianza alrededor del dato: estándares, calidad, metadatos, trazabilidad y control del ciclo de vida.",
+        "Vengo de una base sólida en desarrollo de software e ingeniería de datos y he evolucionado hacia un perfil donde plataforma, gobierno del dato, interoperabilidad clínica y calidad end-to-end funcionan como una sola capacidad. He pasado por entornos de banca, producto y salud digital construyendo soluciones que debían ser fiables, operables y útiles para decisiones reales.",
+        "Ese recorrido me ha llevado a combinar ejecución técnica, criterio arquitectónico y visión de producto para convertir problemas complejos del dato en capacidades reutilizables. Hoy no aporto solo pipelines o integraciones, sino estructuras de confianza alrededor del dato: estándares, calidad, metadatos, trazabilidad y control del ciclo de vida.",
       ],
       en: [
-        "My career started with a strong foundation in software development and data engineering and evolved into a broader profile where platform thinking, data governance, clinical interoperability, and end-to-end quality work as one capability. I have worked across banking, product, and digital health environments building solutions that needed to be reliable, operable, and useful for real decisions.",
-        "That path allowed me to consolidate a less common value proposition: combining technical execution, architectural judgment, and product thinking to turn complex data problems into reusable capabilities. Today I do not bring only pipelines or integrations, but trust structures around data: standards, quality, metadata, traceability, and lifecycle control.",
+        "My career started with strong foundations in software and data engineering and evolved into a broader profile where platform thinking, data governance, clinical interoperability, and end-to-end quality work together as one capability. I have worked across banking, product, and digital health, building solutions that needed to be reliable, operable, and useful for real decisions.",
+        "That path helped me combine hands-on execution, architectural judgment, and product thinking to turn complex data problems into reusable capabilities. Today I do not bring only pipelines or integrations, but trust structures around data: standards, quality, metadata, traceability, and lifecycle control.",
       ],
     },
     layers: {
@@ -234,7 +245,7 @@ window.CV_CONTENT = {
         },
         {
           title: "Quality & lifecycle layer",
-          text: "Data Quality, observability, and Data Offboarding to track data from ingestion to blocking or deletion.",
+          text: "Data quality, observability, and data offboarding to track data from ingestion to blocking or deletion.",
         },
       ],
     },
@@ -270,7 +281,7 @@ window.CV_CONTENT = {
     },
     quickFacts: {
       es: [
-        "Promoción interna en Savana: Ingeniero de Datos Senior → Líder de Ingeniería de Datos → Head of Data Management",
+        "Crecimiento interno en Savana: Senior Data Engineer → Lead Data Engineer → Head of Data Management",
         "Especialización en gobierno del dato, interoperabilidad clínica y calidad del dato",
         "Perfil técnico con foco en producto, escalabilidad y equipos sólidos",
       ],
@@ -284,13 +295,13 @@ window.CV_CONTENT = {
   summary: {
     heading: { es: "Resumen ejecutivo", en: "Executive summary" },
     lead: {
-      es: "Diseño y evoluciono productos y plataformas de datos donde la ingeniería, el gobierno y la interoperabilidad trabajan juntos para que el dato sea útil, trazable y confiable.",
-      en: "I design and evolve data products and platforms where engineering, governance, and interoperability work together to make data useful, traceable, and trustworthy.",
+      es: "En Savana diseño y evoluciono productos y plataformas de datos donde ingeniería, gobierno e interoperabilidad trabajan juntos para que el dato sea útil, trazable y confiable.",
+      en: "At Savana, I design and evolve data products and platforms where engineering, governance, and interoperability work together to make data useful, traceable, and trustworthy.",
     },
     paragraphs: {
       es: [
-        "Mi foco está en convertir necesidades complejas de integración, calidad y explotación en capacidades reales de producto: catálogo, metadatos, validación, observabilidad, visualización y control del ciclo de vida del dato.",
-        "Trabajo con una mezcla de ejecución práctica, criterio arquitectónico y liderazgo técnico para traducir entornos regulados y requisitos complejos en sistemas más sólidos, reutilizables y preparados para generar valor.",
+        "Mi foco es convertir necesidades complejas de integración, calidad y explotación en capacidades reales de producto: catálogo, metadatos, validación, observabilidad, visualización y control del ciclo de vida del dato.",
+        "Combino ejecución práctica, criterio arquitectónico y liderazgo técnico para traducir entornos regulados y requisitos complejos en sistemas más sólidos, reutilizables y preparados para generar valor.",
       ],
       en: [
         "My focus is on turning complex integration, quality, and analytics needs into real product capabilities: cataloging, metadata, validation, observability, visualization, and lifecycle control.",
@@ -332,14 +343,14 @@ window.CV_CONTENT = {
     heading: { es: "Sobre mí", en: "About" },
     paragraphs: {
       es: [
-        "Trabajo en la intersección entre ingeniería de datos, gobierno del dato y producto. Mi foco está en transformar requisitos complejos en plataformas más sólidas, auditables e interoperables, capaces de generar valor real para equipos técnicos y funcionales.",
-        "Me he especializado en gobierno del dato, interoperabilidad y calidad end-to-end, impulsando soluciones que conectan metadatos, catálogo, validación, observabilidad y control operativo del dato a escala. Soy miembro de DAMA y mantengo el conocimiento actualizado mediante formación continua, certificaciones y práctica aplicada.",
-        "También considero la documentación, el mentoring y la transferencia de conocimiento una parte esencial de la escalabilidad técnica y del desarrollo de equipos sólidos.",
+        "Trabajo en la intersección entre ingeniería de datos, gobierno del dato y producto. Mi foco es transformar requisitos complejos en plataformas más sólidas, auditables e interoperables, capaces de generar valor real para equipos técnicos y de negocio.",
+        "Me he especializado en gobierno del dato, interoperabilidad y calidad end-to-end, impulsando soluciones que conectan metadatos, catálogo, validación, observabilidad y control operativo a escala. Soy miembro de DAMA y mantengo el conocimiento actualizado mediante formación continua, certificaciones y práctica aplicada.",
+        "También considero la documentación, el mentoring y la transferencia de conocimiento parte esencial de la escalabilidad técnica y del desarrollo de equipos sólidos.",
       ],
       en: [
-        "I work at the intersection of data engineering, data governance, and product. My focus is on turning complex requirements into stronger, auditable, interoperable platforms that create real value for technical and functional teams.",
-        "I specialize in data governance, interoperability, and end-to-end quality, building solutions that connect metadata, cataloging, validation, observability, and operational control at scale. I am a member of DAMA and keep my expertise current through continuous learning, certifications, and hands-on delivery.",
-        "I also see documentation, mentoring, and knowledge transfer as essential to technical scalability and to building strong teams.",
+        "I work at the intersection of data engineering, data governance, and product. My focus is on turning complex requirements into stronger, auditable, interoperable platforms that create real value for technical and business teams.",
+        "I specialize in data governance, interoperability, and end-to-end quality, building solutions that connect metadata, cataloging, validation, observability, and operational control at scale. I am a member of DAMA and keep my expertise current through continuous learning, certifications, and hands-on work.",
+        "I also see documentation, mentoring, and knowledge transfer as essential parts of technical scalability and strong teams.",
       ],
     },
   },
@@ -347,7 +358,7 @@ window.CV_CONTENT = {
     spotlight: {
       heading: { es: "Savana", en: "Savana" },
       title: {
-        es: "Ingeniero de Datos Senior → Líder de Ingeniería de Datos → Head of Data Management",
+        es: "Senior Data Engineer → Lead Data Engineer → Head of Data Management",
         en: "Senior Data Engineer → Lead Data Engineer → Head of Data Management",
       },
       chapter: {
@@ -356,20 +367,20 @@ window.CV_CONTENT = {
       },
       paragraphs: {
         es: [
-          "He evolucionado dentro de Savana desde un rol técnico de ejecución hasta una posición de liderazgo técnico con visión transversal sobre calidad, interoperabilidad y gobierno del dato, manteniendo siempre una fuerte cercanía a la construcción de soluciones y al diseño de producto.",
-          "He impulsado capacidades de interoperabilidad sobre HL7 FHIR, la especificación moderna de HL7 para el intercambio electrónico de información clínica, y sobre OMOP CDM, el modelo común de datos promovido por OHDSI para estandarización y analítica avanzada. Este trabajo me ha permitido conectar integración operativa, explotación analítica y necesidades reales de negocio dentro del ecosistema del dato clínico.",
-          "También diseñé y evolucioné una plataforma de calidad del dato construida desde cero, alineada con marcos UNE/ISO de calidad del dato y apoyada en herramientas open source, hasta convertirla en una capacidad reutilizable y preparada para consumo vía API. A esto se suma la centralización del catálogo y los metadatos en plataformas open source de terceros como DataHub, junto con soluciones de monitorización y visualización del ciclo de vida del dato, incluyendo la evolución del Data Model Explorer desde Power BI hacia Apache Superset.",
+          "En Savana he pasado de un rol de ejecución a una posición de liderazgo técnico con visión transversal sobre calidad, interoperabilidad y gobierno del dato, sin perder cercanía con la construcción de soluciones y el diseño de producto.",
+          "He impulsado capacidades de interoperabilidad alrededor de HL7 FHIR, el estándar moderno para intercambio electrónico de información clínica, y OMOP CDM, el modelo común promovido por OHDSI para estandarización y analítica avanzada. Eso me permitió conectar integración operativa, analítica y necesidades reales de negocio dentro del ecosistema del dato clínico.",
+          "También diseñé y evolucioné una plataforma de calidad del dato desde cero, alineada con marcos UNE/ISO y apoyada en herramientas open source, hasta convertirla en una capacidad reutilizable y lista para integración vía API. A ello se suman la centralización de catálogo y metadatos en DataHub y la evolución del Data Model Explorer de Power BI a Apache Superset.",
           "Ese trabajo se completa con procesos de Data Offboarding orientados a cumplimiento, seguridad y control operativo, permitiendo seguir el recorrido del dato desde su entrada hasta su bloqueo o eliminación.",
         ],
         en: [
-          "At Savana, I progressed from a hands-on engineering role into a technical leadership position with a cross-functional view of data quality, interoperability, and governance, while staying close to solution design and product thinking.",
+          "At Savana, I moved from a hands-on engineering role into a technical leadership position with a cross-functional view of data quality, interoperability, and governance, while staying close to solution design and product thinking.",
           "I drove interoperability capabilities around HL7 FHIR, the modern HL7 specification for healthcare data exchange, and OMOP CDM, the common data model promoted by OHDSI for standardization and advanced analytics. This allowed me to connect operational integration, analytics enablement, and real business needs across the clinical data ecosystem.",
-          "I also designed and evolved a Data Quality platform from scratch, aligned with UNE/ISO quality frameworks and built on open source tooling, until it became a reusable capability ready for API-based integration. This was complemented by metadata and catalog centralization on third-party open source platforms such as DataHub, as well as lifecycle monitoring and visualization solutions, including the evolution of the Data Model Explorer from Power BI to Apache Superset.",
-          "This work was completed by Data Offboarding processes focused on compliance, security, and operational control, making it possible to track data from ingestion to blocking or deletion.",
+          "I also designed and evolved a data quality platform from scratch, aligned with UNE/ISO quality frameworks and built on open source tooling, until it became a reusable capability ready for API-based integration. This was complemented by metadata and catalog centralization on DataHub, as well as lifecycle monitoring and visualization solutions, including the evolution of the Data Model Explorer from Power BI to Apache Superset.",
+          "This work was completed by data offboarding processes focused on compliance, security, and operational control, making it possible to track data from ingestion to blocking or deletion.",
         ],
       },
       progression: {
-        es: ["Ingeniero de Datos Senior", "Líder de Ingeniería de Datos", "Head of Data Management"],
+        es: ["Senior Data Engineer", "Lead Data Engineer", "Head of Data Management"],
         en: ["Senior Data Engineer", "Lead Data Engineer", "Head of Data Management"],
       },
       focus: {
@@ -381,9 +392,9 @@ window.CV_CONTENT = {
         ],
         en: [
           "Clinical interoperability with HL7 FHIR and OMOP CDM",
-          "Data Quality as a product capability",
+          "Data quality as a product capability",
           "Catalog, metadata, and lineage on DataHub",
-          "Lifecycle management and Data Offboarding",
+          "Lifecycle management and data offboarding",
         ],
       },
     },
@@ -465,7 +476,7 @@ window.CV_CONTENT = {
         },
         {
           id: "interoperability",
-          title: "Interoperabilidad Clinica",
+          title: "Interoperabilidad clínica",
           kicker: "Intercambio clínico y analítica avanzada",
           summary:
             "Impulsé transformaciones de datos clínicos hacia FHIR y OMOP para conectar intercambio operativo, normalización semántica y analítica avanzada sobre una base más consistente y reutilizable.",
@@ -477,7 +488,7 @@ window.CV_CONTENT = {
         },
         {
           id: "lifecycle",
-          title: "Gestion del Ciclo de Vida del Dato",
+          title: "Gestión del ciclo de vida del dato",
           kicker: "Visibilidad y control del dato",
           summary:
             "Contribuí a dar visibilidad y control al recorrido completo del dato, desde la entrada y la monitorización hasta el offboarding, con métricas operativas, trazabilidad y cumplimiento.",
@@ -563,7 +574,7 @@ window.CV_CONTENT = {
           items: [
             "Member of DAMA",
             "Focused on data governance, interoperability, and data quality",
-            "A product, platform, and technical scalability mindset",
+            "A product mindset with a focus on platform and technical scalability",
           ],
         },
         {
@@ -588,18 +599,20 @@ window.CV_CONTENT = {
   contact: {
     heading: { es: "Contacto", en: "Contact" },
     intro: {
-      es: "Disponible para conversaciones sobre plataformas de datos, interoperabilidad, data quality y liderazgo técnico con foco en producto.",
+      es: "Disponible para conversar sobre plataformas de datos, interoperabilidad, calidad del dato y liderazgo técnico con foco en producto.",
       en: "Open to conversations about data platforms, interoperability, data quality, and technical leadership with a product mindset.",
     },
     items: {
       es: [
         { label: "Email", value: "ismaelantonio.professional@gmail.com", href: "mailto:ismaelantonio.professional@gmail.com" },
         { label: "LinkedIn", value: "linkedin.com/in/ismael-sarmiento", href: "https://www.linkedin.com/in/ismael-sarmiento" },
+        { label: "GitHub", value: "github.com/isarmiento", href: "https://github.com/isarmiento" },
         { label: "Web", value: "ismael-sarmiento.github.io", href: "https://ismael-sarmiento.github.io/" },
       ],
       en: [
         { label: "Email", value: "ismaelantonio.professional@gmail.com", href: "mailto:ismaelantonio.professional@gmail.com" },
         { label: "LinkedIn", value: "linkedin.com/in/ismael-sarmiento", href: "https://www.linkedin.com/in/ismael-sarmiento" },
+        { label: "GitHub", value: "github.com/isarmiento", href: "https://github.com/isarmiento" },
         { label: "Website", value: "ismael-sarmiento.github.io", href: "https://ismael-sarmiento.github.io/" },
       ],
     },
@@ -622,7 +635,7 @@ window.CV_CONTENT = {
         "What is his main focus?",
         "What did he do at Savana?",
         "How does he work on interoperability?",
-        "What does Data Quality as a product mean?",
+        "What does data quality as a product mean?",
         "What is his career path?",
         "What can you do?",
         "How do you work?",
@@ -634,12 +647,12 @@ window.CV_CONTENT = {
       es: [
         {
           q: "¿Cuál es su foco principal?",
-          a: "Su foco principal está en productos y plataformas de datos gobernadas, interoperables y orientadas a la calidad del dato, con una mezcla de ejecución técnica, criterio arquitectónico y liderazgo.",
+          a: "Su foco está en productos y plataformas de datos gobernados, interoperables y orientados a la calidad del dato, combinando ejecución técnica, criterio arquitectónico y liderazgo.",
           keywords: ["foco", "principal", "perfil", "especializacion"],
         },
         {
           q: "¿Qué hizo en Savana?",
-          a: "En Savana evolucionó de Ingeniero de Datos Senior a Líder de Ingeniería de Datos y luego a Head of Data Management, impulsando interoperabilidad clínica con FHIR y OMOP, plataformas de calidad del dato, catálogo y metadatos con DataHub, y control del ciclo de vida del dato.",
+          a: "En Savana pasó de Senior Data Engineer a Lead Data Engineer y después a Head of Data Management, impulsando interoperabilidad clínica con FHIR y OMOP, plataformas de calidad del dato, catálogo y metadatos con DataHub, y control del ciclo de vida del dato.",
           keywords: ["savana", "head", "lead", "data management"],
         },
         {
@@ -664,7 +677,7 @@ window.CV_CONTENT = {
         },
         {
           q: "¿Qué puedes hacer?",
-          a: "Puedo resumir la trayectoria, explicar proyectos clave, aclarar cómo trabaja Ismael temas como interoperabilidad o calidad del dato, y detallar los límites públicos de este CV interactivo.",
+          a: "Puedo resumir su trayectoria, explicar proyectos clave, aclarar cómo trabaja Ismael temas como interoperabilidad o calidad del dato, y detallar los límites públicos de este CV interactivo.",
           keywords: ["puedes hacer", "capacidades", "asistente", "faq"],
         },
         {
@@ -691,7 +704,7 @@ window.CV_CONTENT = {
         },
         {
           q: "What did he do at Savana?",
-          a: "At Savana, he progressed from Senior Data Engineer to Lead Data Engineer and then to Head of Data Management, driving clinical interoperability with FHIR and OMOP, Data Quality platforms, metadata and cataloging through DataHub, and lifecycle control.",
+          a: "At Savana, he progressed from Senior Data Engineer to Lead Data Engineer and then to Head of Data Management, driving clinical interoperability with FHIR and OMOP, data quality platforms, metadata and cataloging through DataHub, and lifecycle control.",
           keywords: ["savana", "head", "lead", "data management"],
         },
         {
@@ -700,7 +713,7 @@ window.CV_CONTENT = {
           keywords: ["interoperability", "fhir", "omop", "hl7"],
         },
         {
-          q: "What does Data Quality as a product mean?",
+          q: "What does data quality as a product mean?",
           a: "It means treating data quality as a reusable capability with validation, traceability, observability, and operational control instead of keeping scattered checks that do not scale well.",
           keywords: ["data quality", "quality", "product", "validation"],
         },
@@ -716,7 +729,7 @@ window.CV_CONTENT = {
         },
         {
           q: "What can you do?",
-          a: "I can summarize the career path, explain key projects, clarify how Ismael approaches topics such as interoperability or Data Quality, and describe the public limits of this interactive CV.",
+          a: "I can summarize the career path, explain key projects, clarify how Ismael approaches topics such as interoperability or data quality, and describe the public limits of this interactive CV.",
           keywords: ["can you do", "capabilities", "assistant", "help"],
         },
         {

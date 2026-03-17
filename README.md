@@ -31,8 +31,9 @@ assets/
   og-card.svg
   audio/
     resumen-es.wav
+    summary-en.m4a
     summary-en.wav
-personal-cv-llm-brief.md
+PROJECT_CONTEXT.md
 ```
 
 ## Cómo funciona
@@ -54,9 +55,10 @@ El asistente ofrece dos resúmenes:
 La web intenta reproducir primero los audios estáticos:
 
 - `assets/audio/resumen-es.wav`
+- `assets/audio/summary-en.m4a`
 - `assets/audio/summary-en.wav`
 
-Si un audio no existe o falla, hace fallback al TTS del navegador.
+Si un audio no existe, el formato no es compatible o la reproducción falla, hace fallback al TTS del navegador.
 
 ## SEO técnico
 
@@ -95,9 +97,15 @@ Para SEO:
 - metadatos base: `index.html`, `index_en.html`
 - descubrimiento: `robots.txt`, `sitemap.xml`
 
+## Documentación del proyecto
+
+`README.md` queda como entrada rápida para humanos y mantenimiento del repo.
+
+El documento maestro para continuidad de producto, decisiones y contexto es `PROJECT_CONTEXT.md`.
+
 ## Fuente maestra para LLMs
 
-El documento [personal-cv-llm-brief.md](./personal-cv-llm-brief.md) resume:
+El documento [PROJECT_CONTEXT.md](./PROJECT_CONTEXT.md) resume:
 
 - decisiones de producto y diseño
 - posicionamiento profesional

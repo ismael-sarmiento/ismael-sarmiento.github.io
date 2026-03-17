@@ -86,6 +86,8 @@
   }
 
   function getNarrationText(lang = state.lang) {
+    const narrationScript = content.audio?.[lang]?.script;
+    if (narrationScript) return narrationScript;
     return [
       content.hero.message[lang],
       content.summary.lead[lang],
@@ -148,14 +150,37 @@
       name: content.meta.title[lang],
       description: content.meta.description[lang],
       inLanguage: lang === "es" ? "es-ES" : "en-US",
+      keywords: [
+        content.meta.siteName,
+        "Ismael A. Sarmiento",
+        "Lead Data Engineer",
+        "Savana",
+        "GitHub",
+        "Data Governance",
+        "Clinical Interoperability",
+        "HL7 FHIR",
+        "OMOP",
+        "DataHub",
+      ],
       mainEntity: {
         "@type": "Person",
         "@id": `${content.meta.siteUrl}#ismael-sarmiento`,
         name: content.meta.siteName,
+        alternateName: "Ismael A. Sarmiento",
+        givenName: "Ismael",
+        familyName: "Sarmiento",
         url: content.meta.siteUrl,
         email: `mailto:${content.meta.email}`,
-        jobTitle: getHeroRole(),
+        jobTitle:
+          lang === "es"
+            ? "Lead Data Engineer | Gobierno del dato, interoperabilidad y calidad del dato"
+            : "Lead Data Engineer | Governance, Interoperability & Data Quality",
         description: content.hero.subtitle[lang],
+        mainEntityOfPage: getPageUrl(lang),
+        hasOccupation: {
+          "@type": "Occupation",
+          name: "Lead Data Engineer",
+        },
         sameAs: [content.meta.linkedin, content.meta.github],
         worksFor: {
           "@type": "Organization",
@@ -195,18 +220,22 @@
       "alejandro",
     ];
     const englishPreferred = [
+      "daniel",
+      "moira",
+      "karen",
+      "reed",
+      "flo",
+      "eddy",
       "aaron",
       "alex",
       "fred",
-      "daniel",
       "tom",
-      "eddy",
       "joel",
       "matthew",
       "oliver",
     ];
 
-    const localePattern = lang === "es" ? /es[-_]ES/i : /en[-_]US/i;
+    const localePattern = lang === "es" ? /es[-_]ES/i : /en[-_](GB|IE|AU|US)/i;
     const preferredNames = lang === "es" ? spanishPreferred : englishPreferred;
     const localeFallback = lang === "es" ? /^es/i : /^en/i;
 
@@ -222,6 +251,31 @@
 
     const broadMatch = voices.find((voice) => localeFallback.test(voice.lang));
     return broadMatch || null;
+  }
+
+  function getAudioSources(audioConfig) {
+    if (!audioConfig) return [];
+
+    if (Array.isArray(audioConfig.sources) && audioConfig.sources.length) {
+      return audioConfig.sources.filter((source) => source?.src);
+    }
+
+    if (audioConfig.src) {
+      return [{ src: audioConfig.src, type: audioConfig.type || "" }];
+    }
+
+    return [];
+  }
+
+  function pickPlayableAudioSource(audioConfig) {
+    const sources = getAudioSources(audioConfig);
+    if (!sources.length) return null;
+
+    const probe = document.createElement("audio");
+    return (
+      sources.find((source) => !source.type || probe.canPlayType(source.type)) ||
+      sources[0]
+    );
   }
 
   function updateUrl() {
@@ -997,12 +1051,15 @@
     render();
 
     const audioConfig = content.audio?.[lang];
-    if (!audioConfig?.src) {
+    const selectedSource = pickPlayableAudioSource(audioConfig);
+    const shouldUseStaticAudio =
+      Boolean(selectedSource?.src) && audioConfig?.preferStatic !== false;
+    if (!shouldUseStaticAudio) {
       playSummaryFallback(lang);
       return;
     }
 
-    const audio = new Audio(audioConfig.src);
+    const audio = new Audio(selectedSource.src);
     activeAudioElement = audio;
     audio.preload = "auto";
 
