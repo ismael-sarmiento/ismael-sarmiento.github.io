@@ -18,10 +18,22 @@ La página está pensada para comunicar un perfil de ingeniería de datos con fo
 ## Estructura
 
 ```text
+AGENTS.md
+docs/
+  ARCHITECTURE.md
+  ARTICLES.md
+  TODO.md
 index.html
 index_en.html
 robots.txt
 sitemap.xml
+articles/
+  manifest.json
+  index.html
+  index_en.html
+  _template/
+    index.html
+    index_en.html
 assets/
   app.css
   app.js
@@ -44,6 +56,7 @@ PROJECT_CONTEXT.md
 - `assets/app.js` renderiza la experiencia, el cambio de idioma, el asistente y el audio.
 - `assets/app.css` contiene la identidad visual, responsive y motion.
 - `assets/print.css` mantiene la base para impresión si más adelante se recupera un flujo PDF serio.
+- `articles/` aloja la base para artículos profesionales bilingües como páginas estáticas independientes.
 
 ## Audio
 
@@ -84,6 +97,25 @@ Este repositorio está pensado para desplegarse directamente en GitHub Pages com
 
 No hay build step ni backend. Tras hacer `push`, GitHub Pages debería publicar automáticamente el contenido de la rama.
 
+## Analítica
+
+La opción elegida como base es `Cloudflare Web Analytics`.
+
+Encaje actual:
+
+- compatible con una web estática
+- sin backend
+- sin cambio de stack
+- reusable para varias webs
+
+Mientras el sitio siga en GitHub Pages y no esté detrás de Cloudflare Pages o de un hostname proxied por Cloudflare, la activación requiere:
+
+- crear el sitio en el panel de Cloudflare Web Analytics
+- copiar el beacon snippet real
+- insertarlo en las páginas HTML públicas
+
+En esta iteración el beacon real ya quedó insertado en las páginas públicas actuales y en las plantillas de artículos. Queda pendiente desplegar y comprobar que Cloudflare empieza a recibir tráfico.
+
 ## Mantenimiento
 
 Para editar contenido:
@@ -103,6 +135,10 @@ Para SEO:
 
 El documento maestro para continuidad de producto, decisiones y contexto es `PROJECT_CONTEXT.md`.
 
+`AGENTS.md` sirve como entrada corta para futuros agentes.
+
+`docs/ARCHITECTURE.md`, `docs/ARTICLES.md` y `docs/TODO.md` contienen el mapa técnico mínimo, el patrón editorial y el backlog diferido.
+
 ## Fuente maestra para LLMs
 
 El documento [PROJECT_CONTEXT.md](./PROJECT_CONTEXT.md) resume:
@@ -118,5 +154,6 @@ El documento [PROJECT_CONTEXT.md](./PROJECT_CONTEXT.md) resume:
 
 - validar visualmente en móvil real y desktop tras el despliegue
 - dar de alta `sitemap.xml` en Google Search Console
+- comprobar en Cloudflare que el tráfico empieza a registrarse tras el despliegue
 - crear una exportación PDF robusta con Playwright o Puppeteer
 - refinar la `og:image` si se quiere una capa más editorial

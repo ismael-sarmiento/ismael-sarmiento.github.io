@@ -1,7 +1,7 @@
 # CV Project Context
 
 Fecha de consolidación: 2026-03-16
-Última actualización relevante: 2026-03-17
+Última actualización relevante: 2026-03-22
 Proyecto: `ismael-sarmiento.github.io`
 Objetivo: servir como fuente única de verdad para cualquier LLM o persona que tenga que continuar el trabajo de la web CV, preparar simulaciones de entrevista o adaptar el contenido a LinkedIn u otros canales.
 
@@ -93,6 +93,7 @@ Requisitos de mantenimiento:
 - Debe ser mantenible por futuros LLMs y por eso necesita trazabilidad explícita.
 - Toda decisión relevante de naming, tono, SEO, estructura o narrativa debe quedar reflejada aquí.
 - La capa estable del documento y la capa histórica deben actualizarse juntas.
+- La gobernanza operativa del proyecto debe vivir dentro del propio repositorio.
 
 ## 0.4 Mapa del documento
 
@@ -158,10 +159,16 @@ La web debe transmitir que Ismael no es solo un ingeniero de datos de pipelines,
   - `assets/print.css`
   - `assets/favicon.svg`
   - `assets/og-card.svg`
+  - `AGENTS.md`
+  - `docs/ARCHITECTURE.md`
+  - `docs/ARTICLES.md`
+  - `docs/TODO.md`
+  - `articles/manifest.json`
 - Dos entradas públicas estáticas:
   - `/` como versión principal en español
   - `/index_en.html` como versión inglesa indexable
 - Cambio de idioma por UI con navegación entre entradas y contenido compartido en los mismos assets.
+- Los artículos deben poder publicarse como páginas estáticas bilingües, sin backend y sin framework nuevo.
 
 ## 3. Decisiones ya tomadas
 
@@ -248,6 +255,23 @@ Versión inglesa:
 - El contenido clave de posicionamiento no debe depender solo de JavaScript.
 - GitHub debe estar visible tanto en contenido como en señales SEO.
 
+### Artículos
+
+- Se adopta un patrón `HTML standalone + manifest JSON` para artículos.
+- Cada artículo público debe salir en español e inglés desde el día uno.
+- El índice de artículos puede existir sin estar todavía visible en la navegación principal.
+- La relación objetivo es:
+  - `1 artículo`
+  - `1 post principal de LinkedIn`
+- Un artículo puede publicarse antes de que exista el post de LinkedIn:
+  - en ese caso la referencia a LinkedIn queda pendiente y se completa después
+
+### Analítica
+
+- Se adopta `Cloudflare Web Analytics` como opción base para esta web.
+- Mientras el sitio siga en GitHub Pages sin proxy de Cloudflare, la integración se hace con snippet manual.
+- No se introduce por ahora un stack de analítica más pesado ni un backend auxiliar.
+
 ## 4. Dirección visual actual
 
 - Estética `premium sobria`.
@@ -267,6 +291,7 @@ Versión inglesa:
 
 - Loader inicial con hitos.
 - Hero bilingüe.
+- Gobernanza local mínima dentro del propio repositorio.
 - SEO técnico base compatible con GitHub Pages:
   - `robots.txt`
   - `sitemap.xml`
@@ -284,12 +309,14 @@ Versión inglesa:
 - Footer.
 - Cambio ES/EN.
 - Dark/light.
+- Base estructural para artículos bilingües.
 
 ### Pendiente o mejorable
 
 - Más pulido visual de responsive, especialmente móvil.
 - Más afinado de spacing y densidad en la home.
 - OG image final más afinada.
+- Verificación de recepción de datos en `Cloudflare Web Analytics` tras despliegue.
 - Solución PDF robusta fuera del navegador.
 - Adaptación a LinkedIn.
 - Simulaciones de entrevista.
@@ -795,6 +822,85 @@ Si otro LLM retoma este proyecto, debe:
 Este archivo reemplaza como referencia única a documentos previos de notas y prompt. Si en el futuro se actualiza el contexto del proyecto, este debe seguir siendo el documento maestro.
 
 ## 20. Trazabilidad de cambios recientes
+
+### 2026-03-22
+
+Objetivo del bloque:
+
+- introducir gobernanza mínima local para futuros agentes
+- dejar preparada una base reusable para artículos bilingües
+- cerrar la decisión de analítica ligera para esta web
+
+Motivación:
+
+- evitar que la continuidad dependa de leer un único documento muy largo sin índice operativo
+- preparar publicación editorial sin meter backend ni migración de stack
+- elegir una analítica suficientemente útil y simple para una web estática personal
+
+Decisiones tomadas:
+
+- se crea una capa mínima de gobernanza local con:
+  - `AGENTS.md`
+  - `docs/ARCHITECTURE.md`
+  - `docs/ARTICLES.md`
+  - `docs/TODO.md`
+- `PROJECT_CONTEXT.md` se mantiene como fuente maestra de verdad
+- se adopta un patrón de artículos `HTML standalone + manifest JSON`
+- los artículos públicos serán bilingües desde el día uno
+- el índice de artículos se prepara, pero no se expone todavía en la navegación principal
+- la relación editorial objetivo con LinkedIn será `1 artículo -> 1 post principal`, pero el artículo puede publicarse antes y completar la referencia después
+- se adopta `Cloudflare Web Analytics` como opción base para la analítica de la web
+
+Cambios aplicados:
+
+- documentación:
+  - nuevo `AGENTS.md` en raíz
+  - nuevos `docs/ARCHITECTURE.md`, `docs/ARTICLES.md` y `docs/TODO.md`
+  - `README.md` actualizado con la nueva estructura
+  - `PROJECT_CONTEXT.md` actualizado en capa estable e histórica
+- artículos:
+  - `articles/manifest.json`
+  - `articles/index.html`
+  - `articles/index_en.html`
+  - plantillas en `articles/_template/`
+- analítica:
+  - beacon real de `Cloudflare Web Analytics` insertado en las páginas HTML públicas actuales
+  - beacon añadido también a las plantillas de artículos para futuras publicaciones
+- SEO:
+  - `sitemap.xml` ampliado para incluir los índices de artículos
+
+Ficheros tocados:
+
+- `AGENTS.md`
+- `README.md`
+- `PROJECT_CONTEXT.md`
+- `docs/ARCHITECTURE.md`
+- `docs/ARTICLES.md`
+- `docs/TODO.md`
+- `articles/manifest.json`
+- `articles/index.html`
+- `articles/index_en.html`
+- `articles/_template/index.html`
+- `articles/_template/index_en.html`
+- `index.html`
+- `index_en.html`
+- `sitemap.xml`
+
+Validación realizada:
+
+- revisión manual de consistencia entre documentación, estructura y restricciones del proyecto
+- comprobación de que el repo seguía sin necesidad de build step ni backend para las nuevas páginas
+
+Riesgos o limitaciones:
+
+- `Cloudflare Web Analytics` depende todavía del despliegue y de que Cloudflare empiece a recibir tráfico real
+- el índice de artículos queda preparado, pero sin navegación visible hasta que exista contenido real
+
+Siguientes pasos sugeridos:
+
+1. desplegar los cambios y comprobar en Cloudflare que empiezan a aparecer visitas y pageviews
+2. publicar el primer artículo bilingüe a partir de la plantilla
+3. exponer la sección de artículos en la navegación cuando haya contenido publicado
 
 ### 2026-03-17
 
