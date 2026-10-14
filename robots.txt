@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://ismael-sarmiento.github.io/sitemap.xml

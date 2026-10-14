@@ -1,0 +1,134 @@
+/* Ismael Sarmiento design system — base and shared components (needs tokens.css first).
+   1. Base   2. Buttons, cards, chips   3. Top bar and brand   4. Sections and footer   5. Motion and responsive
+   Same behaviour as IsAcademy (/isacademy/css/main.css § 2–3 and the top bar of § 5). */
+
+/* ===================== 1. Base ===================== */
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html { scroll-behavior: smooth; scroll-padding-top: 84px; interpolate-size: allow-keywords; }
+body { margin: 0; background: var(--bg); color: var(--text); font-family: var(--font-sans); line-height: 1.6; -webkit-font-smoothing: antialiased; }
+h1, h2, h3 { line-height: 1.15; margin: 0; font-weight: 600; letter-spacing: -.01em; text-wrap: balance; }
+p { margin: 0 0 14px; }
+a { color: var(--gold-text); }
+button { font: inherit; color: inherit; cursor: pointer; }
+:focus-visible { outline: 2px solid var(--gold-text); outline-offset: 3px; border-radius: 6px; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.skip-link { position: absolute; left: 16px; top: -60px; z-index: 60; padding: 10px 14px; border-radius: var(--radius-sm); background: var(--gold); color: var(--on-gold); text-decoration: none; }
+.skip-link:focus { top: 12px; }
+.container { width: min(1120px, calc(100% - 32px)); margin: 0 auto; }
+.narrow { width: min(780px, calc(100% - 32px)); }
+.muted { color: var(--text-2); font-size: 14px; }
+.eyebrow { font-size: 13px; letter-spacing: .14em; text-transform: uppercase; color: var(--gold-text); font-weight: 600; margin-bottom: 12px; }
+.lead { font-size: clamp(17px, 1.6vw, 19px); color: var(--text-2); }
+h2 { font-size: clamp(28px, 4vw, 42px); margin-bottom: 16px; }
+
+/* ===================== 2. Buttons, cards, chips ===================== */
+/* buttons: a 1 px lift and a soft shadow on hover, a small press on click */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 10px 18px; line-height: 1.3;
+  border-radius: var(--radius-sm); border: 1px solid var(--line); background: transparent; font-size: 15px; font-weight: 500; color: var(--text);
+  text-decoration: none; transition: transform .2s var(--ease-out), box-shadow .2s ease, background .2s ease, border-color .2s ease; }
+.btn:hover { border-color: var(--gold); transform: translateY(-1px); box-shadow: var(--shadow-sm); }
+.btn:active { transform: translateY(0) scale(.98); box-shadow: none; }
+.btn-primary { background: var(--gold); border-color: var(--gold); color: var(--on-gold); }
+.btn-primary:hover { background: var(--gold-2); border-color: var(--gold-2); box-shadow: 0 8px 22px rgba(200, 149, 63, .32); }
+.btn-lg { min-height: 52px; padding: 14px 24px; font-size: 16px; }
+.btn-sm { min-height: 40px; padding: 8px 14px; font-size: 14px; }
+.btn-icon { min-width: 44px; padding: 10px 12px; }
+.btn[aria-pressed="true"] { border-color: var(--gold); background: rgba(200, 149, 63, .14); }
+/* calls to action end in an arrow that nudges forward */
+.btn-arrow::after { content: "→"; display: inline-block; transition: transform .25s var(--ease-out); }
+.btn-arrow:hover::after { transform: translateX(4px); }
+
+/* cards: one base for every card; a faint light follows the pointer (ds.js sets --mx/--my; mouse only) */
+.card { position: relative; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 24px; box-shadow: var(--shadow);
+  transition: transform .35s var(--ease-out), box-shadow .35s ease, border-color .35s ease; }
+.card::after { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; opacity: 0; transition: opacity .35s ease;
+  background: radial-gradient(240px circle at var(--mx, 50%) var(--my, 50%), var(--spot), transparent 70%); }
+@media (hover: hover) and (pointer: fine) {
+  .card:not(.card--static):hover { transform: translateY(-2px); box-shadow: var(--shadow-hover); border-color: rgba(200, 149, 63, .45); }
+  .card:hover::after { opacity: 1; }
+}
+.card > * { position: relative; }
+.pill { display: inline-block; font-size: 12px; letter-spacing: .04em; padding: 3px 10px; border-radius: 999px; border: 1px solid var(--gold); color: var(--gold-text); }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; padding: 0; margin: 0; list-style: none; }
+.chips li, .chips a { font-size: 13px; padding: 5px 12px; border-radius: 999px; border: 1px solid var(--line); color: var(--text-2); background: var(--surface); text-decoration: none; }
+.chips a:hover { border-color: var(--gold); color: var(--text); }
+
+/* ===================== 3. Top bar and brand ===================== */
+/* glass bar, a soft shadow once the page scrolls and a thin reading-progress line */
+.topbar { position: sticky; top: 0; z-index: 20; background: var(--glass); border-bottom: 1px solid var(--line);
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); transition: box-shadow .3s ease; }
+.topbar.scrolled { box-shadow: var(--bar-shadow); }
+.read-progress { position: absolute; left: 0; right: 0; bottom: -1px; height: 2px; transform: scaleX(0); transform-origin: 0 50%;
+  background: linear-gradient(90deg, var(--gold), var(--gold-2)); pointer-events: none; }
+.topbar-row { display: flex; align-items: center; gap: 18px; min-height: 68px; }
+/* wordmark: the script "Is" shared with IsAcademy (it is Ismael's "Is") followed by the rest of the name */
+.brand { display: inline-flex; align-items: baseline; text-decoration: none; color: var(--text); flex: none; }
+.brand-is { font-family: var(--font-script); color: var(--gold); font-size: 38px; line-height: .8; margin-right: 1px; -webkit-text-stroke: .5px currentColor;
+  transition: transform .3s var(--ease-out); }
+.brand:hover .brand-is { transform: rotate(-4deg); }
+.brand-name { font-size: 20px; font-weight: 500; letter-spacing: -.02em; }
+.brand-tag { margin-left: 10px; align-self: center; text-decoration: none; }
+.nav { display: flex; gap: 4px; flex: 1; justify-content: center; align-items: center; }
+.nav a { color: var(--text-2); text-decoration: none; font-size: 14.5px; padding: 8px 10px; border-radius: 10px; white-space: nowrap; transition: color .2s, background .2s; }
+.nav a:hover { color: var(--text); background: rgba(200, 149, 63, .08); }
+.nav a.active, .nav a[aria-current="page"] { color: var(--text); background: rgba(200, 149, 63, .14); }
+.tools { display: flex; gap: 8px; align-items: center; flex: none; margin-left: auto; }
+/* the bar controls share one height (44 px, as in IsAcademy): text buttons, language and theme */
+.tools > .btn, .intro-top > .btn { min-height: 44px; font-size: 14px; }
+.lang-btn { font-size: 13px; font-weight: 600; letter-spacing: .04em; }
+.theme-btn .i-sun { display: none; }
+:root[data-theme="dark"] .theme-btn .i-sun { display: block; }
+:root[data-theme="dark"] .theme-btn .i-moon { display: none; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .theme-btn .i-sun { display: block; }
+  :root:not([data-theme="light"]) .theme-btn .i-moon { display: none; }
+}
+
+/* signature (signature.js): calligraphic "Is" + the decoded rest of the name, as in IsAcademy's intro logo */
+.sig { display: block; width: 100%; height: auto; overflow: visible; }
+.sig .is { font-family: var(--font-script); font-size: 300px; fill: var(--gold); }
+.sig .is-stroke { fill: none; stroke: var(--gold); stroke-width: 1.6; }
+.sig .word { font-family: var(--font-sans); font-weight: 500; font-size: 150px; fill: var(--text); letter-spacing: -3px; }
+.sig .cursor { fill: var(--gold); }
+.sig .cursor[opacity="1"] { animation: sig-blink 1s steps(1) infinite; }
+@keyframes sig-blink { 50% { opacity: 0; } }
+
+/* ===================== 4. Sections and footer ===================== */
+.section { padding: 96px 0; }
+.section.alt { background: var(--bg-alt); }
+.section-head { max-width: 720px; margin-bottom: 40px; }
+.footer { padding: 36px 0 44px; border-top: 1px solid var(--line); color: var(--text-2); font-size: 14px; }
+.footer-row { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: center; justify-content: space-between; }
+.footer a { color: var(--text-2); text-decoration: none; }
+.footer a:hover { color: var(--text); }
+.footer-links { display: flex; flex-wrap: wrap; gap: 6px 18px; }
+
+/* ===================== 5. Motion and responsive ===================== */
+/* reveal on scroll: a short rise with a natural ease, staggered by --d */
+.reveal { opacity: 0; transform: translateY(12px); transition: opacity .6s var(--ease-out) var(--d, 0s), transform .6s var(--ease-out) var(--d, 0s); }
+.reveal.in { opacity: 1; transform: none; }
+details::details-content { block-size: 0; overflow: clip; transition: block-size .35s var(--ease-out), content-visibility .35s allow-discrete; }
+details[open]::details-content { block-size: auto; }
+/* narrow screens: the bar wraps and the menu becomes a second row that scrolls sideways (as in IsAcademy) */
+@media (max-width: 1080px) {
+  .topbar-row { flex-wrap: wrap; gap: 8px 12px; padding-top: 10px; }
+  .nav { order: 3; flex-basis: 100%; justify-content: flex-start; overflow-x: auto; scrollbar-width: none; margin: 0 -16px; padding: 0 16px 8px; }
+  .nav::-webkit-scrollbar { display: none; }
+  html { scroll-padding-top: 120px; }
+}
+@media (max-width: 640px) {
+  .section { padding: 64px 0; }
+  .topbar-row { gap: 6px 8px; }
+  .tools { gap: 6px; } .tools .btn-icon { min-width: 40px; padding: 8px; }
+}
+@media (max-width: 420px) {
+  .brand-tag { display: none; }
+  .brand-name { font-size: 18px; }
+  .brand-is { font-size: 34px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+  .reveal { opacity: 1; transform: none; }
+}
