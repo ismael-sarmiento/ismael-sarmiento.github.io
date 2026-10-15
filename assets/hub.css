@@ -41,6 +41,7 @@
   .hero { padding: 48px 0 32px; }
   .hero-inner { grid-template-columns: 1fr; gap: 24px; }
   .hero-photo { order: -1; width: 120px; height: 120px; padding: 4px; }
+  .circuit { display: none; }   /* on phones the lines would cross the text */
 }
 @media (prefers-reduced-motion: reduce) {
   .circuit path { stroke-dashoffset: 0; animation: none; }

@@ -16,13 +16,13 @@
 "chip.2": "Calidad del dato",
 "chip.3": "Certificación CDMP · DAMA",
 "projects": "Proyectos",
-"door.0.text": "Mi trayectoria profesional: Savana, Stratio, Santander y BBVA. Gobierno del dato, HL7 FHIR, OMOP CDM y DataHub.",
+"door.0.text": "Mi trayectoria en Savana, StratioBD, Santander Global Tech y BBVA Next Technologies: gobierno, interoperabilidad y calidad del dato.",
 "door.0.cta": "Ver CV Online",
 "door.0.href": "/cv/",
-"door.1.text": "Mi academia online de programación, datos e IA: clases personalizadas de Python, SQL, Big Data, Data Engineering e IA.",
+"door.1.text": "Mi academia online de programación, datos e IA, con clases personalizadas para todas las edades.",
 "door.1.cta": "Conocer IsAcademy",
 "door.1.href": "/isacademy/",
-"door.2.text": "Mi código abierto: librerías de Python y apuntes de ingeniería de datos recogidos a lo largo de los años.",
+"door.2.text": "Mi código abierto: kimera-python, utilidades de Python para ETL, SQLAlchemy y AWS S3 (2020–2022).",
 "door.2.cta": "Ver en GitHub",
 "contact": "Contacto"
 }
