@@ -189,7 +189,7 @@ def home():
     for i, (name, href_key, fixed) in enumerate(DOORS):
         href = f'href="{fixed}" rel="noopener"' if fixed else A('href', href_key)
         doors += f'''
-          <a class="card door reveal" {href} data-d="{i + 1}">
+          <a class="card door reveal" {href}>
             <span class="door-num" aria-hidden="true">0{i + 1}</span>
             <h3>{name}</h3>
             {T(f'door.{i}.text', 'p')}
@@ -211,23 +211,23 @@ def home():
         <path d="M600 330H500l-50-50H380"/><circle cx="380" cy="280" r="4"/>
         <path d="M600 430H440l-30 30H330"/><circle cx="330" cy="460" r="4"/>
       </svg>
-      <div class="container hero-inner">
-        <div class="hero-text">
-          {T('eyebrow', 'p', 'eyebrow')}
+      <div class="container hero-inner stagger">
+        <div class="hero-text stagger">
+          {T('eyebrow', 'p', 'eyebrow reveal')}
           <h1 class="hero-name"><span class="sr-only">Ismael Sarmiento</span>
         {SIG}</h1>
-          {T('lead', 'p', 'lead hero-lead')}
-          <p class="hero-founder"><a href="/isacademy/" data-i18n-href="door.1.href">{T('founder')}</a>{T('slogan', 'span', 'hero-slogan', rich=True)}</p>
-          <ul class="chips hero-chips" {A('aria-label', 'chipsLabel')}>{chips}</ul>
+          {T('lead', 'p', 'lead hero-lead reveal')}
+          <p class="hero-founder reveal"><a href="/isacademy/" data-i18n-href="door.1.href">{T('founder')}</a>{T('slogan', 'span', 'hero-slogan', rich=True)}</p>
+          <ul class="chips hero-chips reveal" {A('aria-label', 'chipsLabel')}>{chips}</ul>
         </div>
-        <img class="hero-photo" src="/assets/brand/ismael.jpg" width="264" height="264" alt="Ismael Sarmiento" fetchpriority="high">
+        <img class="hero-photo reveal" src="/assets/brand/ismael.jpg" width="264" height="264" alt="Ismael Sarmiento" fetchpriority="high">
       </div>
     </section>
 
     <section class="doors" aria-labelledby="doors-title">
       <div class="container">
         {T('projects', 'h2', 'sr-only', ' id="doors-title"')}
-        <div class="door-grid">{doors}
+        <div class="door-grid stagger">{doors}
         </div>
       </div>
     </section>

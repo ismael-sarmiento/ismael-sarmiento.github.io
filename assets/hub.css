@@ -29,7 +29,6 @@
 .door-num { font-family: var(--font-mono); font-size: 13px; letter-spacing: .12em; color: var(--gold-text); }
 .btn-link { color: var(--gold-text); font-weight: 600; font-size: 15px; display: inline-flex; gap: 8px; }
 .door:hover .btn-arrow::after { transform: translateX(4px); }
-.door[data-d="1"] { --d: .05s; } .door[data-d="2"] { --d: .15s; } .door[data-d="3"] { --d: .25s; }
 
 
 @media (max-width: 900px) {

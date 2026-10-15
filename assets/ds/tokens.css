@@ -18,6 +18,12 @@
   --font-sans: 'Space Grotesk', system-ui, -apple-system, sans-serif;
   --font-mono: ui-monospace, 'SF Mono', Menlo, monospace;
   --ease-out: cubic-bezier(.2, .8, .2, 1);
+  /* motion: one rhythm for every site (IsAcademy's timings are the reference) */
+  --ease-in-out: cubic-bezier(.65, 0, .35, 1);
+  --dur-fast: .2s;
+  --dur-base: .45s;
+  --dur-slow: .9s;
+  --stagger: .08s;
   /* light theme: one brand gold (logo, buttons, script, numbers, borders) + one gold for small text */
   --gold: var(--gold-600); --gold-2: var(--gold-500); --gold-text: var(--gold-700);
   --bg: var(--cream-50); --bg-alt: var(--cream-100); --surface: #fffdf9;

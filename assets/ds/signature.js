@@ -67,18 +67,18 @@ export async function playSignature(svg) {
   stroke.style.strokeDashoffset = String(DASH);
   ink.setAttribute('width', '0');
   word.textContent = '';
-  // 1) the outline of "Is" is sketched, 2) ink fills it from left to right
-  await animate(svg, 1300, p => { stroke.style.strokeDashoffset = String(DASH * (1 - easeInOut(p))); });
-  await animate(svg, 600, p => { ink.setAttribute('x', String(fill.x - 20)); ink.setAttribute('width', String((fill.width + 60) * easeInOut(p))); });
+  // same rhythm as IsAcademy: 1) the outline of "Is" is sketched, 2) ink fills it from left to right
+  await animate(svg, 1500, p => { stroke.style.strokeDashoffset = String(DASH * (1 - easeInOut(p))); });
+  await animate(svg, 700, p => { ink.setAttribute('x', String(fill.x - 20)); ink.setAttribute('width', String((fill.width + 60) * easeInOut(p))); });
   // 3) the rest of the name is decoded letter by letter behind a blinking cursor
   const cursor = svg.querySelector('.cursor');
   cursor.setAttribute('opacity', '1');
   for (let i = 0; i <= target.length && !svg.dataset.skipped; i++) {
-    for (let k = 0; k < 2 && !svg.dataset.skipped; k++) {
+    for (let k = 0; k < 3 && !svg.dataset.skipped; k++) {
       const noise = Array.from({ length: Math.min(2, target.length - i) }, () => GLYPHS[Math.floor(Math.random() * GLYPHS.length)]).join('');
       word.textContent = target.slice(0, i) + noise;
       cursorAfter(svg);
-      await sleep(30);
+      await sleep(32);
     }
   }
   word.textContent = target;

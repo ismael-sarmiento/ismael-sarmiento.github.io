@@ -108,6 +108,19 @@ h2 { font-size: clamp(28px, 4vw, 42px); margin-bottom: 16px; }
 /* reveal on scroll: a short rise with a natural ease, staggered by --d */
 .reveal { opacity: 0; transform: translateY(12px); transition: opacity .6s var(--ease-out) var(--d, 0s), transform .6s var(--ease-out) var(--d, 0s); }
 .reveal.in { opacity: 1; transform: none; }
+/* siblings inside .stagger rise one after another (cards of a grid, lines of a hero) */
+.stagger > .reveal:nth-child(2) { --d: calc(var(--stagger) * 1); }
+.stagger > .reveal:nth-child(3) { --d: calc(var(--stagger) * 2); }
+.stagger > .reveal:nth-child(4) { --d: calc(var(--stagger) * 3); }
+.stagger > .reveal:nth-child(5) { --d: calc(var(--stagger) * 4); }
+.stagger > .reveal:nth-child(6) { --d: calc(var(--stagger) * 5); }
+.stagger > .reveal:nth-child(7) { --d: calc(var(--stagger) * 6); }
+.stagger > .reveal:nth-child(n+8) { --d: calc(var(--stagger) * 7); }
+/* moving between the portada, CV Online and IsAcademy (same origin) is a soft cross-fade, not a cut */
+@media (prefers-reduced-motion: no-preference) {
+  @view-transition { navigation: auto; }
+  ::view-transition-old(root), ::view-transition-new(root) { animation-duration: var(--dur-base); animation-timing-function: var(--ease-out); }
+}
 details::details-content { block-size: 0; overflow: clip; transition: block-size .35s var(--ease-out), content-visibility .35s allow-discrete; }
 details[open]::details-content { block-size: auto; }
 /* narrow screens: the bar wraps and the menu becomes a second row that scrolls sideways (as in IsAcademy) */
