@@ -7,6 +7,8 @@ const VERSION = new URL(import.meta.url).searchParams.get('v') || 'dev';
 const i18n = createI18n({ base: 'https://ismael-sarmiento.github.io/', dict: code => `/i18n/${code}.json?v=${VERSION}` });
 
 initDesignSystem();
+// the hero is the first screen: it rises on load (staggered), never waiting for a scroll that may not come
+document.querySelectorAll('.hero .reveal').forEach(el => el.classList.add('in'));
 i18n.start();
 document.querySelectorAll('.hero-name .sig').forEach(svg => playSignature(svg));
 document.querySelectorAll('[data-year]').forEach(el => { el.textContent = String(new Date().getFullYear()); });
