@@ -67,8 +67,101 @@ ES = {k: v[0] for k, v in TEXT.items()}
 EN = {k: v[1] for k, v in TEXT.items()}
 DOORS = [('CV Online', 'door.0.href', None), ('IsAcademy', 'door.1.href', None), ('Kimera Tools', None, 'https://github.com/kimera-tools')]
 
+# Alan on Inicio: the same assistant as CV Online and IsAcademy (/assets/ds/assistant.js), fed with the public story of
+# this page. Answers shared with the CV FAQ keep its wording (cv/data/content.json); nothing here is new information.
+MAIL, CV_PDF = f'mailto:{EMAIL}', {'es': '/cv/ismael-sarmiento-cv.pdf', 'en': '/cv/ismael-sarmiento-cv-en.pdf'}
+ALAN = {
+    'es': {
+        'assistant': {
+            'name': 'Alan', 'badge': 'Beta', 'subtitle': 'Asistente local de la web · sin datos privados ni modelos externos',
+            'open': '¿Te ayudo?', 'openLabel': 'Abrir el asistente', 'close': 'Cerrar el asistente', 'typing': 'Alan está escribiendo…',
+            'placeholder': 'Escribe tu pregunta…', 'send': 'Enviar',
+            'greeting': '¡Hola! Soy Alan, el asistente local de la web de Ismael (versión beta). Respondo solo con el contenido público de esta web: no uso datos privados ni modelos externos.',
+            'suggestions': ['¿Quién es Ismael?', '¿Qué hace en Savana?', '¿Qué es IsAcademy?', '¿Cómo contacto con él?'],
+            'fallback': {'answer': 'No tengo una respuesta exacta para eso en esta versión beta. Puedo contarte quién es Ismael, su trayectoria, IsAcademy, Kimera Tools, su CV o cómo contactar con él.',
+                         'actions': [{'label': 'Ver CV Online', 'href': '/cv/'}]},
+        },
+        'faq': [
+            {'q': '¿Quién es Ismael?', 'keywords': ['quien', 'ismael', 'sarmiento', 'presentacion', 'sobre'],
+             'a': 'Ismael Sarmiento es Head of Data Management en Savana y fundador de IsAcademy. Lleva casi una década construyendo plataformas de datos: primero en banca (BBVA Next Technologies, Santander Global Tech), después en StratioBD y hoy en Savana, donde lidera Data Management en salud digital. Tiene la certificación CDMP de DAMA International.',
+             'actions': [{'label': 'Ver CV Online', 'href': '/cv/'}]},
+            {'q': '¿Cuál es su foco principal?', 'keywords': ['foco', 'principal', 'perfil', 'especializacion'],
+             'a': 'Su foco es diseñar y construir plataformas de datos e IA gobernadas y confiables que ayudan a las organizaciones a decidir mejor y a crecer con impacto real, combinando ejecución técnica, criterio arquitectónico y liderazgo de equipos.'},
+            {'q': '¿Qué hace en Savana?', 'keywords': ['savana', 'head', 'lead', 'data management'],
+             'a': 'En Savana pasó de Senior Data Engineer a Lead Data Engineer y después a Head of Data Management, impulsando interoperabilidad clínica con FHIR y OMOP, plataformas de calidad del dato, catálogo y metadatos con DataHub, y control del ciclo de vida del dato.'},
+            {'q': '¿Cuál es su trayectoria?', 'keywords': ['autana', 'bbva', 'career', 'companies', 'empresas', 'experience', 'experiencia', 'santander', 'stratio', 'stratiobd', 'trayectoria'],
+             'a': 'Su trayectoria pasa por Autana Consultores de Tecnología, BBVA Next Technologies, Santander Global Tech, StratioBD y Savana: una evolución desde el desarrollo de software y las plataformas de datos hasta liderar Data Management, con foco en gobierno, interoperabilidad y calidad del dato.',
+             'actions': [{'label': 'Ver CV Online', 'href': '/cv/'}]},
+            {'q': '¿Qué certificaciones tiene?', 'keywords': ['certificacion', 'certificaciones', 'cdmp', 'dama', 'fhir', 'snomed', 'mondragon', 'titulo'],
+             'a': 'Tiene la certificación CDMP (Associate) de DAMA International (2026) y es miembro activo de DAMA Spain. También es FHIR Foundational Implementer (2025), Experto en Gobierno y Gestión Estratégica de Datos por Mondragon Unibertsitatea (2024) y tiene los fundamentos de terminología SNOMED CT (2026).'},
+            {'q': '¿Lidera equipos?', 'keywords': ['lidera', 'liderazgo', 'lider', 'equipo', 'equipos', 'head', 'manager', 'gestion', 'responsable'],
+             'a': 'Sí. Como Head of Data Management en Savana lidera el área de Data Management y equipos de datos de alto rendimiento, sin perder cercanía con la arquitectura, la construcción de soluciones y el diseño de producto.'},
+            {'q': '¿Qué es IsAcademy?', 'keywords': ['isacademy', 'academia', 'alumnos', 'cursos', 'fundador', 'clases'],
+             'a': 'IsAcademy es la academia online de programación, datos e IA que Ismael fundó en 2023: clases personalizadas de Python, SQL, Big Data, Data Engineering e IA para todas las edades. Su lema: la IA te da respuestas; aquí te enseñamos a pensar.',
+             'actions': [{'label': 'Conocer IsAcademy', 'href': '/isacademy/'}]},
+            {'q': '¿Qué es Kimera Tools?', 'keywords': ['kimera', 'tools', 'codigo', 'abierto', 'github', 'python', 'open source'],
+             'a': 'Kimera Tools es su código abierto: kimera-python, utilidades de Python para ETL, SQLAlchemy y AWS S3 (2020–2022).',
+             'actions': [{'label': 'Ver en GitHub', 'href': 'https://github.com/kimera-tools'}]},
+            {'q': '¿Dónde veo su CV?', 'keywords': ['cv', 'curriculum', 'pdf', 'descargar', 'resume'],
+             'a': 'Su CV Online cuenta su trayectoria en Savana, StratioBD, Santander Global Tech y BBVA Next Technologies, en español e inglés, y también se descarga en PDF.',
+             'actions': [{'label': 'Ver CV Online', 'href': '/cv/'}, {'label': 'Descargar PDF', 'href': CV_PDF['es']}]},
+            {'q': '¿Cómo contacto con él?', 'keywords': ['contacto', 'contactar', 'correo', 'email', 'escribir', 'linkedin', 'hablar'],
+             'a': f'Por correo ({EMAIL}) o por LinkedIn. Los dos están al pie de esta página.',
+             'actions': [{'label': 'Escribir un correo', 'href': MAIL}, {'label': 'LinkedIn', 'href': LINKEDIN}]},
+            {'q': '¿Qué puedes hacer?', 'keywords': ['puedes hacer', 'capacidades', 'asistente', 'ayuda'],
+             'a': 'Puedo contarte quién es Ismael, resumir su trayectoria, explicarte IsAcademy y Kimera Tools, y llevarte a su CV Online o a su contacto.'},
+            {'q': '¿Puedes dar datos privados?', 'keywords': ['privados', 'confidencial', 'datos', 'secretos', 'privacidad'],
+             'a': 'No. Este asistente está limitado al contenido público de esta web y no tiene acceso a datos privados, credenciales, métricas sensibles ni información confidencial de Ismael o de las empresas en las que ha trabajado.'},
+        ],
+    },
+    'en': {
+        'assistant': {
+            'name': 'Alan', 'badge': 'Beta', 'subtitle': 'Local site assistant · no private data, no external models',
+            'open': 'Can I help?', 'openLabel': 'Open the assistant', 'close': 'Close the assistant', 'typing': 'Alan is typing…',
+            'placeholder': 'Type your question…', 'send': 'Send',
+            'greeting': "Hi! I'm Alan, the local assistant of Ismael's site (beta). I only answer from the public content of this site: no private data and no external models.",
+            'suggestions': ['Who is Ismael?', 'What does he do at Savana?', 'What is IsAcademy?', 'How can I contact him?'],
+            'fallback': {'answer': 'I do not have an exact answer for that in this beta version. I can tell you who Ismael is, his career, IsAcademy, Kimera Tools, his CV or how to contact him.',
+                         'actions': [{'label': 'View CV Online', 'href': '/cv/?lang=en'}]},
+        },
+        'faq': [
+            {'q': 'Who is Ismael?', 'keywords': ['who', 'ismael', 'sarmiento', 'introduction', 'about'],
+             'a': 'Ismael Sarmiento is Head of Data Management at Savana and founder of IsAcademy. For almost a decade he has been building data platforms: first in banking (BBVA Next Technologies, Santander Global Tech), then at StratioBD and today at Savana, where he leads Data Management in digital health. He holds the CDMP certification from DAMA International.',
+             'actions': [{'label': 'View CV Online', 'href': '/cv/?lang=en'}]},
+            {'q': 'What is his main focus?', 'keywords': ['focus', 'main', 'specialization', 'profile'],
+             'a': 'His focus is designing and building governed, reliable data and AI platforms that help organisations make better decisions and grow with real impact, combining technical execution, architectural judgment and team leadership.'},
+            {'q': 'What does he do at Savana?', 'keywords': ['savana', 'head', 'lead', 'data management'],
+             'a': 'At Savana, he progressed from Senior Data Engineer to Lead Data Engineer and then to Head of Data Management, driving clinical interoperability with FHIR and OMOP, data quality platforms, metadata and cataloging through DataHub, and lifecycle control.'},
+            {'q': 'What is his career path?', 'keywords': ['autana', 'bbva', 'career', 'companies', 'empresas', 'experience', 'experiencia', 'path', 'santander', 'stratio', 'stratiobd'],
+             'a': 'His path goes through Autana Consultores de Tecnología, BBVA Next Technologies, Santander Global Tech, StratioBD and Savana: an evolution from software development and data platforms to leading Data Management, focused on data governance, interoperability and quality.',
+             'actions': [{'label': 'View CV Online', 'href': '/cv/?lang=en'}]},
+            {'q': 'What certifications does he hold?', 'keywords': ['certification', 'certifications', 'cdmp', 'dama', 'fhir', 'snomed', 'mondragon', 'degree'],
+             'a': 'He holds the CDMP (Associate) certification from DAMA International (2026) and is an active member of DAMA Spain. He is also a FHIR Foundational Implementer (2025), an Expert in Data Governance and Strategic Data Management from Mondragon Unibertsitatea (2024) and holds SNOMED CT terminology fundamentals (2026).'},
+            {'q': 'Does he lead teams?', 'keywords': ['lead', 'leads', 'leadership', 'leader', 'team', 'teams', 'head', 'manager', 'management'],
+             'a': 'Yes. As Head of Data Management at Savana he leads the Data Management area and high-performing data teams, while staying close to architecture, solution building and product design.'},
+            {'q': 'What is IsAcademy?', 'keywords': ['isacademy', 'academy', 'students', 'courses', 'founder', 'lessons'],
+             'a': 'IsAcademy is the online academy for programming, data and AI that Ismael founded in 2023: tailored lessons in Python, SQL, Big Data, Data Engineering and AI for all ages. Its motto: AI gives you answers; here we teach you how to think.',
+             'actions': [{'label': 'Discover IsAcademy', 'href': '/isacademy/?lang=en'}]},
+            {'q': 'What is Kimera Tools?', 'keywords': ['kimera', 'tools', 'code', 'open source', 'github', 'python'],
+             'a': 'Kimera Tools is his open source: kimera-python, Python utilities for ETL, SQLAlchemy and AWS S3 (2020–2022).',
+             'actions': [{'label': 'View on GitHub', 'href': 'https://github.com/kimera-tools'}]},
+            {'q': 'Where can I see his CV?', 'keywords': ['cv', 'resume', 'curriculum', 'pdf', 'download'],
+             'a': 'His CV Online tells his career at Savana, StratioBD, Santander Global Tech and BBVA Next Technologies, in Spanish and English, and it can also be downloaded as a PDF.',
+             'actions': [{'label': 'View CV Online', 'href': '/cv/?lang=en'}, {'label': 'Download PDF', 'href': CV_PDF['en']}]},
+            {'q': 'How can I contact him?', 'keywords': ['contact', 'email', 'mail', 'write', 'linkedin', 'reach', 'talk'],
+             'a': f'By email ({EMAIL}) or on LinkedIn. Both are at the foot of this page.',
+             'actions': [{'label': 'Send an email', 'href': MAIL}, {'label': 'LinkedIn', 'href': LINKEDIN}]},
+            {'q': 'What can you do?', 'keywords': ['can you do', 'capabilities', 'assistant', 'help'],
+             'a': 'I can tell you who Ismael is, summarise his career, explain IsAcademy and Kimera Tools, and take you to his CV Online or his contact details.'},
+            {'q': 'Can you share private data?', 'keywords': ['private data', 'confidential', 'credentials', 'sensitive', 'privacy'],
+             'a': 'No. This assistant is limited to the public content of this site and has no access to private data, credentials, sensitive metrics, or confidential information from Ismael or the companies he has worked with.'},
+        ],
+    },
+}
+
 BOOT = "document.documentElement.classList.add('js');try{var t=localStorage.getItem('isa-theme');if(t==='light'||t==='dark')document.documentElement.dataset.theme=t}catch(e){}"
-MODULES = ['/assets/ds/ds.js', '/assets/ds/i18n.js', '/assets/ds/signature.js', '/assets/ds/fx.js', '/assets/ds/intro.js', '/assets/hub.js']
+MODULES = ['/assets/ds/ds.js', '/assets/ds/i18n.js', '/assets/ds/signature.js', '/assets/ds/fx.js', '/assets/ds/intro.js',
+           '/assets/ds/avatar.js', '/assets/ds/assistant.js', '/assets/hub.js']
 IMPORT_MAP = json.dumps({'imports': {m: f'{m}?v={VERSION}' for m in MODULES}}, separators=(',', ':'))
 sha = lambda s: base64.b64encode(hashlib.sha256(s.encode()).digest()).decode()
 CSP = ("default-src 'self'; script-src 'self' https://static.cloudflareinsights.com "
@@ -135,6 +228,7 @@ def head(title, description, extra=''):
   <link rel="stylesheet" href="/assets/ds/tokens.css?v={VERSION}">
   <link rel="stylesheet" href="/assets/ds/base.css?v={VERSION}">
   <link rel="stylesheet" href="/assets/ds/intro.css?v={VERSION}">
+  <link rel="stylesheet" href="/assets/ds/assistant.css?v={VERSION}">
   <link rel="stylesheet" href="/assets/hub.css?v={VERSION}">
   <script type="importmap">{IMPORT_MAP}</script>
   <script type="module" src="/assets/hub.js?v={VERSION}"></script>
@@ -219,6 +313,7 @@ def home():
             {T(f'door.{i}.text', 'p')}
             {T(f'door.{i}.cta', 'span', 'btn-link btn-arrow')}
           </a>'''
+    alan_json = json.dumps(ALAN, ensure_ascii=False).replace('</', '<\\/')   # inert data for assets/hub.js
     return f'''<!doctype html>
 <html lang="es">
 {head(ES['meta.title'], ES['meta.description'], extra)}
@@ -258,6 +353,7 @@ def home():
   </main>
 
   {footer()}
+  <script type="application/json" id="alan-data">{alan_json}</script>
 </body>
 </html>
 '''

@@ -4,12 +4,35 @@
 //   const alan = createAssistant({ name, badge, subtitle, open, openLabel, close, placeholder, send, typing,
 //                                  greeting, suggestions, match, fallback, onAction });
 //   match(question) -> { answer, actions: [{ label, href?, action?, arg? }] } | null
+//   match can be faqMatcher(faq) below (the public FAQ of the site, ES or EN)
 //   optional: fabId (an id for the floating button), startHidden (the site shows it later, e.g. after its intro)
 import { avatarSVG } from './avatar.js';
 
 const ENTITIES = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
 const esc = s => String(s).replace(/[&<>"']/g, c => ENTITIES[c]);
 const isPhone = () => matchMedia('(max-width: 640px)').matches;
+
+const normalize = s => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+// words that carry no meaning in a question ("qué", "es", "his"...) never decide the answer
+const STOP = new Set(('que cual cuales como donde cuando quien quienes por para con sin sus del las los una uno unos unas este esta esto eso '
+  + 'hay hace hacer tiene tienes eres puedes puede sobre mas muy '
+  + 'the what which who how does did can his her you are with for and from about has have this that').split(' '));
+const words = s => normalize(s).split(/[^a-z0-9+#]+/).filter(t => t.length >= 3 && !STOP.has(t));
+
+// match() for the public FAQ of a site ([{ q, a, keywords?, actions? }]): the best entry, where a keyword weighs 3,
+// a word of the question 2 and a word of the answer 1; below 2 points Alan admits it has no answer instead of guessing
+export function faqMatcher(faq) {
+  const index = faq.map(item => ({ item, keys: new Set((item.keywords || []).flatMap(words)), q: new Set(words(item.q)), a: new Set(words(item.a)) }));
+  return question => {
+    const tokens = words(question);
+    let best = null, bestScore = 0;
+    for (const e of index) {
+      const score = tokens.reduce((n, t) => n + (e.keys.has(t) ? 3 : 0) + (e.q.has(t) ? 2 : 0) + (e.a.has(t) ? 1 : 0), 0);
+      if (score > bestScore) { best = e.item; bestScore = score; }
+    }
+    return bestScore >= 2 ? { answer: best.a, actions: best.actions || [] } : null;
+  };
+}
 
 export function createAssistant(cfg) {
   let started = false;
