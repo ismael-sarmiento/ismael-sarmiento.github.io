@@ -53,6 +53,10 @@ h2 { font-size: clamp(28px, 4vw, 42px); margin-bottom: 16px; }
 .chips { display: flex; flex-wrap: wrap; gap: 8px; padding: 0; margin: 0; list-style: none; }
 .chips li, .chips a { font-size: 13px; padding: 5px 12px; border-radius: 999px; border: 1px solid var(--line); color: var(--text-2); background: var(--surface); text-decoration: none; }
 .chips a:hover { border-color: var(--gold); color: var(--text); }
+/* a chip that holds a link is drawn once, by the link (no pill inside a pill); chips keep their words on one line */
+.chips li:has(> a) { padding: 0; border: 0; background: none; }
+.chips li, .chips a { white-space: nowrap; }
+.chips a { display: inline-block; }
 
 /* ===================== 3. Top bar and brand ===================== */
 /* glass bar, a soft shadow once the page scrolls and a thin reading-progress line */
