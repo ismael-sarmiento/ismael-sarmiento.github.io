@@ -1,0 +1,52 @@
+/* Ismael Sarmiento design system — the intro shared by every site (Inicio, CV Online; IsAcademy keeps its own markup
+   with the same measures). Markup: tools/build.py of each site; behaviour: /assets/ds/intro.js.
+
+   One scale for the signature everywhere: the signature viewBox is ~1401 units wide and IsAcademy's logo 1000, so
+   the signature is min(1160px, 92vw) and IsAcademy's logo min(828px, 65.7vw): the "Is" has the same size and the
+   same place on every site and every screen. Keep that ratio (1000 / 1401) if one of them changes. */
+
+/* only with JavaScript (the boot script adds .js); otherwise the page shows straight away */
+.intro { display: none; }
+.js .intro { position: fixed; inset: 0; z-index: 50; display: grid; justify-items: center; align-content: start;
+  padding: max(12vh, 72px) 24px 24px; background: var(--bg); overflow: hidden auto; }
+.js .intro[hidden] { display: none; }
+body.intro-open { overflow: hidden; }
+
+.intro-top { position: absolute; top: 16px; right: 16px; display: flex; gap: 8px; align-items: center; z-index: 2; }
+.intro-stage { width: min(92vw, 1160px); text-align: center; position: relative; z-index: 1; }
+.intro-sig .sig { width: min(1160px, 92vw); margin: 0 auto; }
+/* coming from another site of the universe the signature is already known: it fades in drawn */
+.intro-sig.drawn .sig { animation: sig-in .7s var(--ease-out) both; }
+@keyframes sig-in { from { opacity: 0; transform: translateY(6px); } }
+
+.intro-after, .intro-actions { opacity: 0; transform: translateY(8px); transition: opacity .8s ease, transform .8s var(--ease-out); }
+.intro.after .intro-after, .intro.ready .intro-actions { opacity: 1; transform: none; }
+.intro-tag { display: table; margin: 4px auto 0; }
+.intro-hook { font-size: clamp(16px, 2.2vw, 22px); color: var(--text-2); max-width: 52ch; margin: 22px auto 0; }
+.intro-milestones { width: min(520px, 100%); margin: 26px auto 0; }
+.intro-segs { display: grid; grid-auto-flow: column; gap: 6px; margin-bottom: 12px; }
+.intro-segs span { height: 3px; border-radius: 3px; background: var(--line); transition: background .5s ease; }
+.intro-segs span.on { background: linear-gradient(90deg, var(--gold), var(--gold-2)); }
+.intro-step { min-height: 1.6em; margin: 0; color: var(--text); font-weight: 500; }
+.intro-step.swap { animation: step-in .45s var(--ease-out); }
+@keyframes step-in { from { opacity: 0; transform: translateY(6px); } }
+.intro-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin-top: 30px; }
+
+/* while the intro is open the hero waits; when it closes, its lines rise one after another (.stagger) */
+body.intro-open .hero .reveal.in { opacity: 0; transform: translateY(16px); }
+/* the intro hands the focus to the page title (for screen readers and the keyboard): no ring on a programmatic focus */
+main h1[tabindex="-1"]:focus { outline: none; }
+
+/* the exit: the "Is" (human) flies to the seal leaving gold ink, the name (artificial) breaks into pixels */
+.intro-flyer { position: fixed; z-index: 60; margin: 0; pointer-events: none; transform-origin: 0 0; }
+.intro-flyer .sig { display: block; width: 100%; height: auto; }
+.intro-flyer .word, .intro-flyer .cursor { display: none; }
+body.entering .topbar .brand { opacity: 0; }
+
+@media (max-width: 640px) {
+  .js .intro { padding-top: max(14vh, 84px); }
+  .intro-top { left: 16px; justify-content: flex-end; flex-wrap: wrap; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .intro-after, .intro-actions { transition: none; }
+}

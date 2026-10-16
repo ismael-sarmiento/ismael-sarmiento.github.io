@@ -27,6 +27,8 @@ por todas sus webs.
 | `ds.js` | Tema compartido entre webs, aparición al hacer scroll, barra superior y luz que sigue al puntero |
 | `i18n.js` | Idiomas: un solo botón ES/EN, `?lang=en` en la URL y la elección compartida entre webs |
 | `signature.js` | La firma: «Is» manuscrita esbozada y el resto del nombre decodificado al estilo IA |
+| `intro.js`, `intro.css` | La intro común (Inicio y CV Online): firma, papel, eslogan y botones; al entrar, la «Is» vuela al sello dejando tinta dorada y el nombre se deshace en píxeles. La misma escala que el logo de IsAcademy |
+| `fx.js` | Efectos de partículas (tinta, píxeles, destellos) compartidos con IsAcademy |
 | `avatar.js`, `assistant.js`, `assistant.css` | Alan, el asistente local compartido (cada web le da su propio contenido) |
 | `fonts/` | Space Grotesk y Allura, servidas desde el propio dominio |
 

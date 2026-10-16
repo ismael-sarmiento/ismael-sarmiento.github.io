@@ -37,16 +37,18 @@ TEXT = {
     'theme': ('Cambiar modo claro / oscuro', 'Toggle light / dark mode'),
     'homeHref': ('/', '/?lang=en'),
     'eyebrow': ('Head of Data Management en Savana', 'Head of Data Management at Savana'),
-    'lead': ('Construyo productos y plataformas de datos gobernados, interoperables y confiables que ayudan a tomar decisiones con impacto real.',
-             'I build governed, interoperable and reliable data products and platforms that drive decisions with real impact.'),
-    'founder': ('Fundador de IsAcademy', 'Founder of IsAcademy'),
-    'slogan': ('La Inteligencia Artificial (IA) te da respuestas. <b>Aquí te enseñamos a pensar.</b>',
-               'Artificial Intelligence (AI) gives you answers. <b>Here we teach you how to think.</b>'),
-    'chipsLabel': ('Especialización', 'Specialisation'),
-    'chip.0': ('Gobierno del dato', 'Data governance'),
-    'chip.1': ('Interoperabilidad clínica', 'Clinical interoperability'),
-    'chip.2': ('Calidad del dato', 'Data quality'),
-    'chip.3': ('Certificación CDMP · DAMA', 'CDMP certified · DAMA'),
+    'lead': ('Diseño y construyo plataformas de datos e IA gobernadas y confiables que ayudan a las organizaciones a decidir mejor y a crecer con impacto real.',
+             'I design and build governed, reliable data and AI platforms that help organisations make better decisions and grow with real impact.'),
+    'about.title': ('Sobre mí', 'About me'),
+    'about.0': ('Llevo casi una década construyendo plataformas de datos: primero en banca (BBVA Next Technologies, Santander Global Tech), después en StratioBD y hoy en Savana, donde lidero Data Management en salud digital.',
+                'For almost a decade I have been building data platforms: first in banking (BBVA Next Technologies, Santander Global Tech), then at StratioBD and today at Savana, where I lead Data Management in digital health.'),
+    'about.1': ('Me obsesiona que el dato sea algo en lo que se pueda confiar: gobernado, interoperable (HL7 FHIR, OMOP CDM) y con una calidad que se mide (UNE 0081). Tengo la certificación CDMP de DAMA International.',
+                'I am obsessed with data people can trust: governed, interoperable (HL7 FHIR, OMOP CDM) and with measurable quality (UNE 0081). I hold the CDMP certification from DAMA International.'),
+    'about.2': ('Y como aprender sigue siendo algo humano, fundé <a href="/isacademy/">IsAcademy</a> para enseñar a pensar con datos e IA.',
+                'And because learning is still human, I founded <a href="/isacademy/?lang=en">IsAcademy</a> to teach people to think with data and AI.'),
+    'intro.title': ('Ismael Sarmiento · Inicio', 'Ismael Sarmiento · Home'),
+    'intro.skip': ('Saltar intro', 'Skip intro'),
+    'intro.enter': ('Conocerme', 'Get to know me'),
     'projects': ('Proyectos', 'Projects'),
     'door.0.text': ('Mi trayectoria en Savana, StratioBD, Santander Global Tech y BBVA Next Technologies: gobierno, interoperabilidad y calidad del dato.',
                     'My career at Savana, StratioBD, Santander Global Tech and BBVA Next Technologies: data governance, interoperability and quality.'),
@@ -65,8 +67,8 @@ ES = {k: v[0] for k, v in TEXT.items()}
 EN = {k: v[1] for k, v in TEXT.items()}
 DOORS = [('CV Online', 'door.0.href', None), ('IsAcademy', 'door.1.href', None), ('Kimera Tools', None, 'https://github.com/kimera-tools')]
 
-BOOT = "try{var t=localStorage.getItem('isa-theme');if(t==='light'||t==='dark')document.documentElement.dataset.theme=t}catch(e){}"
-MODULES = ['/assets/ds/ds.js', '/assets/ds/i18n.js', '/assets/ds/signature.js', '/assets/hub.js']
+BOOT = "document.documentElement.classList.add('js');try{var t=localStorage.getItem('isa-theme');if(t==='light'||t==='dark')document.documentElement.dataset.theme=t}catch(e){}"
+MODULES = ['/assets/ds/ds.js', '/assets/ds/i18n.js', '/assets/ds/signature.js', '/assets/ds/fx.js', '/assets/ds/intro.js', '/assets/hub.js']
 IMPORT_MAP = json.dumps({'imports': {m: f'{m}?v={VERSION}' for m in MODULES}}, separators=(',', ':'))
 sha = lambda s: base64.b64encode(hashlib.sha256(s.encode()).digest()).decode()
 CSP = ("default-src 'self'; script-src 'self' https://static.cloudflareinsights.com "
@@ -132,20 +134,42 @@ def head(title, description, extra=''):
   <link rel="preload" href="/assets/ds/fonts/space-grotesk-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="/assets/ds/tokens.css?v={VERSION}">
   <link rel="stylesheet" href="/assets/ds/base.css?v={VERSION}">
+  <link rel="stylesheet" href="/assets/ds/intro.css?v={VERSION}">
   <link rel="stylesheet" href="/assets/hub.css?v={VERSION}">
   <script type="importmap">{IMPORT_MAP}</script>
   <script type="module" src="/assets/hub.js?v={VERSION}"></script>
 </head>'''
 
 
+def toggles():
+    return (f'<button class="btn btn-icon lang-btn" type="button" data-action="lang" {A("aria-label", "langLabel")}>{T("langShort")}</button>'
+            f'<button class="btn btn-icon theme-btn" type="button" data-action="theme" {A("aria-label", "theme")}>{MOON}{SUN}</button>')
+
+
+def intro():
+    """The intro shared with CV Online (/assets/ds/intro.js): the signature, the role, the slogan and two ways in."""
+    return f'''<div id="intro" class="intro" role="dialog" aria-modal="true" aria-labelledby="intro-title">
+    <div class="intro-top">{toggles()}<button class="btn" type="button" data-action="skip">{T('intro.skip')}</button></div>
+    <div class="intro-stage">
+      {T('intro.title', 'p', 'sr-only', ' id="intro-title"')}
+      <div class="intro-sig">{SIG}</div>
+      <div class="intro-after">
+        <p class="pill intro-tag">Head of Data Management</p>
+        {T('lead', 'p', 'intro-hook')}
+      </div>
+      <div class="intro-actions">
+        <button class="btn btn-primary btn-lg btn-arrow" type="button" data-action="enter">{T('intro.enter')}</button>
+        <a class="btn btn-lg" {A('href', 'door.0.href')}>{T('door.0.cta')}</a>
+      </div>
+    </div>
+  </div>'''
+
+
 def topbar():
     return f'''<header class="topbar">
     <div class="container topbar-row">
       <a class="brand" href="/" {A('href', 'homeHref').replace('href="/" ', '')} aria-label="Ismael Sarmiento"><span class="brand-is" aria-hidden="true">Is</span><span class="brand-name" aria-hidden="true">mael Sarmiento</span></a>
-      <div class="tools">
-        <button class="btn btn-icon lang-btn" type="button" data-action="lang" {A('aria-label', 'langLabel')}>{T('langShort')}</button>
-        <button class="btn btn-icon theme-btn" type="button" data-action="theme" {A('aria-label', 'theme')}>{MOON}{SUN}</button>
-      </div>
+      <div class="tools">{toggles()}</div>
     </div>
   </header>'''
 
@@ -195,12 +219,12 @@ def home():
             {T(f'door.{i}.text', 'p')}
             {T(f'door.{i}.cta', 'span', 'btn-link btn-arrow')}
           </a>'''
-    chips = ''.join(T(f'chip.{i}', 'li') for i in range(4))
     return f'''<!doctype html>
 <html lang="es">
 {head(ES['meta.title'], ES['meta.description'], extra)}
 <body>
   <a class="skip-link" href="#main">{T('skip')}</a>
+  {intro()}
   {topbar()}
 
   <main id="main">
@@ -214,11 +238,11 @@ def home():
       <div class="container hero-inner stagger">
         <div class="hero-text stagger">
           {T('eyebrow', 'p', 'eyebrow reveal')}
-          <h1 class="hero-name"><span class="sr-only">Ismael Sarmiento</span>
-        {SIG}</h1>
-          {T('lead', 'p', 'lead hero-lead reveal')}
-          <p class="hero-founder reveal"><a href="/isacademy/" data-i18n-href="door.1.href">{T('founder')}</a>{T('slogan', 'span', 'hero-slogan', rich=True)}</p>
-          <ul class="chips hero-chips reveal" {A('aria-label', 'chipsLabel')}>{chips}</ul>
+          <h1 class="hero-title reveal"><span class="sr-only">Ismael Sarmiento · </span>{T('lead')}</h1>
+          {T('about.title', 'h2', 'about-title reveal')}
+          {T('about.0', 'p', 'about reveal')}
+          {T('about.1', 'p', 'about reveal')}
+          {T('about.2', 'p', 'about reveal', rich=True)}
         </div>
         <img class="hero-photo reveal" src="/assets/brand/ismael.jpg" width="264" height="264" alt="Ismael Sarmiento" fetchpriority="high">
       </div>

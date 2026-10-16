@@ -70,19 +70,22 @@ export async function playSignature(svg) {
   // same rhythm as IsAcademy: 1) the outline of "Is" is sketched, 2) ink fills it from left to right
   await animate(svg, 1500, p => { stroke.style.strokeDashoffset = String(DASH * (1 - easeInOut(p))); });
   await animate(svg, 700, p => { ink.setAttribute('x', String(fill.x - 20)); ink.setAttribute('width', String((fill.width + 60) * easeInOut(p))); });
+  if (svg.dataset.skipped) return;   // skipped while drawing: skipSignature already left the final state
   // 3) the rest of the name is decoded letter by letter behind a blinking cursor
   const cursor = svg.querySelector('.cursor');
   cursor.setAttribute('opacity', '1');
+  // the decoding lasts the same (~0.75 s) whatever the word, as "Academy" in IsAcademy
+  const pause = Math.max(14, Math.round(760 / (target.length * 3)));
   for (let i = 0; i <= target.length && !svg.dataset.skipped; i++) {
     for (let k = 0; k < 3 && !svg.dataset.skipped; k++) {
       const noise = Array.from({ length: Math.min(2, target.length - i) }, () => GLYPHS[Math.floor(Math.random() * GLYPHS.length)]).join('');
       word.textContent = target.slice(0, i) + noise;
       cursorAfter(svg);
-      await sleep(32);
+      await sleep(pause);
     }
   }
   word.textContent = target;
   cursorAfter(svg);
-  await sleep(500);
+  if (!svg.dataset.skipped) await sleep(500);
   cursor.setAttribute('opacity', '0');
 }

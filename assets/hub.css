@@ -2,16 +2,16 @@
 
 /* hero: name, role and a portrait framed in the brand gold, over the IsAcademy circuit lines */
 .hero { position: relative; overflow: hidden; padding: 88px 0 56px; }
-.hero-inner { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 48px; position: relative; z-index: 1; }
-.hero-name { margin: 0 0 18px -1.2%; width: min(640px, 100%); }
-.hero-lead { max-width: 56ch; margin-bottom: 14px; }
-/* founder of IsAcademy + its slogan, in the academy's own voice */
-.hero-founder { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; max-width: 60ch; margin: 0 0 22px; padding-left: 14px;
-  border-left: 2px solid var(--gold); }
-.hero-founder a { color: var(--gold-text); font-weight: 600; text-decoration: none; }
-.hero-founder a:hover { text-decoration: underline; text-underline-offset: 4px; }
-.hero-slogan { color: var(--text-2); }
-.hero-slogan b { color: var(--text); font-weight: 600; }
+.hero-inner { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: start; gap: 48px; position: relative; z-index: 1; }
+/* the slogan is the title (the name lives in the seal of the bar and in the intro); then a short «Sobre mí» */
+.hero-title { font-size: clamp(28px, 3.3vw, 42px); line-height: 1.18; max-width: 24ch; margin: 0 0 30px; }
+.about-title { display: flex; align-items: center; gap: 12px; font-family: var(--font-mono); font-size: 13px; font-weight: 500;
+  letter-spacing: .12em; text-transform: uppercase; color: var(--gold-text); margin: 0 0 12px; }
+.about-title::after { content: ""; width: 48px; height: 1px; background: var(--gold); }
+.about { max-width: 62ch; color: var(--text-2); margin: 0 0 12px; }
+.about a { color: var(--gold-text); font-weight: 600; text-decoration: underline; text-decoration-color: rgba(200, 149, 63, .5);
+  text-underline-offset: 4px; transition: text-decoration-color .25s ease; }
+.about a:hover { text-decoration-color: currentColor; }
 .hero-photo { width: 208px; height: 208px; border-radius: 50%; object-fit: cover; border: 3px solid var(--gold); padding: 6px;
   background: var(--surface); box-shadow: var(--shadow); }
 .circuit { position: absolute; right: 0; top: 0; height: 100%; width: auto; opacity: .45; pointer-events: none; }
@@ -23,13 +23,21 @@
 /* the three doors: CV Online, IsAcademy, Kimera Tools */
 .doors { padding: 8px 0 96px; }
 .door-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; }
-.door { display: flex; flex-direction: column; gap: 10px; text-decoration: none; color: var(--text); min-height: 260px; }
+.door { display: flex; flex-direction: column; gap: 10px; text-decoration: none; color: var(--text); min-height: 260px; overflow: hidden; }
 .door h3 { font-size: 24px; }
 .door p { color: var(--text-2); margin: 0; flex: 1; }
 .door-num { font-family: var(--font-mono); font-size: 13px; letter-spacing: .12em; color: var(--gold-text); }
 .btn-link { color: var(--gold-text); font-weight: 600; font-size: 15px; display: inline-flex; gap: 8px; }
-.door:hover .btn-arrow::after { transform: translateX(4px); }
-
+/* hover: the card lifts a little more, a gold line draws along its top, the light follows the pointer (ds.js) and the
+   arrow moves forward; keyboard focus gets the same treatment */
+.door::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 2px; z-index: 1;
+  background: linear-gradient(90deg, var(--gold), var(--gold-2)); transform: scaleX(0); transform-origin: left; transition: transform .5s var(--ease-out); }
+.door:hover::before, .door:focus-visible::before { transform: scaleX(1); }
+.door:focus-visible { border-color: rgba(200, 149, 63, .45); }
+.door:focus-visible .btn-arrow::after, .door:hover .btn-arrow::after { transform: translateX(6px); }
+@media (hover: hover) and (pointer: fine) {
+  .door.card:hover { transform: translateY(-4px); }
+}
 
 @media (max-width: 900px) {
   .door-grid { grid-template-columns: 1fr; }
