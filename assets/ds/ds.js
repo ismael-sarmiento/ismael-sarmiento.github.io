@@ -1,5 +1,6 @@
 // Ismael Sarmiento design system — behaviour shared by the portada and CV Online (same as IsAcademy).
-// Theme, reveal on scroll, top bar shadow + reading progress and the card spotlight. ES module, no dependencies.
+// Theme (and the tab icon that follows it), reveal on scroll, top bar shadow + reading progress and the card spotlight.
+import { syncFavicon } from './favicon.js';
 
 // The theme choice is shared by every site on this origin, IsAcademy included ('isa-theme' is its historical key).
 const THEME_KEY = 'isa-theme';
@@ -15,11 +16,12 @@ export function isDark() {
   return forced ? forced === 'dark' : media.matches;
 }
 export function onThemeChange(fn) { themeListeners.push(fn); }
-const notify = () => themeListeners.forEach(fn => fn(isDark()));
+const notify = () => { syncFavicon(); themeListeners.forEach(fn => fn(isDark())); };
 
 export function initTheme() {
   const s = stored();
   if (s === 'light' || s === 'dark') document.documentElement.dataset.theme = s;
+  syncFavicon();
   media.addEventListener('change', notify);
   document.addEventListener('click', e => {
     if (!e.target.closest('[data-action="theme"]')) return;

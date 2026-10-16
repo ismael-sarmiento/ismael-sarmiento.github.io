@@ -29,6 +29,7 @@ por todas sus webs.
 | `signature.js` | La firma: «Is» manuscrita esbozada y el resto del nombre decodificado al estilo IA |
 | `intro.js`, `intro.css` | La intro común (Inicio y CV Online): firma, papel, eslogan y botones; al entrar, la «Is» vuela al sello dejando tinta dorada y el nombre se deshace en píxeles. La misma escala que el logo de IsAcademy |
 | `fx.js` | Efectos de partículas (tinta, píxeles, destellos) compartidos con IsAcademy |
+| `favicon.js` | El icono de la pestaña sigue el tema de la página en las tres webs (iconos en `assets/brand/favicon-{light,dark}`, generados con `tools/icons.py`) |
 | `avatar.js`, `assistant.js`, `assistant.css` | Alan, el asistente local compartido (cada web le da su propio contenido) |
 | `fonts/` | Space Grotesk y Allura, servidas desde el propio dominio |
 

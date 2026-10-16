@@ -160,7 +160,7 @@ ALAN = {
 }
 
 BOOT = "document.documentElement.classList.add('js');try{var t=localStorage.getItem('isa-theme');if(t==='light'||t==='dark')document.documentElement.dataset.theme=t}catch(e){}"
-MODULES = ['/assets/ds/ds.js', '/assets/ds/i18n.js', '/assets/ds/signature.js', '/assets/ds/fx.js', '/assets/ds/intro.js',
+MODULES = ['/assets/ds/ds.js', '/assets/ds/favicon.js', '/assets/ds/i18n.js', '/assets/ds/signature.js', '/assets/ds/fx.js', '/assets/ds/intro.js',
            '/assets/ds/avatar.js', '/assets/ds/assistant.js', '/assets/hub.js']
 IMPORT_MAP = json.dumps({'imports': {m: f'{m}?v={VERSION}' for m in MODULES}}, separators=(',', ':'))
 sha = lambda s: base64.b64encode(hashlib.sha256(s.encode()).digest()).decode()
@@ -221,7 +221,10 @@ def head(title, description, extra=''):
   <meta name="author" content="Ismael Sarmiento">
   <meta name="theme-color" content="#0b1026">
   {extra}
-  <link rel="icon" href="/assets/brand/favicon-32.png" sizes="32x32" type="image/png">
+  <link rel="icon" href="/assets/brand/favicon-light.svg" type="image/svg+xml" media="(prefers-color-scheme: light)" data-theme-icon="light">
+  <link rel="icon" href="/assets/brand/favicon-dark.svg" type="image/svg+xml" media="(prefers-color-scheme: dark)" data-theme-icon="dark">
+  <link rel="icon" href="/assets/brand/favicon-light-32.png" sizes="32x32" type="image/png" media="(prefers-color-scheme: light)" data-theme-icon="light">
+  <link rel="icon" href="/assets/brand/favicon-dark-32.png" sizes="32x32" type="image/png" media="(prefers-color-scheme: dark)" data-theme-icon="dark">
   <link rel="apple-touch-icon" href="/assets/brand/apple-touch-icon.png">
   <script>{BOOT}</script>
   <link rel="preload" href="/assets/ds/fonts/space-grotesk-latin.woff2" as="font" type="font/woff2" crossorigin>
