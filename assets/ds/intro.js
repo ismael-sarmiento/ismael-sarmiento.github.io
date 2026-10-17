@@ -18,8 +18,21 @@ const settled = anim => anim.finished.catch(() => {});
 // the box of a piece of text as the browser lays it out (same metrics for the svg glyph and the seal in the bar)
 const textBox = el => { const r = document.createRange(); r.selectNodeContents(el); return r.getBoundingClientRect(); };
 
+// hand-off between intros (Inicio → CV Online): leaving through a link of the intro once the signature is written
+// leaves a mark for 4 s; the next intro shows the signature complete (the boot script adds .sig-handoff before the
+// first paint) and the page transition keeps it in place instead of drawing it again
+const HANDOFF = 'sig-handoff';
+const takeHandoff = () => {
+  let at = 0;
+  try { at = Number(sessionStorage.getItem(HANDOFF)); sessionStorage.removeItem(HANDOFF); } catch { /* storage unavailable */ }
+  return at > 0 && Date.now() - at < 4000;
+};
+const leaveHandoff = () => { try { sessionStorage.setItem(HANDOFF, String(Date.now())); } catch { /* storage unavailable */ } };
+
 export function initIntro({ i18n, steps = null, stepMs = 1600 } = {}) {
   const intro = document.getElementById('intro');
+  const handoff = takeHandoff();
+  document.documentElement.classList.remove('sig-handoff');
   if (!intro) return null;
   // #top is the start of the page, not a deep link: a refresh there plays the intro again (as #hero in IsAcademy)
   if (location.hash === '#top') history.replaceState(history.state, '', location.pathname + location.search);
@@ -151,6 +164,10 @@ export function initIntro({ i18n, steps = null, stepMs = 1600 } = {}) {
   const rest = () => intro.focus({ preventScroll: true });
   rest();   // from the first frame: Escape jumps to the end, Tab reaches «Saltar intro»
   enter?.addEventListener('click', close);
+  intro.addEventListener('click', e => {
+    const a = e.target.closest('a[href]');
+    if (a && a.origin === location.origin && !a.hasAttribute('download') && intro.classList.contains('after')) leaveHandoff();
+  });
   skip?.addEventListener('click', () => { finish(); enter?.focus(); });
   intro.addEventListener('keydown', e => {
     if (e.key === 'Escape') { if (done) close(); else { finish(); enter?.focus(); } }
@@ -159,9 +176,10 @@ export function initIntro({ i18n, steps = null, stepMs = 1600 } = {}) {
 
   if (reducedMotion()) { finish(); rest(); return { close }; }
   (async () => {
-    await sleep(200);
-    // always drawn, as IsAcademy's logo, also when the visitor comes from another site of the universe
-    await playSignature(svg);
+    // drawn on every visit, as IsAcademy's logo; only a visitor who has just seen it written in the intro of another
+    // site (Inicio → CV Online) finds it complete, carried over by the page transition
+    if (handoff) skipSignature(svg);
+    else { await sleep(200); await playSignature(svg); }
     if (done) return;
     intro.classList.add('after');
     await sleep(600);

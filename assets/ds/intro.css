@@ -19,6 +19,11 @@ body.intro-open { overflow: hidden; }
 /* the signature starts empty, as IsAcademy's logo: nothing flashes before it is drawn (signature.js adds .is-live) */
 .js .intro .sig:not(.is-live) .is-stroke { stroke-dasharray: 3000; stroke-dashoffset: 3000; }
 .js .intro .sig:not(.is-live) :is(.is-fill, .word, .cursor) { visibility: hidden; }
+/* coming from the intro of another site with the signature already written (intro.js, boot script): it is shown
+   complete from the first frame and the page transition keeps it in place (view-transition-name) */
+.js.sig-handoff .intro .sig .is-stroke { stroke-dashoffset: 0; }
+.js.sig-handoff .intro .sig :is(.is-fill, .word) { visibility: visible; }
+.js .intro:not([hidden]) .sig { view-transition-name: signature; }
 /* while a stored English choice is being applied the intro texts wait, so they never flash in Spanish (i18n.js) */
 .i18n-wait .intro :is(.intro-top, .intro-after, .intro-actions) { visibility: hidden; }
 

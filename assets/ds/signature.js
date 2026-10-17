@@ -76,16 +76,14 @@ export async function playSignature(svg) {
   // 3) the rest of the name is decoded letter by letter behind a blinking cursor
   const cursor = svg.querySelector('.cursor');
   cursor.setAttribute('opacity', '1');
-  // the decoding lasts the same (~0.75 s) whatever the word, as "Academy" in IsAcademy
-  const pause = Math.max(14, Math.round(760 / (target.length * 3)));
-  for (let i = 0; i <= target.length && !svg.dataset.skipped; i++) {
-    for (let k = 0; k < 3 && !svg.dataset.skipped; k++) {
-      const noise = Array.from({ length: Math.min(2, target.length - i) }, () => GLYPHS[Math.floor(Math.random() * GLYPHS.length)]).join('');
-      word.textContent = target.slice(0, i) + noise;
-      cursorAfter(svg);
-      await sleep(pause);
-    }
-  }
+  // the decoding lasts the same (~0.76 s) whatever the word, as "Academy" in IsAcademy; it follows the screen's own
+  // frames (one change per frame at most), so the letters advance evenly instead of jumping with timer jitter
+  await animate(svg, 760, p => {
+    const i = Math.min(target.length, Math.floor(p * (target.length + 1)));
+    const noise = Array.from({ length: Math.min(2, target.length - i) }, () => GLYPHS[Math.floor(Math.random() * GLYPHS.length)]).join('');
+    word.textContent = target.slice(0, i) + noise;
+    cursorAfter(svg);
+  });
   word.textContent = target;
   cursorAfter(svg);
   if (!svg.dataset.skipped) await sleep(500);

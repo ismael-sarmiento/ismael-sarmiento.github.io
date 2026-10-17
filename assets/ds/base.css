@@ -5,7 +5,9 @@
 /* ===================== 1. Base ===================== */
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
-html { scroll-behavior: smooth; scroll-padding-top: 84px; interpolate-size: allow-keywords; }
+/* the scrollbar space is always kept (also while an intro holds the page): every page has the same width, so the
+   cross-fade between sites is never aborted by a viewport that changes size */
+html { scroll-behavior: smooth; scroll-padding-top: 84px; interpolate-size: allow-keywords; scrollbar-gutter: stable; }
 body { margin: 0; background: var(--bg); color: var(--text); font-family: var(--font-sans); line-height: 1.6; -webkit-font-smoothing: antialiased; }
 h1, h2, h3 { line-height: 1.15; margin: 0; font-weight: 600; letter-spacing: -.01em; text-wrap: balance; }
 p { margin: 0 0 14px; }
