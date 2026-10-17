@@ -27,16 +27,15 @@ e = lambda s: html.escape(str(s), quote=True)
 
 # every text of the portada; the keys are the data-i18n keys of the page
 TEXT = {
-    'meta.title': ('Ismael Sarmiento · Head of Data Management y fundador de IsAcademy',
-                   'Ismael Sarmiento · Head of Data Management and founder of IsAcademy'),
-    'meta.description': ('Ismael Sarmiento, Head of Data Management en Savana y fundador de IsAcademy. Gobierno del dato, interoperabilidad clínica y calidad del dato. CV Online, academia y código abierto.',
-                         'Ismael Sarmiento, Head of Data Management at Savana and founder of IsAcademy. Data governance, clinical interoperability and data quality. CV Online, academy and open source.'),
+    'meta.title': ('Ismael Sarmiento · Datos, IA y educación', 'Ismael Sarmiento · Data, AI and education'),
+    'meta.description': ('Ismael Sarmiento diseña y construye plataformas de datos e IA gobernadas y confiables, y fundó IsAcademy para enseñar a pensar con datos e IA. CV Online, academia y código abierto.',
+                         'Ismael Sarmiento designs and builds governed, reliable data and AI platforms, and founded IsAcademy to teach people to think with data and AI. CV Online, academy and open source.'),
     'skip': ('Ir al contenido', 'Skip to content'),
     'langLabel': ('Cambiar a inglés', 'Switch to Spanish'),
     'langShort': ('EN', 'ES'),
     'theme': ('Cambiar modo claro / oscuro', 'Toggle light / dark mode'),
     'homeHref': ('/', '/?lang=en'),
-    'eyebrow': ('Head of Data Management en Savana', 'Head of Data Management at Savana'),
+    'eyebrow': ('Datos · IA · Educación', 'Data · AI · Education'),
     'lead': ('Diseño y construyo plataformas de datos e IA gobernadas y confiables que ayudan a las organizaciones a decidir mejor y a crecer con impacto real.',
              'I design and build governed, reliable data and AI platforms that help organisations make better decisions and grow with real impact.'),
     'about.title': ('Sobre mí', 'About me'),
@@ -78,13 +77,13 @@ ALAN = {
             'open': '¿Te ayudo?', 'openLabel': 'Abrir el asistente', 'close': 'Cerrar el asistente', 'typing': 'Alan está escribiendo…',
             'placeholder': 'Escribe tu pregunta…', 'send': 'Enviar',
             'greeting': '¡Hola! Soy Alan, el asistente local de la web de Ismael (versión beta). Respondo solo con el contenido público de esta web: no uso datos privados ni modelos externos.',
-            'suggestions': ['¿Quién es Ismael?', '¿Qué hace en Savana?', '¿Qué es IsAcademy?', '¿Cómo contacto con él?'],
+            'suggestions': ['¿Quién es Ismael?', '¿Qué es IsAcademy?', '¿Qué es Kimera Tools?', '¿Cómo contacto con él?'],
             'fallback': {'answer': 'No tengo una respuesta exacta para eso en esta versión beta. Puedo contarte quién es Ismael, su trayectoria, IsAcademy, Kimera Tools, su CV o cómo contactar con él.',
                          'actions': [{'label': 'Ver CV Online', 'href': '/cv/'}]},
         },
         'faq': [
             {'q': '¿Quién es Ismael?', 'keywords': ['quien', 'ismael', 'sarmiento', 'presentacion', 'sobre'],
-             'a': 'Ismael Sarmiento es Head of Data Management en Savana y fundador de IsAcademy. Lleva casi una década construyendo plataformas de datos: primero en banca (BBVA Next Technologies, Santander Global Tech), después en StratioBD y hoy en Savana, donde lidera Data Management en salud digital. Tiene la certificación CDMP de DAMA International.',
+             'a': 'Ismael Sarmiento diseña y construye plataformas de datos e IA, y es el fundador de IsAcademy. Lleva casi una década construyendo plataformas de datos: primero en banca (BBVA Next Technologies, Santander Global Tech), después en StratioBD y hoy en Savana, donde lidera Data Management en salud digital. Tiene la certificación CDMP de DAMA International.',
              'actions': [{'label': 'Ver CV Online', 'href': '/cv/'}]},
             {'q': '¿Cuál es su foco principal?', 'keywords': ['foco', 'principal', 'perfil', 'especializacion'],
              'a': 'Su foco es diseñar y construir plataformas de datos e IA gobernadas y confiables que ayudan a las organizaciones a decidir mejor y a crecer con impacto real, combinando ejecución técnica, criterio arquitectónico y liderazgo de equipos.'},
@@ -121,13 +120,13 @@ ALAN = {
             'open': 'Can I help?', 'openLabel': 'Open the assistant', 'close': 'Close the assistant', 'typing': 'Alan is typing…',
             'placeholder': 'Type your question…', 'send': 'Send',
             'greeting': "Hi! I'm Alan, the local assistant of Ismael's site (beta). I only answer from the public content of this site: no private data and no external models.",
-            'suggestions': ['Who is Ismael?', 'What does he do at Savana?', 'What is IsAcademy?', 'How can I contact him?'],
+            'suggestions': ['Who is Ismael?', 'What is IsAcademy?', 'What is Kimera Tools?', 'How can I contact him?'],
             'fallback': {'answer': 'I do not have an exact answer for that in this beta version. I can tell you who Ismael is, his career, IsAcademy, Kimera Tools, his CV or how to contact him.',
                          'actions': [{'label': 'View CV Online', 'href': '/cv/?lang=en'}]},
         },
         'faq': [
             {'q': 'Who is Ismael?', 'keywords': ['who', 'ismael', 'sarmiento', 'introduction', 'about'],
-             'a': 'Ismael Sarmiento is Head of Data Management at Savana and founder of IsAcademy. For almost a decade he has been building data platforms: first in banking (BBVA Next Technologies, Santander Global Tech), then at StratioBD and today at Savana, where he leads Data Management in digital health. He holds the CDMP certification from DAMA International.',
+             'a': 'Ismael Sarmiento designs and builds data and AI platforms, and is the founder of IsAcademy. For almost a decade he has been building data platforms: first in banking (BBVA Next Technologies, Santander Global Tech), then at StratioBD and today at Savana, where he leads Data Management in digital health. He holds the CDMP certification from DAMA International.',
              'actions': [{'label': 'View CV Online', 'href': '/cv/?lang=en'}]},
             {'q': 'What is his main focus?', 'keywords': ['focus', 'main', 'specialization', 'profile'],
              'a': 'His focus is designing and building governed, reliable data and AI platforms that help organisations make better decisions and grow with real impact, combining technical execution, architectural judgment and team leadership.'},
@@ -229,6 +228,7 @@ def head(title, description, extra=''):
   <link rel="icon" href="/assets/brand/favicon-dark-32.png" sizes="32x32" type="image/png" media="(prefers-color-scheme: dark)" data-theme-icon="dark">
   <link rel="apple-touch-icon" href="/assets/brand/apple-touch-icon.png">
   <script>{BOOT}</script>
+  <link rel="preload" href="/assets/ds/fonts/allura-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="/assets/ds/fonts/space-grotesk-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="/assets/ds/tokens.css?v={VERSION}">
   <link rel="stylesheet" href="/assets/ds/base.css?v={VERSION}">
@@ -253,7 +253,7 @@ def intro():
       {T('intro.title', 'p', 'sr-only', ' id="intro-title"')}
       <div class="intro-sig">{SIG}</div>
       <div class="intro-after">
-        <p class="pill intro-tag">Head of Data Management</p>
+        {T('eyebrow', 'p', 'pill intro-tag')}
         {T('lead', 'p', 'intro-hook')}
       </div>
       <div class="intro-actions">
@@ -306,7 +306,7 @@ def home():
   <meta property="og:image" content="{SITE}/assets/brand/og.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
-  <meta property="og:image:alt" content="Ismael Sarmiento · Head of Data Management · Fundador de IsAcademy">
+  <meta property="og:image:alt" content="Ismael Sarmiento · Datos · IA · Educación · Fundador de IsAcademy">
   <meta name="twitter:card" content="summary_large_image">
   <script type="application/ld+json">{json.dumps(PERSON, ensure_ascii=False)}</script>'''
     doors = ''
