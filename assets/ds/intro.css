@@ -16,9 +16,9 @@ body.intro-open { overflow: hidden; }
 .intro-top { position: absolute; top: 16px; right: 16px; display: flex; gap: 8px; align-items: center; z-index: 2; }
 .intro-stage { width: min(92vw, 1160px); text-align: center; position: relative; z-index: 1; }
 .intro-sig .sig { width: min(1160px, 92vw); margin: 0 auto; }
-/* coming from another site of the universe the signature is already known: it fades in drawn */
-.intro-sig.drawn .sig { animation: sig-in .7s var(--ease-out) both; }
-@keyframes sig-in { from { opacity: 0; transform: translateY(6px); } }
+/* the signature starts empty, as IsAcademy's logo: nothing flashes before it is drawn (signature.js adds .is-live) */
+.js .intro .sig:not(.is-live) .is-stroke { stroke-dasharray: 3000; stroke-dashoffset: 3000; }
+.js .intro .sig:not(.is-live) :is(.is-fill, .word, .cursor) { visibility: hidden; }
 
 .intro-after, .intro-actions { opacity: 0; transform: translateY(8px); transition: opacity .8s ease, transform .8s var(--ease-out); }
 .intro.after .intro-after, .intro.ready .intro-actions { opacity: 1; transform: none; }

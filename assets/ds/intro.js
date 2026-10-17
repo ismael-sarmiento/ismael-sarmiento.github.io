@@ -7,21 +7,13 @@
 //
 //   initIntro({ i18n, steps: () => ['…', '…'], stepMs: 1600 })   // steps are optional (the CV milestones)
 import { reducedMotion } from './ds.js';
-import { playSignature, skipSignature, fitSignature } from './signature.js';
+import { playSignature, skipSignature } from './signature.js';
 import { ink, pixels } from './fx.js';
 
 const EASE_OUT = 'cubic-bezier(.2, .8, .2, 1)';
 const EASE_IN_OUT = 'cubic-bezier(.65, 0, .35, 1)';
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const settled = anim => anim.finished.catch(() => {});
-
-// a visitor coming from another site of the universe has just watched the signature (or IsAcademy's logo) being drawn
-function fromSibling() {
-  try {
-    const r = new URL(document.referrer);
-    return r.origin === location.origin && r.pathname !== location.pathname;
-  } catch { return false; }
-}
 
 // the box of a piece of text as the browser lays it out (same metrics for the svg glyph and the seal in the bar)
 const textBox = el => { const r = document.createRange(); r.selectNodeContents(el); return r.getBoundingClientRect(); };
@@ -146,11 +138,11 @@ export function initIntro({ i18n, steps = null, stepMs = 1600 } = {}) {
 
     // 5) the "Is" lands: the real seal takes over
     await flight;
-    brand?.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 260, fill: 'forwards' }).finished
-      .then(() => brand.getAnimations().forEach(a => a.cancel())).catch(() => {});
+    const brandIn = brand?.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 260, fill: 'forwards' });
     await settled(flyer.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 260, fill: 'forwards' }));
     clearTimeout(safety);
-    settle();
+    settle();            // first the page leaves the "entering" state (which hides the seal)…
+    brandIn?.cancel();   // …then the seal's own fade lets go: it never blinks off for a frame
   };
 
   document.body.classList.add('intro-open');
@@ -168,15 +160,8 @@ export function initIntro({ i18n, steps = null, stepMs = 1600 } = {}) {
   if (reducedMotion()) { finish(); rest(); return { close }; }
   (async () => {
     await sleep(200);
-    if (fromSibling()) {
-      await document.fonts.ready;
-      fitSignature(svg);
-      skipSignature(svg);
-      intro.querySelector('.intro-sig')?.classList.add('drawn');
-      await sleep(600);
-    } else {
-      await playSignature(svg);
-    }
+    // always drawn, as IsAcademy's logo, also when the visitor comes from another site of the universe
+    await playSignature(svg);
     if (done) return;
     intro.classList.add('after');
     await sleep(600);

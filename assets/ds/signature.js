@@ -54,6 +54,7 @@ export function skipSignature(svg) {
   svg.querySelector('.ink').setAttribute('width', '3000');
   svg.querySelector('.word').textContent = svg.dataset.word;
   svg.querySelector('.cursor').setAttribute('opacity', '0');
+  svg.classList.add('is-live');
 }
 
 export async function playSignature(svg) {
@@ -67,6 +68,7 @@ export async function playSignature(svg) {
   stroke.style.strokeDashoffset = String(DASH);
   ink.setAttribute('width', '0');
   word.textContent = '';
+  svg.classList.add('is-live');   // from here the drawing owns every piece (intro.css kept them hidden until now)
   // same rhythm as IsAcademy: 1) the outline of "Is" is sketched, 2) ink fills it from left to right
   await animate(svg, 1500, p => { stroke.style.strokeDashoffset = String(DASH * (1 - easeInOut(p))); });
   await animate(svg, 700, p => { ink.setAttribute('x', String(fill.x - 20)); ink.setAttribute('width', String((fill.width + 60) * easeInOut(p))); });
