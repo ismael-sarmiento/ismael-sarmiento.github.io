@@ -169,7 +169,7 @@ BOOT = ("var d=document.documentElement;d.classList.add('js');try{var t=localSto
         "if(t==='light'||t==='dark')d.dataset.theme=t;var q=new URLSearchParams(location.search).get('lang');"
         "if(q==='en'||(q!=='es'&&localStorage.getItem('isa-lang')==='en'))d.classList.add('i18n-wait');"
         "var h=+sessionStorage.getItem('sig-handoff');if(h&&Date.now()-h<4000)d.classList.add('sig-handoff')}catch(e){}")
-MODULES = ['/assets/ds/ds.js', '/assets/ds/favicon.js', '/assets/ds/i18n.js', '/assets/ds/signature.js', '/assets/ds/fx.js', '/assets/ds/intro.js',
+MODULES = ['/assets/ds/ds.js', '/assets/ds/frame-guard.js', '/assets/ds/favicon.js', '/assets/ds/i18n.js', '/assets/ds/signature.js', '/assets/ds/fx.js', '/assets/ds/intro.js',
            '/assets/ds/avatar.js', '/assets/ds/assistant.js', '/assets/hub.js']
 IMPORT_MAP = json.dumps({'imports': {m: f'{m}?v={VERSION}' for m in MODULES}}, separators=(',', ':'))
 sha = lambda s: base64.b64encode(hashlib.sha256(s.encode()).digest()).decode()

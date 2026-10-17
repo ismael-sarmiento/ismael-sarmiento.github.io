@@ -1,0 +1,8 @@
+# GitHub Pages serves only the site: the files for agents, the README and the build tools stay in the repository but
+# are not published. Every page is plain HTML (no front matter), so Jekyll copies it untouched.
+exclude:
+  - AGENTS.md
+  - README.md
+  - tools
+include:
+  - .well-known

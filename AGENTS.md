@@ -11,8 +11,8 @@ Sibling sites on the same origin: CV Online (`cv`, served at `/cv/`) and IsAcade
 ## Purpose
 
 Entry point for agents working on the portada (`https://ismael-sarmiento.github.io/`) and on the shared design system
-(`assets/ds/`) used by every site of Ismael Sarmiento. Personal project; DATM governance does not apply beyond the L0
-protocols (Plan al Milímetro before each task, close-out recap after).
+(`assets/ds/`) used by every site of Ismael Sarmiento. Personal project; only the global L0
+protocols apply (Plan al Milímetro before each task, close-out recap after).
 
 ## Rules
 

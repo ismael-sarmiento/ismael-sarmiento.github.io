@@ -1,0 +1,4 @@
+Contact: mailto:ismaelantonio.professional@gmail.com
+Expires: 2027-10-17T00:00:00.000Z
+Preferred-Languages: es, en
+Canonical: https://ismael-sarmiento.github.io/.well-known/security.txt
