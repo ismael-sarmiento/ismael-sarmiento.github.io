@@ -12,6 +12,10 @@
   --cream-50: #fbf7ef; --cream-100: #f4ecdd; --cream-200: #f6f1e7;
   --mist-100: #e7e9f5; --mist-200: #c9cde3; --mist-300: #b9bdd3; --mist-500: #8d94b8; --mist-600: #6d7499;
   --on-gold: #1c1407;
+  --mist-350: #b3b8d6;
+  /* states: messages of forms (success, error) */
+  --success: #9fe0b4; --success-strong: #5fbf7a;
+  --danger: #e06c5a; --danger-strong: #d4553f; --danger-soft: #ffb4a3; --danger-border: #ff8a73;
   /* shape, type and motion */
   --radius: 18px; --radius-sm: 12px; --radius-lg: 28px;
   --font-script: 'Allura', 'Snell Roundhand', cursive;
