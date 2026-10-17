@@ -56,7 +56,11 @@ export function createI18n({ base, dict: dictUrl }) {
       if (e.target.closest('[data-action="lang"]')) setLang(lang === 'es' ? 'en' : 'es', true);
     });
     const first = detectLang();
-    if (first !== 'es') await setLang(first); else { dict = await load('es'); listeners.forEach(fn => fn('es')); }
+    try {
+      if (first !== 'es') await setLang(first); else { dict = await load('es'); listeners.forEach(fn => fn('es')); }
+    } finally {
+      document.documentElement.classList.remove('i18n-wait');   // set by the boot script while English is on its way
+    }
   }
 
   return { start, setLang, t, lang: () => lang, onChange: fn => listeners.push(fn) };

@@ -34,8 +34,13 @@ export function faqMatcher(faq) {
   };
 }
 
+// a Spanish phone number never breaks across two lines (+34 613 371 874)
+const keepPhone = html => html.replace(/\+34 (\d{3}) (\d{3}) (\d{3})/g, '+34&nbsp;$1&nbsp;$2&nbsp;$3');
+// the focus only goes back to something the visitor can see (the button steps aside at the foot of the page)
+const visible = el => !!el?.isConnected && (el.checkVisibility?.({ visibilityProperty: true, opacityProperty: true }) ?? true);
+
 export function createAssistant(cfg) {
-  let started = false;
+  let started = false, opener = null;
   const fab = document.createElement('button');
   fab.type = 'button';
   fab.className = 'assistant-fab';
@@ -79,7 +84,7 @@ export function createAssistant(cfg) {
   function say(who, text, actions = []) {
     const item = document.createElement('div');
     item.className = `msg msg-${who}`;
-    item.innerHTML = `<p>${esc(text)}</p>` + (actions.length ? `<div class="msg-actions">${actions.map(a =>
+    item.innerHTML = `<p>${keepPhone(esc(text))}</p>` + (actions.length ? `<div class="msg-actions">${actions.map(a =>
       `<button type="button" class="btn btn-sm" data-as-href="${esc(a.href || '')}" data-as-action="${esc(a.action || '')}" data-as-arg="${esc(a.arg || '')}">${esc(a.label)}</button>`).join('')}</div>` : '');
     log.appendChild(item);
     log.scrollTop = log.scrollHeight;
@@ -107,6 +112,7 @@ export function createAssistant(cfg) {
   }
 
   function open() {
+    opener = document.activeElement;   // the button that opened Alan gets the focus back when he closes
     panel.hidden = false;
     fab.setAttribute('aria-expanded', 'true');
     requestAnimationFrame(() => panel.classList.add('open'));
@@ -123,7 +129,8 @@ export function createAssistant(cfg) {
     panel.classList.remove('open');
     fab.setAttribute('aria-expanded', 'false');
     setTimeout(() => { panel.hidden = true; }, 250);
-    fab.focus();
+    const back = [opener, fab].find(el => el !== document.body && visible(el));
+    back?.focus({ preventScroll: true });
   }
 
   function refresh(next = {}) {
