@@ -61,6 +61,10 @@ TEXT = {
                     'My open source: kimera-python, Python utilities for ETL, SQLAlchemy and AWS S3 (2020–2022).'),
     'door.2.cta': ('Ver en GitHub', 'View on GitHub'),
     'contact': ('Contacto', 'Contact'),
+    'mail': ('Correo', 'Email'),
+    'nf.title': ('Esta página no existe', 'This page does not exist'),
+    'nf.lead': ('Puede que el enlace esté mal escrito o que la página se haya movido.', 'The link may be mistyped or the page may have moved.'),
+    'nf.home': ('Ir al inicio', 'Go to home'),
     'waHref': ('https://wa.me/34613371874?text=Hola%20Ismael%2C%20he%20visto%20tu%20web%20y%20me%20gustar%C3%ADa%20hablar%20contigo.', 'https://wa.me/34613371874?text=Hi%20Ismael%2C%20I%20saw%20your%20website%20and%20would%20like%20to%20talk%20with%20you.'),
 }
 ES = {k: v[0] for k, v in TEXT.items()}
@@ -282,11 +286,14 @@ def footer():
     return f'''<footer class="footer">
     <div class="container footer-row">
       <span>© <span data-year>2026</span> Ismael Sarmiento</span>
+      <!-- the footer of every site of the universe: the other sites, then the ways to reach Ismael (CV, IsAcademy) -->
       <nav class="footer-links" {A('aria-label', 'contact')}>
+        <a {A('href', 'door.0.href')}>CV Online</a>
+        <a {A('href', 'door.1.href')}>IsAcademy</a>
         <a {A('href', 'waHref')} rel="noopener">WhatsApp</a>
+        <a href="mailto:{EMAIL}">{T('mail')}</a>
         <a href="{LINKEDIN}" rel="noopener me">LinkedIn</a>
         <a href="{GITHUB}" rel="noopener me">GitHub</a>
-        <a href="mailto:{EMAIL}">{EMAIL}</a>
       </nav>
     </div>
   </footer>
@@ -396,9 +403,9 @@ def not_found():
   {topbar()}
   <main id="main" class="container nf">
     <p class="eyebrow">404</p>
-    <h1>Esta página no existe · This page does not exist</h1>
-    <p class="lead">Puede que la dirección haya cambiado. El CV Online está ahora en <a href="/cv/">/cv/</a>.</p>
-    <p class="nf-actions"><a class="btn btn-primary btn-arrow" href="/">Ir al inicio</a><a class="btn" href="/cv/">CV Online</a><a class="btn" href="/isacademy/">IsAcademy</a></p>
+    {T('nf.title', 'h1')}
+    {T('nf.lead', 'p', 'lead')}
+    <p class="nf-actions"><a class="btn btn-primary btn-arrow" {A('href', 'homeHref')}>{T('nf.home')}</a><a class="btn" {A('href', 'door.0.href')}>CV Online</a><a class="btn" {A('href', 'door.1.href')}>IsAcademy</a></p>
   </main>
   {footer()}
 </body>
