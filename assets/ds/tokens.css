@@ -1,5 +1,5 @@
 /* Ismael Sarmiento design system — tokens shared by every site on ismael-sarmiento.github.io
-   (portada /, CV Online /cv/). Values are the IsAcademy ones (/isacademy/css/main.css § 1): keep both in sync.
+   (Inicio /, CV Online /cv/, IsAcademy /isacademy/, which adds only its own console and opening colours).
    Change a value here and every page that links /assets/ds/tokens.css follows. */
 
 @font-face { font-family: 'Allura'; src: url('fonts/allura-latin.woff2') format('woff2'); font-weight: 400; font-display: swap; }

@@ -20,7 +20,7 @@ protocols (Plan al Milímetro before each task, close-out recap after).
   (`index.html`, `en/index.html`, `404.html`, redirects, `robots.txt`, sitemaps).
 - `assets/ds/` is shared: a change there affects the portada, CV Online and IsAcademy. Check the three sites (light and dark,
   360 px to desktop) and publish this repository first.
-- Colours only through `tokens.css`; the values mirror IsAcademy's tokens.
+- Colours only through `tokens.css`; IsAcademy loads it too and adds only its own console and opening colours.
 - The theme key `isa-theme` is shared by every site on the origin; keep it.
 - Every text exists in Spanish and English; Spanish is the default.
 - Current position of the owner: Head of Data Management at Savana; founder of IsAcademy.
