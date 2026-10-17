@@ -125,14 +125,14 @@ export function initIntro({ i18n, steps = null, stepMs = 1600 } = {}) {
       })();
     }
 
-    // 3) the name (artificial) breaks into pixels and fades away
+    // 3) the name (artificial) breaks into pixels and is gone before the page appears (never on top of its title)
     const wr = word.getBoundingClientRect();
-    word.animate([{ opacity: 1 }, { opacity: 1, offset: .2 }, { opacity: 0 }], { duration: 800, delay: 150, fill: 'forwards' });
+    word.animate([{ opacity: 1 }, { opacity: .55, offset: .45 }, { opacity: 0 }], { duration: 420, delay: 80, easing: EASE_OUT, fill: 'forwards' });
     const t0 = performance.now();
     (function dissolve(now) {
-      const p = (now - t0) / 950;
+      const p = (now - t0) / 620;
       if (p > 1) return;
-      if (p > .15) pixels(wr.left + wr.width * Math.random(), wr.top + wr.height * (.3 + Math.random() * .5), wr.height * .3, Math.random() < .5 ? -1 : 1, 3);
+      if (p > .1) pixels(wr.left + wr.width * Math.random(), wr.top + wr.height * (.3 + Math.random() * .5), wr.height * .3, Math.random() < .5 ? -1 : 1, 3);
       requestAnimationFrame(dissolve);
     })(t0);
 
@@ -154,11 +154,18 @@ export function initIntro({ i18n, steps = null, stepMs = 1600 } = {}) {
   };
 
   document.body.classList.add('intro-open');
+  // the focus rests on the intro itself: no button looks pressed before the visitor touches anything
+  intro.tabIndex = -1;
+  const rest = () => intro.focus({ preventScroll: true });
+  rest();   // from the first frame: Escape jumps to the end, Tab reaches «Saltar intro»
   enter?.addEventListener('click', close);
   skip?.addEventListener('click', () => { finish(); enter?.focus(); });
-  intro.addEventListener('keydown', e => { if (e.key === 'Escape') { if (done) close(); else { finish(); enter?.focus(); } } });
+  intro.addEventListener('keydown', e => {
+    if (e.key === 'Escape') { if (done) close(); else { finish(); enter?.focus(); } }
+    if (e.key === 'Enter' && e.target === intro && intro.classList.contains('ready')) close();
+  });
 
-  if (reducedMotion()) { finish(); enter?.focus(); return { close }; }
+  if (reducedMotion()) { finish(); rest(); return { close }; }
   (async () => {
     await sleep(200);
     if (fromSibling()) {
@@ -175,7 +182,8 @@ export function initIntro({ i18n, steps = null, stepMs = 1600 } = {}) {
     await sleep(600);
     intro.classList.add('ready');          // the actions are available while the milestones run
     for (let i = 0; i < list().length && !done; i++) { showMilestone(i); await sleep(stepMs); }
-    if (!done) { done = true; if (skip) skip.hidden = true; enter?.focus(); }
+    if (!done) { done = true; if (skip) skip.hidden = true; }
+    if (!intro.contains(document.activeElement)) rest();
   })();
   return { close };
 }

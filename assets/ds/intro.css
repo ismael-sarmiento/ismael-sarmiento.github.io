@@ -12,6 +12,7 @@
 .js .intro[hidden] { display: none; }
 body.intro-open { overflow: hidden; }
 
+.intro:focus { outline: none; }   /* it holds the focus at rest (intro.js); its buttons keep their rings */
 .intro-top { position: absolute; top: 16px; right: 16px; display: flex; gap: 8px; align-items: center; z-index: 2; }
 .intro-stage { width: min(92vw, 1160px); text-align: center; position: relative; z-index: 1; }
 .intro-sig .sig { width: min(1160px, 92vw); margin: 0 auto; }

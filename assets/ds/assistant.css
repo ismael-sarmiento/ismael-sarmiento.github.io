@@ -15,7 +15,7 @@
 .assistant-fab { position: fixed; right: 18px; bottom: 18px; z-index: 40; display: flex; align-items: center; gap: 10px; padding: 6px 16px 6px 6px;
   border-radius: 999px; border: 1px solid rgba(226, 178, 92, .6); background: var(--ink-850); color: var(--cream-200); font-size: 15px; font-weight: 500;
   box-shadow: 0 14px 40px rgba(10, 14, 40, .35); transition: transform .25s var(--ease-out), box-shadow .25s ease, opacity .25s ease; animation: fabin .6s ease backwards; }
-.assistant-fab.fab-tucked { opacity: 0; transform: translateY(24px) scale(.9); pointer-events: none; }
+.assistant-fab.fab-tucked, .assistant-fab.fab-away { opacity: 0; transform: translateY(24px) scale(.9); pointer-events: none; }
 .assistant-fab:hover { transform: translateY(-2px); box-shadow: 0 18px 44px rgba(10, 14, 40, .42), 0 0 0 4px var(--gold-glow); }
 .assistant-fab .as-avatar { width: 52px; height: 52px; }
 @keyframes fabin { from { opacity: 0; transform: translateY(16px) scale(.9); } }

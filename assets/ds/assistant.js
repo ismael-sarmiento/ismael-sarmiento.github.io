@@ -43,6 +43,9 @@ export function createAssistant(cfg) {
   fab.setAttribute('aria-controls', 'assistantPanel');
   if (cfg.fabId) fab.id = cfg.fabId;
   if (cfg.startHidden) fab.hidden = true;
+  // at the foot of the page the button steps aside: it never covers the footer links
+  const foot = document.querySelector('.footer');
+  if (foot) new IntersectionObserver(([en]) => fab.classList.toggle('fab-away', en.isIntersecting)).observe(foot);
   fab.innerHTML = `<span class="as-avatar">${avatarSVG('fab')}</span><span class="fab-label"></span>`;
   const panel = document.createElement('section');
   panel.id = 'assistantPanel';
