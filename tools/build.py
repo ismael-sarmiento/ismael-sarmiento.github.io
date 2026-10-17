@@ -62,6 +62,7 @@ TEXT = {
                     'My open source: kimera-python, Python utilities for ETL, SQLAlchemy and AWS S3 (2020–2022).'),
     'door.2.cta': ('Ver en GitHub', 'View on GitHub'),
     'contact': ('Contacto', 'Contact'),
+    'waHref': ('https://wa.me/34613371874?text=Hola%20Ismael%2C%20he%20visto%20tu%20web%20y%20me%20gustar%C3%ADa%20hablar%20contigo.', 'https://wa.me/34613371874?text=Hi%20Ismael%2C%20I%20saw%20your%20website%20and%20would%20like%20to%20talk%20with%20you.'),
 }
 ES = {k: v[0] for k, v in TEXT.items()}
 EN = {k: v[1] for k, v in TEXT.items()}
@@ -105,9 +106,9 @@ ALAN = {
             {'q': '¿Dónde veo su CV?', 'keywords': ['cv', 'curriculum', 'pdf', 'descargar', 'resume'],
              'a': 'Su CV Online cuenta su trayectoria en Savana, StratioBD, Santander Global Tech y BBVA Next Technologies, en español e inglés, y también se descarga en PDF.',
              'actions': [{'label': 'Ver CV Online', 'href': '/cv/'}, {'label': 'Descargar PDF', 'href': CV_PDF['es']}]},
-            {'q': '¿Cómo contacto con él?', 'keywords': ['contacto', 'contactar', 'correo', 'email', 'escribir', 'linkedin', 'hablar'],
-             'a': f'Por correo ({EMAIL}) o por LinkedIn. Los dos están al pie de esta página.',
-             'actions': [{'label': 'Escribir un correo', 'href': MAIL}, {'label': 'LinkedIn', 'href': LINKEDIN}]},
+            {'q': '¿Cómo contacto con él?', 'keywords': ['contacto', 'contactar', 'correo', 'email', 'escribir', 'linkedin', 'hablar', 'whatsapp', 'telefono', 'llamar', 'movil'],
+             'a': f'Por correo ({EMAIL}), por WhatsApp o teléfono (+34 613 371 874) o por LinkedIn. Todo está al pie de esta página.',
+             'actions': [{'label': 'WhatsApp', 'href': 'https://wa.me/34613371874?text=Hola%20Ismael%2C%20he%20visto%20tu%20web%20y%20me%20gustar%C3%ADa%20hablar%20contigo.'}, {'label': 'Escribir un correo', 'href': MAIL}, {'label': 'LinkedIn', 'href': LINKEDIN}]},
             {'q': '¿Qué puedes hacer?', 'keywords': ['puedes hacer', 'capacidades', 'asistente', 'ayuda'],
              'a': 'Puedo contarte quién es Ismael, resumir su trayectoria, explicarte IsAcademy y Kimera Tools, y llevarte a su CV Online o a su contacto.'},
             {'q': '¿Puedes dar datos privados?', 'keywords': ['privados', 'confidencial', 'datos', 'secretos', 'privacidad'],
@@ -148,9 +149,9 @@ ALAN = {
             {'q': 'Where can I see his CV?', 'keywords': ['cv', 'resume', 'curriculum', 'pdf', 'download'],
              'a': 'His CV Online tells his career at Savana, StratioBD, Santander Global Tech and BBVA Next Technologies, in Spanish and English, and it can also be downloaded as a PDF.',
              'actions': [{'label': 'View CV Online', 'href': '/cv/?lang=en'}, {'label': 'Download PDF', 'href': CV_PDF['en']}]},
-            {'q': 'How can I contact him?', 'keywords': ['contact', 'email', 'mail', 'write', 'linkedin', 'reach', 'talk'],
-             'a': f'By email ({EMAIL}) or on LinkedIn. Both are at the foot of this page.',
-             'actions': [{'label': 'Send an email', 'href': MAIL}, {'label': 'LinkedIn', 'href': LINKEDIN}]},
+            {'q': 'How can I contact him?', 'keywords': ['contact', 'email', 'mail', 'write', 'linkedin', 'reach', 'talk', 'whatsapp', 'phone', 'call', 'mobile'],
+             'a': f'By email ({EMAIL}), on WhatsApp or by phone (+34 613 371 874), or on LinkedIn. Everything is at the foot of this page.',
+             'actions': [{'label': 'WhatsApp', 'href': 'https://wa.me/34613371874?text=Hi%20Ismael%2C%20I%20saw%20your%20website%20and%20would%20like%20to%20talk%20with%20you.'}, {'label': 'Send an email', 'href': MAIL}, {'label': 'LinkedIn', 'href': LINKEDIN}]},
             {'q': 'What can you do?', 'keywords': ['can you do', 'capabilities', 'assistant', 'help'],
              'a': 'I can tell you who Ismael is, summarise his career, explain IsAcademy and Kimera Tools, and take you to his CV Online or his contact details.'},
             {'q': 'Can you share private data?', 'keywords': ['private data', 'confidential', 'credentials', 'sensitive', 'privacy'],
@@ -194,6 +195,7 @@ PERSON = {
          'hasCredential': {'@type': 'EducationalOccupationalCredential', 'name': 'CDMP Certification – Associate', 'credentialCategory': 'certification',
                            'recognizedBy': {'@type': 'Organization', 'name': 'DAMA International'}},
          'knowsAbout': ['Data Governance', 'Clinical Interoperability', 'Data Quality', 'HL7 FHIR', 'OMOP CDM', 'DataHub', 'Data Engineering', 'Python'],
+         'telephone': '+34 613 371 874',
          'sameAs': [LINKEDIN, GITHUB, 'https://github.com/kimera-tools']},
     ],
 }
@@ -276,6 +278,7 @@ def footer():
     <div class="container footer-row">
       <span>© <span data-year>2026</span> Ismael Sarmiento</span>
       <nav class="footer-links" {A('aria-label', 'contact')}>
+        <a {A('href', 'waHref')} rel="noopener">WhatsApp</a>
         <a href="{LINKEDIN}" rel="noopener me">LinkedIn</a>
         <a href="{GITHUB}" rel="noopener me">GitHub</a>
         <a href="mailto:{EMAIL}">{EMAIL}</a>
@@ -390,7 +393,7 @@ def not_found():
     <p class="eyebrow">404</p>
     <h1>Esta página no existe · This page does not exist</h1>
     <p class="lead">Puede que la dirección haya cambiado. El CV Online está ahora en <a href="/cv/">/cv/</a>.</p>
-    <p class="nf-actions"><a class="btn btn-primary btn-arrow" href="/">Ir a la portada</a><a class="btn" href="/cv/">CV Online</a><a class="btn" href="/isacademy/">IsAcademy</a></p>
+    <p class="nf-actions"><a class="btn btn-primary btn-arrow" href="/">Ir al inicio</a><a class="btn" href="/cv/">CV Online</a><a class="btn" href="/isacademy/">IsAcademy</a></p>
   </main>
   {footer()}
 </body>

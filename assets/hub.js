@@ -14,7 +14,9 @@ function initAlan() {
   if (!node) return;
   const data = JSON.parse(node.textContent);
   const cfg = lang => ({ ...data[lang].assistant, match: faqMatcher(data[lang].faq) });
-  const alan = createAssistant({ ...cfg('es'), onAction: ({ href }) => { if (href) location.href = href; } });
+  // pages of the universe open here; WhatsApp, LinkedIn and GitHub open beside it
+  const go = href => (/^https?:/.test(href) && !href.startsWith(location.origin) ? window.open(href, '_blank', 'noopener') : (location.href = href));
+  const alan = createAssistant({ ...cfg('es'), onAction: ({ href }) => { if (href) go(href); } });
   i18n.onChange(lang => alan.refresh(cfg(lang)));
   // never on top of the intro
   const intro = document.getElementById('intro');
