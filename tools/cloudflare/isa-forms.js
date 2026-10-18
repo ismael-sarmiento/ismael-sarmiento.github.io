@@ -12,6 +12,8 @@
 //   ALLOWED_HOSTS     text    comma-separated hostnames Turnstile may report (ismael-sarmiento.github.io)
 //   TURNSTILE_SECRET  secret  secret key of the Turnstile widget «Universo Ismael - formularios»
 //   RESEND_API_KEY    secret  Resend API key «isa-forms» (sending access only)
+// Bindings: FORM_EVENTS (Workers Analytics Engine, dataset isa_forms_events): one anonymous event per request with
+// the site and the outcome, read by the private panel (isa-panel.js). No field of the message is stored.
 //
 // The forms post JSON: the visible fields (Nombre, Email, Mensaje…) plus _subject, _replyto, _page, _honey and
 // cf-turnstile-response. Fields starting with "_" steer the email and are not listed in it.
@@ -60,7 +62,7 @@ function renderEmail(data, { subject, replyTo, page }) {
   const whatsapp = shown(phone) ? whatsappOf(phone) : '';
   const details = Object.entries(data)
     .filter(([k, v]) => !k.startsWith('_') && k !== 'cf-turnstile-response' && !SPECIAL.has(k) && v != null && shown(String(v).trim()));
-  const when = new Date().toLocaleString('es-ES', { timeZone: 'Europe/Madrid', dateStyle: 'full', timeStyle: 'short' });
+  const when = new Date().toLocaleString('es-ES', { timeZone: 'Atlantic/Canary', dateStyle: 'full', timeStyle: 'short' });
   const link = (k, v) => k === 'Email' && EMAIL.test(v) ? `<a href="mailto:${esc(v)}" style="color:${C.ink2};text-decoration:none">${esc(v)}</a>`
     : k === PHONE ? `<a href="tel:${esc(v.replace(/[^\d+]/g, ''))}" style="color:${C.ink2};text-decoration:none">${esc(v)}</a>` : esc(v);
   const rows = details.map(([k, v], i) => `<tr><td style="padding:12px 0;${i ? `border-top:1px solid ${C.line};` : ''}font-family:${FONT}">
@@ -119,6 +121,10 @@ function renderEmail(data, { subject, replyTo, page }) {
   return { html, text };
 }
 
+// one anonymous data point per request: [site, outcome] (sent, turnstile, honeypot, origin, invalid, mail_error)
+const siteOf = page => /\/isacademy\//.test(page || '') ? 'isacademy' : /\/cv\//.test(page || '') ? 'cv' : page ? 'inicio' : 'unknown';
+const track = (env, page, outcome) => { try { env.FORM_EVENTS?.writeDataPoint({ blobs: [siteOf(page), outcome], doubles: [1], indexes: [outcome] }); } catch { /* never block a message */ } };
+
 export default {
   async fetch(request, env) {
     const origin = request.headers.get('Origin') || '';
@@ -134,21 +140,22 @@ export default {
     const reply = (status, body) => new Response(JSON.stringify(body), { status, headers: { ...cors, 'Content-Type': 'application/json' } });
 
     if (request.method === 'OPTIONS') return new Response(null, { status: allowed ? 204 : 403, headers: cors });
-    if (request.method !== 'POST') return reply(405, { success: 'false', message: 'method' });
-    if (!allowed) return reply(403, { success: 'false', message: 'origin' });
+    if (request.method !== 'POST') { track(env, '', 'invalid'); return reply(405, { success: 'false', message: 'method' }); }
+    if (!allowed) { track(env, '', 'origin'); return reply(403, { success: 'false', message: 'origin' }); }
 
     const raw = await request.text();
-    if (raw.length > MAX_BODY) return reply(413, { success: 'false', message: 'size' });
+    if (raw.length > MAX_BODY) { track(env, '', 'invalid'); return reply(413, { success: 'false', message: 'size' }); }
     let data;
-    try { data = JSON.parse(raw); } catch { return reply(400, { success: 'false', message: 'json' }); }
-    if (!data || typeof data !== 'object' || Array.isArray(data)) return reply(400, { success: 'false', message: 'json' });
+    try { data = JSON.parse(raw); } catch { track(env, '', 'invalid'); return reply(400, { success: 'false', message: 'json' }); }
+    if (!data || typeof data !== 'object' || Array.isArray(data)) { track(env, '', 'invalid'); return reply(400, { success: 'false', message: 'json' }); }
+    const at = typeof data._page === 'string' ? data._page : '';
 
     // bots fill the invisible field: answer as if it worked and drop the message
-    if (data._honey) return reply(200, { success: 'true' });
+    if (data._honey) { track(env, at, 'honeypot'); return reply(200, { success: 'true' }); }
 
     // Turnstile: the token must be valid, fresh and issued for one of our hostnames
     const token = data['cf-turnstile-response'];
-    if (typeof token !== 'string' || !token) return reply(403, { success: 'false', message: 'turnstile' });
+    if (typeof token !== 'string' || !token) { track(env, at, 'turnstile'); return reply(403, { success: 'false', message: 'turnstile' }); }
     const form = new FormData();
     form.append('secret', env.TURNSTILE_SECRET || '');
     form.append('response', token);
@@ -157,7 +164,7 @@ export default {
     const check = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', { method: 'POST', body: form })
       .then(r => r.json()).catch(() => ({ success: false }));
     const hosts = list(env.ALLOWED_HOSTS);
-    if (!check.success || (hosts.length && !hosts.includes(check.hostname))) return reply(403, { success: 'false', message: 'turnstile' });
+    if (!check.success || (hosts.length && !hosts.includes(check.hostname))) { track(env, at, 'turnstile'); return reply(403, { success: 'false', message: 'turnstile' }); }
 
     const subject = String(data._subject || 'Nuevo mensaje desde la web').slice(0, 200);
     const replyTo = [data._replyto, data.Email, data.email].find(v => typeof v === 'string' && EMAIL.test(v.trim()));
@@ -169,7 +176,8 @@ export default {
       headers: { Authorization: `Bearer ${env.RESEND_API_KEY || ''}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({ from: FROM, to: [env.FORM_TO], subject, html, text, ...(replyTo ? { reply_to: replyTo.trim() } : {}) }),
     });
-    if (!sent.ok) return reply(502, { success: 'false', message: 'mail' });
+    if (!sent.ok) { track(env, page, 'mail_error'); return reply(502, { success: 'false', message: 'mail' }); }
+    track(env, page, 'sent');
     return reply(200, { success: 'true', message: 'sent' });
   },
 };

@@ -50,6 +50,7 @@ assets/hub.css, hub.js      Estilo y comportamiento de la portada
 assets/brand/               Favicons, foto, og.png (imagen al compartir)
 tools/build.py              Genera todo lo anterior desde una plantilla con los textos ES/EN
 tools/brand/og.swift        Genera las imágenes al compartir (macOS, sin dependencias)
+tools/cloudflare/           Workers de Cloudflare: isa-forms (formularios con Turnstile y Resend) e isa-panel (IsPanel)
 ```
 
 ## Desarrollo local
@@ -59,6 +60,13 @@ python3 tools/build.py 20261014a   # la versión evita mezclas de caché en el n
 ```
 
 Para probar el universo completo, sirve una carpeta con este repositorio en la raíz, `cv/` y `isacademy/`.
+
+## IsPanel (panel privado)
+
+`tools/cloudflare/isa-panel.js` es IsPanel, el panel privado del universo en un Worker de Cloudflare: visitas por web,
+día, país (mapa interactivo), origen, página y dispositivo (Cloudflare Web Analytics, sin cookies), resultado de los
+formularios (Workers Analytics Engine) y seguridad (últimos accesos, bloqueos, rastreos). Se entra con un enlace de un
+solo uso que llega al correo del propietario. La cabecera del fichero explica variables, secretos y despliegue.
 
 ## Despliegue
 
