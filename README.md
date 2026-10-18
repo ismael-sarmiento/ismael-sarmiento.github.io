@@ -29,7 +29,7 @@ por todas sus webs.
 | `signature.js` | La firma: «Is» manuscrita esbozada y el resto del nombre decodificado al estilo IA |
 | `intro.js`, `intro.css` | La intro común (Inicio y CV Online): firma, papel, eslogan y botones; al entrar, la «Is» vuela al sello dejando tinta dorada y el nombre se deshace en píxeles. La misma escala que el logo de IsAcademy |
 | `fx.js` | Efectos de partículas (tinta, píxeles, destellos) compartidos con IsAcademy |
-| `contact.css`, `contact.js` | La pieza de contacto de CV Online e IsAcademy: tarjeta oscura con formulario (validación, antibots y envío por FormSubmit a ismaelantonio.professional@gmail.com) y botones de WhatsApp, correo y LinkedIn |
+| `contact.css`, `contact.js` | La pieza de contacto de CV Online e IsAcademy: tarjeta oscura con formulario (validación, antibots y envío protegido por Cloudflare Turnstile a través del Worker `isa-forms`, que lo entrega con Resend; código en `tools/cloudflare/isa-forms.js`) y botones de WhatsApp, correo y LinkedIn |
 | `icons.svg` | Iconos comunes (WhatsApp, correo, LinkedIn, teléfono) como sprite: `<use href="/assets/ds/icons.svg#i-whatsapp"/>` |
 | `favicon.js` | El icono de la pestaña sigue el tema de la página en las tres webs (iconos en `assets/brand/favicon-{light,dark}`, generados con `tools/icons.py`). La imagen para compartir, los avatares «Is» y el banner de LinkedIn salen de `tools/social.py` |
 | `avatar.js`, `assistant.js`, `assistant.css` | Alan, el asistente local compartido (cada web le da su propio contenido) |

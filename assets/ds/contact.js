@@ -1,10 +1,15 @@
 // The contact form shared by CV Online and IsAcademy (styles: /assets/ds/contact.css): validation in the visitor's
-// language, an invisible field that catches bots, delivery by FormSubmit (https://formsubmit.co) to Ismael's inbox and
-// a status line. Each site writes its own fields and decides what the email he receives says (buildEmail).
+// language, an invisible field that catches bots, an invisible Cloudflare Turnstile check and delivery through the
+// isa-forms Worker (source: tools/cloudflare/isa-forms.js), which verifies the check and mails Ismael with Resend.
+// No address is written in the page. Each site writes its own fields and decides what the email he receives says
+// (buildEmail: visible fields become rows, _subject and _replyto steer the email).
 //
-//   initContactForm({ form, to: 'ismaelantonio.professional@gmail.com', texts: () => ({ required, badEmail,
-//                     needPrivacy, send, sending, ok, error }), buildEmail: async form => ({ … }), onSent })
+//   initContactForm({ form, texts: () => ({ required, badEmail, needPrivacy, send, sending, ok, error }),
+//                     buildEmail: async form => ({ … }), onSent })
 const EMAIL = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+const WORKER = 'https://isa-forms.ismaelantonio-professional.workers.dev';
+const SITE_KEY = '0x4AAAAAAFZ7JbJ5yVIvt3uH';   // Turnstile widget «Universo Ismael - formularios» (Invisible)
+const TURNSTILE = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
 
 // one message under a field (or none), announced to screen readers through aria-describedby
 export function fieldError(field, msg) {
@@ -31,9 +36,54 @@ function validate(form, tx) {
   return !first;
 }
 
-export function initContactForm({ form, to, texts, buildEmail, onSent }) {
+// Cloudflare's script is only fetched once the visitor starts using a form (a failed load is tried again on the next send)
+let api = null;
+function loadTurnstile() {
+  api ??= new Promise((resolve, reject) => {
+    const script = document.createElement('script');
+    script.src = TURNSTILE;
+    script.onload = () => window.turnstile ? resolve(window.turnstile) : reject(new Error('turnstile'));
+    script.onerror = () => { api = null; script.remove(); reject(new Error('turnstile')); };
+    document.head.appendChild(script);
+  });
+  return api;
+}
+
+// one invisible widget per form; every send asks it for a fresh token (a token is accepted only once)
+function humanCheck(form) {
+  const box = document.createElement('div');
+  box.className = 'f-turnstile';
+  form.appendChild(box);
+  let widget = null, waiting = null;
+  const settle = (ok, value) => { const w = waiting; waiting = null; w?.[ok ? 'resolve' : 'reject'](value); };
+  const ready = async () => {
+    const turnstile = await loadTurnstile();
+    widget ??= turnstile.render(box, {
+      sitekey: SITE_KEY, execution: 'execute', retry: 'never',
+      callback: token => settle(true, token),
+      'error-callback': () => { settle(false, new Error('turnstile')); return true; },
+    });
+    return turnstile;
+  };
+  return {
+    warm: () => { ready().catch(() => {}); },
+    token: async () => {
+      const turnstile = await ready();
+      return new Promise((resolve, reject) => {
+        const mine = waiting = { resolve, reject };
+        turnstile.reset(widget);
+        turnstile.execute(widget);
+        setTimeout(() => { if (waiting === mine) settle(false, new Error('timeout')); }, 30000);
+      });
+    },
+  };
+}
+
+export function initContactForm({ form, texts, buildEmail, onSent }) {
   const status = form.querySelector('.f-status');
   const button = form.querySelector('[type="submit"]');
+  const check = humanCheck(form);
+  form.addEventListener('focusin', check.warm, { once: true });
   form.addEventListener('input', e => { if (e.target.getAttribute('aria-invalid')) fieldError(e.target, ''); });
   form.addEventListener('submit', async e => {
     e.preventDefault();
@@ -43,8 +93,11 @@ export function initContactForm({ form, to, texts, buildEmail, onSent }) {
     if (form.elements._honey?.value) return;   // bots fill the invisible field
     button.disabled = true; button.textContent = tx.sending;
     try {
-      const res = await fetch(`https://formsubmit.co/ajax/${to}`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify(await buildEmail(form)),
+      const email = await buildEmail(form);
+      email._page = location.origin + location.pathname;
+      email['cf-turnstile-response'] = await check.token();
+      const res = await fetch(WORKER, {
+        method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify(email),
       });
       const json = await res.json().catch(() => ({}));
       if (!res.ok || String(json.success) !== 'true') throw new Error(json.message || res.status);

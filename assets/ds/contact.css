@@ -35,6 +35,7 @@
 .f-status.ok { color: var(--success); }
 .f-status.err { color: var(--danger-soft); }
 .hp { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
+.f-turnstile { position: absolute; }   /* the invisible Turnstile check (contact.js): out of the form's grid */
 
 
 /* the direct ways in, under the form: one row of icon buttons */
