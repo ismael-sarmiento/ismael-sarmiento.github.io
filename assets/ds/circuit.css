@@ -1,0 +1,30 @@
+/* Ismael Sarmiento design system — the circuit lines of the brand, the same traces as IsAcademy's intro: gold traces
+   that draw themselves and nodes that light up when their trace arrives. Used by the intros of Inicio and CV Online
+   (top right and bottom left, like IsAcademy) and by the heroes of Inicio and CV Online (right side).
+
+   <svg class="ds-circuit ds-circuit--intro" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice">
+     <path pathLength="1" d="…"/><circle …/> …   (one node after each trace) </svg> */
+.ds-circuit { position: absolute; pointer-events: none; }
+.ds-circuit path { fill: none; stroke: var(--gold); stroke-width: 1.2;
+  stroke-dasharray: 1; stroke-dashoffset: 1; animation: ds-trace 1.4s ease-out var(--at, .4s) forwards; }
+.ds-circuit circle { fill: var(--gold); opacity: 0; transform-box: fill-box; transform-origin: center;
+  animation: ds-node .3s ease-out calc(var(--at, .4s) + 1.15s) forwards; }
+/* one trace after another, every 120 ms */
+.ds-circuit :is(path, circle):nth-of-type(2) { --at: calc(var(--from, .4s) + .12s); }
+.ds-circuit :is(path, circle):nth-of-type(3) { --at: calc(var(--from, .4s) + .24s); }
+.ds-circuit :is(path, circle):nth-of-type(4) { --at: calc(var(--from, .4s) + .36s); }
+.ds-circuit :is(path, circle):nth-of-type(1) { --at: var(--from, .4s); }
+@keyframes ds-trace { to { stroke-dashoffset: 0; } }
+@keyframes ds-node { from { opacity: 0; transform: scale(.4); } to { opacity: 1; transform: none; } }
+
+/* the intro: the whole screen behind the signature */
+.ds-circuit--intro { inset: 0; width: 100%; height: 100%; opacity: .5; }
+/* the hero: a column of traces on the right */
+.ds-circuit--hero { right: 0; top: 0; height: 100%; width: auto; opacity: .45; --from: .3s; }
+@media (max-width: 900px) { .ds-circuit--hero { opacity: .25; } }
+@media (max-width: 640px) { .ds-circuit--hero { display: none; } .ds-circuit--intro { opacity: .35; } }   /* on phones the hero lines would cross the text */
+
+@media (prefers-reduced-motion: reduce) {
+  .ds-circuit path { animation: none; stroke-dashoffset: 0; }
+  .ds-circuit circle { animation: none; opacity: 1; }
+}

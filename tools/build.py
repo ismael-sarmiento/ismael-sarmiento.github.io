@@ -69,7 +69,10 @@ TEXT = {
 }
 ES = {k: v[0] for k, v in TEXT.items()}
 EN = {k: v[1] for k, v in TEXT.items()}
-DOORS = [('CV Online', 'door.0.href', None), ('IsAcademy', 'door.1.href', None), ('Kimera Tools', None, 'https://github.com/kimera-tools')]
+# each door carries the mark of its site: the «Is» of the signature, IsAcademy's logo and Kimera Tools' «K_»
+DOORS = [('CV Online', 'door.0.href', None, '<span class="door-mark mark-is" aria-hidden="true">Is</span>'),
+         ('IsAcademy', 'door.1.href', None, '<span class="door-mark mark-isa" aria-hidden="true"><b>Is</b>Academy</span>'),
+         ('Kimera Tools', None, 'https://github.com/kimera-tools', '<span class="door-mark mark-k" aria-hidden="true">K<i>_</i></span>')]
 
 # Alan on Inicio: the same assistant as CV Online and IsAcademy (/assets/ds/assistant.js), fed with the public story of
 # this page. Answers shared with the CV FAQ keep its wording (cv/data/content.json); nothing here is new information.
@@ -244,6 +247,7 @@ def head(title, description, extra=''):
   <link rel="stylesheet" href="/assets/ds/intro.css?v={VERSION}">
   <link rel="stylesheet" href="/assets/ds/assistant.css?v={VERSION}">
   <link rel="stylesheet" href="/assets/ds/portrait.css?v={VERSION}">
+  <link rel="stylesheet" href="/assets/ds/circuit.css?v={VERSION}">
   <link rel="stylesheet" href="/assets/hub.css?v={VERSION}">
   <script type="importmap">{IMPORT_MAP}</script>
   <script type="module" src="/assets/hub.js?v={VERSION}"></script>
@@ -255,9 +259,26 @@ def toggles():
             f'<button class="btn btn-icon theme-btn" type="button" data-action="theme" {A("aria-label", "theme")}>{MOON}{SUN}</button>')
 
 
+# the circuit lines of the brand (/assets/ds/circuit.css): in the intro the same traces as IsAcademy's intro, in the hero a
+# column on the right; CV Online's tools/build.py carries the same two drawings
+CIRCUIT_INTRO = '''<svg class="ds-circuit ds-circuit--intro" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
+      <path pathLength="1" d="M1600 150 H1380 L1340 190 H1180"/><circle cx="1180" cy="190" r="5"/>
+      <path pathLength="1" d="M1600 210 H1440 L1400 250 H1290"/><circle cx="1290" cy="250" r="5"/>
+      <path pathLength="1" d="M0 720 H200 L240 680 H380"/><circle cx="380" cy="680" r="5"/>
+      <path pathLength="1" d="M0 780 H260 L300 740 H460"/><circle cx="460" cy="740" r="5"/>
+    </svg>'''
+CIRCUIT_HERO = '''<svg class="ds-circuit ds-circuit--hero" viewBox="0 0 600 600" aria-hidden="true" focusable="false">
+        <path pathLength="1" d="M600 120H430l-40 40H300"/><circle cx="300" cy="160" r="4"/>
+        <path pathLength="1" d="M600 210H470l-30 30H350"/><circle cx="350" cy="240" r="4"/>
+        <path pathLength="1" d="M600 330H500l-50-50H380"/><circle cx="380" cy="280" r="4"/>
+        <path pathLength="1" d="M600 430H440l-30 30H330"/><circle cx="330" cy="460" r="4"/>
+      </svg>'''
+
+
 def intro():
     """The intro shared with CV Online (/assets/ds/intro.js): the signature, the role, the slogan and two ways in."""
     return f'''<div id="intro" class="intro" role="dialog" aria-modal="true" aria-labelledby="intro-title">
+    {CIRCUIT_INTRO}
     <div class="intro-top">{toggles()}<button class="btn" type="button" data-action="skip">{T('intro.skip')}</button></div>
     <div class="intro-stage">
       {T('intro.title', 'p', 'sr-only', ' id="intro-title"')}
@@ -323,11 +344,11 @@ def home():
   <meta name="twitter:card" content="summary_large_image">
   <script type="application/ld+json">{json.dumps(PERSON, ensure_ascii=False)}</script>'''
     doors = ''
-    for i, (name, href_key, fixed) in enumerate(DOORS):
+    for i, (name, href_key, fixed, mark) in enumerate(DOORS):
         href = f'href="{fixed}" rel="noopener"' if fixed else A('href', href_key)
         doors += f'''
           <a class="card door reveal" {href}>
-            <span class="door-num" aria-hidden="true">0{i + 1}</span>
+            {mark}
             <h3>{name}</h3>
             {T(f'door.{i}.text', 'p')}
             {T(f'door.{i}.cta', 'span', 'btn-link btn-arrow')}
@@ -343,12 +364,7 @@ def home():
 
   <main id="main">
     <section class="hero">
-      <svg class="circuit" viewBox="0 0 600 600" aria-hidden="true" focusable="false">
-        <path d="M600 120H430l-40 40H300"/><circle cx="300" cy="160" r="4"/>
-        <path d="M600 210H470l-30 30H350"/><circle cx="350" cy="240" r="4"/>
-        <path d="M600 330H500l-50-50H380"/><circle cx="380" cy="280" r="4"/>
-        <path d="M600 430H440l-30 30H330"/><circle cx="330" cy="460" r="4"/>
-      </svg>
+      {CIRCUIT_HERO}
       <div class="container hero-inner stagger">
         <div class="hero-text stagger">
           {T('eyebrow', 'p', 'eyebrow reveal')}
