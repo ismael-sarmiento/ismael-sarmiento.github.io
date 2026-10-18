@@ -6,6 +6,11 @@
 // to the page; "Saltar intro" or Escape jump to the end. Styles: /assets/ds/intro.css.
 //
 //   initIntro({ i18n, steps: () => ['…', '…'], stepMs: 1600 })   // steps are optional (the CV milestones)
+//
+// A milestone written as «2017 · Autana — Primeros pasos en datos y analítica» shows its year (counting up from the
+// previous one) and the place (decoded like the signature) above the sentence, which arrives word by word; several
+// milestones in one place with a role («2023 · Savana · Lead Data Engineer — …») draw that career as a small ladder
+// and share one stretch of the bar. Each bar fills while its milestone is on screen; at the end they join into one line.
 import { reducedMotion } from './ds.js';
 import { playSignature, skipSignature } from './signature.js';
 import { ink, pixels } from './fx.js';
@@ -47,19 +52,80 @@ export function initIntro({ i18n, steps = null, stepMs = 1600 } = {}) {
   const skip = intro.querySelector('[data-action="skip"]');
   let done = false, closing = false, shown = -1;
   // switching language during the intro keeps the current milestone, in the new language
-  i18n?.onChange(() => { if (shown >= 0 && stepText) stepText.textContent = list()[shown]; });
+  i18n?.onChange(() => { joinBars(); if (shown >= 0 && stepText) renderStep(shown, false); });
 
-  const showMilestone = i => {
+  const milestones = intro.querySelector('.intro-milestones');
+  milestones?.style.setProperty('--step-ms', `${stepMs}ms`);
+  // «year · place · role — sentence» (role and year optional; without « — » the whole text is the sentence)
+  const parse = t => {
+    const [head, ...rest] = String(t).split(' — ');
+    if (!rest.length) return { text: head };
+    const parts = head.split(' · ');
+    const year = /^\d{4}$/.test(parts[0]) ? parts.shift() : '';
+    return { year, where: parts[0] || '', role: parts.slice(1).join(' · '), text: rest.join(' — ') };
+  };
+  const parsed = () => list().map(parse);
+  // consecutive milestones in the same place (Savana: Senior → Lead → Head) share one stretch of the bar
+  const joinBars = () => { const p = parsed(); segs.forEach((s, k) => s.classList.toggle('joined', k > 0 && !!p[k].where && p[k].where === p[k - 1].where)); };
+  joinBars();
+  let yearShown = 0, counting = 0, decoding = 0;
+  const countYear = (el, to) => {
+    cancelAnimationFrame(counting);
+    if (!yearShown || to <= yearShown || reducedMotion()) { el.textContent = String(to); yearShown = to; return; }
+    const from = yearShown, t0 = performance.now(), dur = 460;
+    const tick = now => { const p = Math.min(1, (now - t0) / dur); el.textContent = String(Math.round(from + (to - from) * (1 - (1 - p) ** 3))); if (p < 1) counting = requestAnimationFrame(tick); };
+    tick(t0); yearShown = to;
+  };
+  // the place is decoded like the name in the signature: letters settle one by one out of random glyphs
+  const GLYPHS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  const decode = (el, word) => {
+    cancelAnimationFrame(decoding);
+    if (reducedMotion()) { el.textContent = word; return; }
+    const t0 = performance.now(), per = 32;
+    const tick = now => {
+      const done = Math.floor((now - t0) / per);
+      el.textContent = [...word].map((c, i) => (i < done || c === ' ' ? c : GLYPHS[(Math.random() * GLYPHS.length) | 0])).join('');
+      if (done < word.length) decoding = requestAnimationFrame(tick);
+    };
+    tick(t0);
+  };
+  const renderStep = (i, animate) => {
+    const all = parsed(), m = all[i];
+    stepText.replaceChildren();
+    const meta = document.createElement('span'); meta.className = 'st-meta';
+    if (m.year) { const y = document.createElement('b'); y.className = 'st-year'; meta.append(y); animate ? countYear(y, Number(m.year)) : (y.textContent = m.year); }
+    if (m.where) { const w = document.createElement('span'); w.className = 'st-where'; meta.append(w); animate ? decode(w, m.where) : (w.textContent = m.where); }
+    stepText.append(meta);
+    // a career inside one place: its roles as a small ladder, the current one lit and the earlier ones ticked
+    const group = all.map((x, k) => ({ ...x, k })).filter(x => x.where && x.where === m.where && x.role);
+    if (m.role && group.length > 1) {
+      const ladder = document.createElement('span'); ladder.className = 'st-ladder';
+      group.forEach((x, n) => {
+        const r = document.createElement('span');
+        r.className = `st-rung${x.k < i ? ' past' : x.k === i ? ' now' : ''}`;
+        r.textContent = x.role.replace(/ (Data Engineer|of Data Management)$/, '');
+        if (n) { const sep = document.createElement('i'); sep.className = 'st-sep'; sep.textContent = '›'; ladder.append(sep); }
+        ladder.append(r);
+      });
+      stepText.append(ladder);
+    } else if (m.role) { const r = document.createElement('span'); r.className = 'st-role'; r.textContent = m.role; meta.append(r); }
+    // the sentence comes word by word, from blurred to sharp
+    const text = document.createElement('span'); text.className = 'st-text';
+    m.text.split(' ').forEach((w, n) => { const s = document.createElement('span'); s.className = 'st-w'; s.textContent = w; s.style.setProperty('--n', n); text.append(s, ' '); });
+    stepText.append(text);
+  };
+  const showMilestone = (i, last = false) => {
     if (!stepText) return;
-    segs.forEach((s, k) => s.classList.toggle('on', k <= i));
-    stepText.textContent = list()[i];
+    segs.forEach((s, k) => { s.classList.toggle('on', k < i || (last && k === i)); s.classList.toggle('run', !last && k === i); });
+    renderStep(i, !last);
     shown = i;
     stepText.classList.remove('swap'); void stepText.offsetWidth; stepText.classList.add('swap');
   };
+  const complete = () => { segs.forEach(s => { s.classList.remove('run'); s.classList.add('on'); }); intro.querySelector('.intro-segs')?.classList.add('complete'); };
   const finish = () => {
     done = true;
     skipSignature(svg);
-    if (list().length) showMilestone(list().length - 1);
+    if (list().length) { showMilestone(list().length - 1, true); complete(); }
     intro.classList.add('after', 'ready');
     if (skip) skip.hidden = true;
   };
@@ -185,7 +251,7 @@ export function initIntro({ i18n, steps = null, stepMs = 1600 } = {}) {
     await sleep(600);
     intro.classList.add('ready');          // the actions are available while the milestones run
     for (let i = 0; i < list().length && !done; i++) { showMilestone(i); await sleep(stepMs); }
-    if (!done) { done = true; if (skip) skip.hidden = true; }
+    if (!done) { done = true; complete(); if (skip) skip.hidden = true; }
     if (!intro.contains(document.activeElement)) rest();
   })();
   return { close };

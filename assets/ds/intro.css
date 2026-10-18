@@ -32,11 +32,46 @@ body.intro-open { overflow: hidden; }
 .intro-tag { display: table; margin: 4px auto 0; }
 .intro-hook { font-size: clamp(16px, 2.2vw, 22px); color: var(--text-2); max-width: 52ch; margin: 22px auto 0; }
 .intro-milestones { width: min(520px, 100%); margin: 26px auto 0; }
-.intro-segs { display: grid; grid-auto-flow: column; gap: 6px; margin-bottom: 12px; }
-.intro-segs span { height: 3px; border-radius: 3px; background: var(--line); transition: background .5s ease; }
-.intro-segs span.on { background: linear-gradient(90deg, var(--gold), var(--gold-2)); }
-.intro-step { min-height: 1.6em; margin: 0; color: var(--text); font-weight: 500; }
-.intro-step.swap { animation: step-in .45s var(--ease-out); }
+/* milestones: each bar fills while its milestone is on screen (a light runs at its tip); the year counts up, the
+   sentence is uncovered like ink; at the end the bars join into one gold line with a passing shine */
+.intro-segs { position: relative; display: flex; margin-bottom: 14px; }
+.intro-segs span { position: relative; flex: 1; height: 3px; margin-left: 6px; border-radius: 3px; background: var(--line); transition: margin .7s var(--ease-out), border-radius .7s ease; }
+.intro-segs span:first-child { margin-left: 0; }
+.intro-segs span.joined { margin-left: 2px; }
+.intro-segs span::after { content: ""; position: absolute; inset: 0; border-radius: inherit; background: linear-gradient(90deg, var(--gold), var(--gold-2));
+  transform: scaleX(0); transform-origin: left; }
+.intro-segs span.on::after { transform: none; transition: transform .3s var(--ease-out); }
+.intro-segs span.run::after { animation: seg-fill var(--step-ms, 1600ms) linear forwards; }
+.intro-segs span.run::before { content: ""; position: absolute; z-index: 1; top: -4px; left: 0; width: 10px; height: 11px; margin-left: -5px; border-radius: 50%;
+  background: radial-gradient(circle, var(--gold-2) 0 35%, transparent 70%); animation: seg-tip var(--step-ms, 1600ms) linear forwards; }
+@keyframes seg-fill { to { transform: scaleX(1); } }
+@keyframes seg-tip { from { left: 0; } to { left: 100%; } }
+.intro-segs.complete span { margin-left: 0; }
+.intro-segs.complete span { border-radius: 0; }
+.intro-segs.complete span:first-child { border-radius: 3px 0 0 3px; }
+.intro-segs.complete span:last-child { border-radius: 0 3px 3px 0; }
+.intro-segs.complete::after { content: ""; position: absolute; inset: -3px 0; background: linear-gradient(90deg, transparent, rgba(255, 244, 214, .9), transparent);
+  background-size: 30% 100%; background-repeat: no-repeat; animation: seg-shine 1.1s .35s var(--ease-out) both; pointer-events: none; }
+@keyframes seg-shine { from { background-position: -40% 0; } to { background-position: 140% 0; } }
+.intro-step { display: grid; justify-items: center; gap: 8px; min-height: 7.6em; align-content: start; margin: 0; color: var(--text); font-weight: 500; }
+.st-meta { display: flex; align-items: baseline; gap: 10px; font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--text-2); }
+.st-year { font-family: var(--font-mono); font-size: 14px; font-weight: 600; letter-spacing: .04em; color: var(--gold-text); font-variant-numeric: tabular-nums; }
+.st-where { font-weight: 600; color: var(--text); }
+.st-role { font-weight: 600; color: var(--text); }
+.st-ladder { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 4px 8px; font-size: 13px; }
+.st-rung { padding: 3px 10px; border-radius: 999px; border: 1px solid var(--line); color: var(--text-2); transition: background .4s ease, color .4s ease, border-color .4s ease; }
+.st-rung.past { color: var(--gold-text); border-color: color-mix(in srgb, var(--gold) 45%, transparent); }
+.st-rung.past::before { content: "✓ "; }
+.st-rung.now { color: var(--on-gold, #1c1407); background: linear-gradient(90deg, var(--gold), var(--gold-2)); border-color: transparent; font-weight: 600; box-shadow: 0 6px 18px rgba(200, 149, 63, .28); }
+.st-sep { font-style: normal; color: var(--gold-text); opacity: .7; }
+.st-text { font-size: clamp(15.5px, 2vw, 18px); line-height: 1.45; max-width: 46ch; }
+.st-w { display: inline-block; }
+.intro-step.swap .st-meta { animation: step-in .45s var(--ease-out) both; }
+.intro-step.swap .st-ladder { animation: step-in .5s .05s var(--ease-out) both; }
+.intro-step.swap .st-rung.now { animation: rung-up .6s .15s var(--ease-out) both; }
+@keyframes rung-up { from { transform: translateY(6px) scale(.92); opacity: .4; } }
+.intro-step.swap .st-w { animation: word-in .55s calc(.12s + var(--n, 0) * 45ms) var(--ease-out) both; }
+@keyframes word-in { from { opacity: 0; transform: translateY(8px); filter: blur(5px); } }
 @keyframes step-in { from { opacity: 0; transform: translateY(6px); } }
 .intro-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin-top: 30px; }
 
@@ -60,4 +95,5 @@ body.entering .topbar .brand { opacity: 0; }
 }
 @media (prefers-reduced-motion: reduce) {
   .intro-after, .intro-actions { transition: none; }
+  .intro-segs span.run::before, .intro-segs.complete::after { display: none; }
 }

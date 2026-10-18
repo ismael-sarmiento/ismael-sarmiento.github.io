@@ -33,6 +33,7 @@ por todas sus webs.
 | `icons.svg` | Iconos comunes (WhatsApp, correo, LinkedIn, teléfono) como sprite: `<use href="/assets/ds/icons.svg#i-whatsapp"/>` |
 | `favicon.js` | El icono de la pestaña sigue el tema de la página en las tres webs (iconos en `assets/brand/favicon-{light,dark}`, generados con `tools/icons.py`). La imagen para compartir, los avatares «Is» y el banner de LinkedIn salen de `tools/social.py` |
 | `avatar.js`, `assistant.js`, `assistant.css` | Alan, el asistente local compartido (cada web le da su propio contenido) |
+| `portrait.css` | La foto redonda común (Inicio, IsAcademy): aro dorado que se dibuja al aparecer y brillo al pasar el ratón |
 | `views.js` | Una visita anónima por página para el mapa de ciudades de IsPanel (sin cookies ni IP; respeta Do Not Track y GPC) |
 | `fonts/` | Space Grotesk y Allura, servidas desde el propio dominio |
 

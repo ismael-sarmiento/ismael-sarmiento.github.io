@@ -1,0 +1,30 @@
+/* Ismael Sarmiento design system — the portrait shared by every site (Inicio hero, IsAcademy founder card):
+   a round photo inside a gold ring that draws itself when the photo appears and glows when hovered.
+
+   <span class="portrait reveal"><img src="…/ismael.jpg" width="264" height="264" alt="Ismael Sarmiento"></span>
+   Size with --portrait-size (default 208px). The ring is drawn once the portrait (or a card around it) gets .in. */
+@property --ring { syntax: "<angle>"; inherits: false; initial-value: 360deg; }
+
+.portrait { --size: var(--portrait-size, 208px); position: relative; display: inline-grid; place-items: center; flex: none;
+  width: var(--size); height: var(--size); padding: 6px; border-radius: 50%; isolation: isolate; }
+.portrait img { display: block; width: 100%; height: 100%; border-radius: 50%; object-fit: cover; background: var(--surface);
+  box-shadow: var(--shadow); transition: transform .5s var(--ease-out), box-shadow .4s ease; }
+/* the ring: a conic gold stroke (3px) that sweeps around from the top */
+.portrait::before { content: ""; position: absolute; inset: 0; z-index: -1; border-radius: 50%; padding: 3px;
+  background: conic-gradient(from -90deg, var(--gold), var(--gold-2), var(--gold) var(--ring), transparent 0);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0); transition: --ring 1.4s .25s var(--ease-out); }
+/* the glow: a soft gold halo that grows on hover (the photo itself or the card that holds it) */
+.portrait::after { content: ""; position: absolute; inset: 0; z-index: -2; border-radius: 50%; box-shadow: 0 0 0 0 var(--gold-glow);
+  transition: box-shadow .4s ease; }
+.portrait:hover::after, .card:hover .portrait::after { box-shadow: 0 0 0 7px var(--gold-glow), 0 0 28px var(--gold-glow); }
+.portrait:hover img, .card:hover .portrait img { transform: scale(1.03); }
+
+/* before it appears the ring is empty; .in (on the portrait or on a reveal around it) draws it */
+.js .portrait.reveal:not(.in)::before, .js .reveal:not(.in) .portrait::before,
+:root:not(.js) .reveal:not(.in) .portrait::before { --ring: 0deg; }  /* IsAcademy reveals without the .js class */
+
+@media (prefers-reduced-motion: reduce) {
+  .portrait::before { transition: none; --ring: 360deg !important; }
+  .portrait img { transition: none; }
+}

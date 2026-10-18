@@ -243,6 +243,7 @@ def head(title, description, extra=''):
   <link rel="stylesheet" href="/assets/ds/base.css?v={VERSION}">
   <link rel="stylesheet" href="/assets/ds/intro.css?v={VERSION}">
   <link rel="stylesheet" href="/assets/ds/assistant.css?v={VERSION}">
+  <link rel="stylesheet" href="/assets/ds/portrait.css?v={VERSION}">
   <link rel="stylesheet" href="/assets/hub.css?v={VERSION}">
   <script type="importmap">{IMPORT_MAP}</script>
   <script type="module" src="/assets/hub.js?v={VERSION}"></script>
@@ -357,7 +358,7 @@ def home():
           {T('about.1', 'p', 'about reveal')}
           {T('about.2', 'p', 'about reveal', rich=True)}
         </div>
-        <img class="hero-photo reveal" src="/assets/brand/ismael.jpg" width="264" height="264" alt="Ismael Sarmiento" fetchpriority="high">
+        <span class="portrait hero-photo reveal"><img src="/assets/brand/ismael.jpg" width="264" height="264" alt="Ismael Sarmiento" fetchpriority="high"></span>
       </div>
     </section>
 
