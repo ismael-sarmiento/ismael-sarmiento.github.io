@@ -2,7 +2,8 @@
 // One page, only for him, in the look of the sites (it loads the shared design system /assets/ds/ of the portada):
 // visits by site, day, country (interactive world map), source, page and device (Cloudflare Web Analytics through the
 // GraphQL API, no cookies on the sites), the outcome of the contact forms (written by isa-forms to Workers Analytics
-// Engine) and a security corner (last accesses to the panel, blocked requests, probes of pages that do not exist).
+// Engine), the approximate cities of the page views (isa-forms /hit, also in Analytics Engine, no IP stored) and a
+// security corner (last accesses to the panel, blocked requests, probes of pages that do not exist).
 // Nothing about visitors is stored or shown beyond aggregated counts.
 //
 // Access: «Envíame el enlace» (checked by Turnstile) mails a one-use link valid for 15 minutes to PANEL_EMAIL only; the
@@ -73,7 +74,7 @@ const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;'
 function secure(headers, nonce) {
   headers.set('Content-Security-Policy', [
     "default-src 'none'", `script-src 'nonce-${nonce}' https://challenges.cloudflare.com`, `style-src 'nonce-${nonce}' ${SITE}`,
-    `font-src ${SITE}`, 'img-src data:', "connect-src 'self' https://cdn.jsdelivr.net", 'frame-src https://challenges.cloudflare.com',
+    `font-src ${SITE}`, `img-src data: ${SITE}`, "connect-src 'self' https://cdn.jsdelivr.net", 'frame-src https://challenges.cloudflare.com',
     "frame-ancestors 'none'", "base-uri 'none'", "form-action 'self'"].join('; '));
   headers.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
   headers.set('Cross-Origin-Opener-Policy', 'same-origin');
@@ -122,13 +123,20 @@ async function visits(env, days, site) {
   const group = (alias, filter, dim, limit, order) =>
     `${alias}: rumPageloadEventsAdaptiveGroups(filter: ${lit(filter)}, limit: ${limit}${order ? `, orderBy: [${order}]` : ''}) { count sum { visits }${dim ? ` dimensions { ${dim} }` : ''} }`;
   const today = new Date(), weekAgo = new Date(today.getTime() - 6 * DAY);
-  const ranges = days > 7 ? [[day(weekAgo), day(today)], [day(since), day(new Date(weekAgo.getTime() - DAY))]] : [[day(since), day(today)]];
+  // one query may not span more than 13 weeks, so longer stretches go in slices of 90 days
+  const split = (a, b) => { const out = []; for (let s = a; s <= b; s = new Date(s.getTime() + 90 * DAY)) out.push([day(s), day(new Date(Math.min(b.getTime(), s.getTime() + 89 * DAY)))]); return out; };
+  const ranges = days > 7 ? [[day(weekAgo), day(today)], ...split(since, new Date(weekAgo.getTime() - DAY))] : [[day(since), day(today)]];
   const current = await Promise.all(ranges.map(([a, b]) => {
     const f = { ...base, date_geq: a, date_leq: b, ...pathFilter(site) };
     return gql(env, [group('total', f, '', 1), ...Object.entries(DIMS).map(([k, [dim, limit, order]]) => group(k, f, dim, limit, order)),
-      ...['inicio', 'cv', 'isacademy'].map(s => group(`site_${s}`, { ...base, date_geq: a, date_leq: b, ...pathFilter(s) }, '', 1))]);
+      ...['inicio', 'cv', 'isacademy'].map(s => group(`site_${s}`, { ...base, date_geq: a, date_leq: b, ...pathFilter(s) }, '', 1)),
+      ...['inicio', 'cv', 'isacademy'].map(s => group(`daily_${s}`, { ...base, date_geq: a, date_leq: b, ...pathFilter(s) }, 'date', 200, 'date_ASC'))]);
   }));
-  const previous = [await gql(env, [group('total', { ...base, date_geq: day(from), date_leq: day(new Date(since.getTime() - DAY)), ...pathFilter(site) }, '', 1)])];
+  // the previous period is only compared when Cloudflare still keeps all of it (about six months); a failure there
+  // never breaks the panel, it just shows «sin datos antes»
+  const oldest = new Date(Date.now() - (MAX_DAYS - 1) * DAY);
+  const previous = from < oldest ? [] : await Promise.all(split(from, new Date(since.getTime() - DAY)).map(([a, b]) =>
+    gql(env, [group('total', { ...base, date_geq: a, date_leq: b, ...pathFilter(site) }, '', 1)]).catch(e => { console.error('previous period', e.message); return {}; })));
   const num = parts => parts.reduce((t, g) => ({ visits: t.visits + (g?.[0]?.sum?.visits || 0), views: t.views + (g?.[0]?.count || 0) }), { visits: 0, views: 0 });
   const merge = key => {
     const dim = DIMS[key][0], acc = new Map();
@@ -145,20 +153,35 @@ async function visits(env, days, site) {
   return {
     range: { since: day(since), until: day(new Date()), days, exactSince: days > 7 ? day(weekAgo) : day(since) }, total: num(current.map(w => w.total)), previous: num(previous.map(w => w.total)), daily,
     sites: Object.fromEntries(['inicio', 'cv', 'isacademy'].map(s => [s, num(current.map(w => w[`site_${s}`]))])),
+    siteDaily: Object.fromEntries(['inicio', 'cv', 'isacademy'].map(s => {
+      const per = {}; for (const w of current) for (const r of w[`daily_${s}`] || []) per[r.dimensions.date] = (per[r.dimensions.date] || 0) + r.sum.visits;
+      return [s, daily.map(d => per[d.key] || 0)];
+    })),
     countries: merge('countries').sort((a, b) => b.visits - a.visits), sources: merge('sources'), pages: merge('pages'), devices: merge('devices'), browsers: merge('browsers'), systems: merge('systems'),
   };
 }
 
 // ---------- data: contact forms (Workers Analytics Engine, written by isa-forms) ----------
-async function forms(env, days) {
-  const sql = `SELECT blob1 AS site, blob2 AS outcome, SUM(_sample_interval) AS n FROM isa_forms_events
-    WHERE timestamp > NOW() - INTERVAL '${days}' DAY GROUP BY site, outcome FORMAT JSON`;
+// a dataset that has never received an event answers 400/422: that is «no data yet», not an error
+async function aeSql(env, sql) {
   const res = await fetch(`https://api.cloudflare.com/client/v4/accounts/${env.ACCOUNT_ID}/analytics_engine/sql`, {
     method: 'POST', headers: { Authorization: `Bearer ${env.CF_API_TOKEN}` }, body: sql,
   });
-  if (!res.ok) return { rows: [], note: res.status === 422 || res.status === 400 ? 'empty' : `HTTP ${res.status}` };
-  const out = await res.json().catch(() => ({}));
-  return { rows: (out.data || []).map(r => ({ site: r.site, outcome: r.outcome, n: Number(r.n) || 0 })) };
+  if (!res.ok) return { data: [], note: res.status === 422 || res.status === 400 ? 'empty' : `HTTP ${res.status}` };
+  return res.json().catch(() => ({ data: [], note: 'json' }));
+}
+async function forms(env, days) {
+  const out = await aeSql(env, `SELECT blob1 AS site, blob2 AS outcome, SUM(_sample_interval) AS n FROM isa_forms_events
+    WHERE timestamp > NOW() - INTERVAL '${days}' DAY GROUP BY site, outcome FORMAT JSON`);
+  return { rows: (out.data || []).map(r => ({ site: r.site, outcome: r.outcome, n: Number(r.n) || 0 })), note: out.note };
+}
+// page views by approximate city (written by isa-forms /hit since 18 October 2026); the site is one of a fixed list
+async function cities(env, days, site) {
+  const only = ['inicio', 'cv', 'isacademy'].includes(site) ? ` AND blob1 = '${site}'` : '';
+  const out = await aeSql(env, `SELECT blob2 AS country, blob3 AS region, blob4 AS city, AVG(double1) AS lat, AVG(double2) AS lon,
+    SUM(_sample_interval) AS n FROM isa_site_views WHERE timestamp > NOW() - INTERVAL '${days}' DAY${only}
+    GROUP BY country, region, city ORDER BY n DESC LIMIT 300 FORMAT JSON`);
+  return { rows: (out.data || []).map(r => ({ country: r.country, region: r.region, city: r.city, lat: Number(r.lat) || 0, lon: Number(r.lon) || 0, n: Number(r.n) || 0 })), note: out.note };
 }
 
 async function data(req, env, url) {
@@ -171,11 +194,12 @@ async function data(req, env, url) {
   const hit = url.searchParams.get('fresh') === '1' ? null : await env.PANEL_KV?.get(key, 'json');
   if (hit) return json({ ...hit, security, cached: true });
   try {
-    const [v, f] = await Promise.all([visits(env, days, site), forms(env, days)]);
-    const body = { ...v, site, forms: f, generated: new Date().toISOString() };
+    const [v, f, c] = await Promise.all([visits(env, days, site), forms(env, days), cities(env, days, site)]);
+    const body = { ...v, site, forms: f, cities: c, generated: new Date().toISOString() };
     await env.PANEL_KV?.put(key, JSON.stringify(body), { expirationTtl: Math.max(60, CACHE_S) });
     return json({ ...body, security });
   } catch (e) {
+    console.error('data', days, site, e.message);
     return json({ error: String(e.message || e).slice(0, 300) }, 502);
   }
 }
@@ -214,8 +238,13 @@ async function sendLink(req, env, url) {
 }
 
 // ---------- shared look: the sites' design system plus what only the panel needs ----------
-const HEAD = nonce => `<link rel="stylesheet" href="${SITE}/assets/ds/tokens.css"><link rel="stylesheet" href="${SITE}/assets/ds/base.css">
-<script nonce="${nonce}">try{const t=localStorage.getItem('ispanel-theme');if(t==='light'||t==='dark')document.documentElement.dataset.theme=t}catch(e){}</script>`;
+// the tab icon of the sites («Is» in gold), light or dark like the page (see /assets/ds/favicon.js)
+const ICONS = ['light', 'dark'].map(t => `<link rel="icon" href="${SITE}/assets/brand/favicon-${t}.svg" type="image/svg+xml" media="(prefers-color-scheme: ${t})" data-theme-icon="${t}">
+<link rel="icon" href="${SITE}/assets/brand/favicon-${t}-32.png" sizes="32x32" type="image/png" media="(prefers-color-scheme: ${t})" data-theme-icon="${t}">`).join('')
+  + `<link rel="apple-touch-icon" href="${SITE}/assets/brand/apple-touch-icon.png">`;
+const SYNC_ICON = `function syncIcon(){const f=document.documentElement.dataset.theme;document.querySelectorAll('link[data-theme-icon]').forEach(l=>{const m=f?(f===l.dataset.themeIcon?'all':'not all'):'(prefers-color-scheme: '+l.dataset.themeIcon+')';if(l.media===m)return;const n=l.cloneNode();n.media=m;l.replaceWith(n)})}`;
+const HEAD = nonce => `<link rel="stylesheet" href="${SITE}/assets/ds/tokens.css"><link rel="stylesheet" href="${SITE}/assets/ds/base.css">${ICONS}
+<script nonce="${nonce}">${SYNC_ICON};try{const t=localStorage.getItem('ispanel-theme');if(t==='light'||t==='dark')document.documentElement.dataset.theme=t}catch(e){}syncIcon()</script>`;
 const PANEL_TOKENS = `:root{--accent:#2e3c74;--teal:#2f8f86;--soft:var(--bg-alt);--ok:#2f8a55;--bad:#b4473b;--ink:var(--text)}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--accent:#9fb0ff;--teal:#5cc8bd;--ok:#5fbf7a;--bad:#ef8a7d}}
 :root[data-theme="dark"]{--accent:#9fb0ff;--teal:#5cc8bd;--ok:#5fbf7a;--bad:#ef8a7d}
@@ -397,7 +426,8 @@ ${labels.map(({ d, i }) => `<text x="${x(i)}" y="${H - 8}" class="ax" text-ancho
   // ---------- world map: Natural Earth countries, Equal Earth projection, drag to move, wheel or buttons to zoom ----------
   const num2a = {}; for (let i = 0; i < ISO.length; i += 5) num2a[ISO.slice(i, i + 3)] = ISO.slice(i + 3, i + 5);
   const WORLD = { x: -272, y: -134, w: 544, h: 242 };   // from Greenland to Tierra del Fuego
-  let world = null, mapVisits = {}, view = { ...WORLD };
+  let world = null, mapVisits = {}, mapCities = [], view = { ...WORLD };
+  let mapMode = store.get('panel-map') === 'cities' ? 'cities' : 'countries';
   const A1 = 1.340264, A2 = -0.081106, A3 = 0.000893, A4 = 0.003796, M = Math.sqrt(3) / 2;
   const project = ([lon, lat]) => {
     const l = lon * Math.PI / 180, t = Math.asin(M * Math.sin(lat * Math.PI / 180)), t2 = t * t, t6 = t2 * t2 * t2;
@@ -421,28 +451,62 @@ ${labels.map(({ d, i }) => `<text x="${x(i)}" y="${H - 8}" class="ax" text-ancho
     }));
     return world;
   };
-  const setView = () => $('#map svg')?.setAttribute('viewBox', `${view.x} ${view.y} ${view.w} ${view.h}`);
+  // the dots keep their size on screen while zooming
+  const dotSize = () => $$('#dots circle').forEach(c => c.setAttribute('r', (c.dataset.r * view.w / WORLD.w).toFixed(2)));
+  const setView = () => { $('#map svg')?.setAttribute('viewBox', `${view.x} ${view.y} ${view.w} ${view.h}`); dotSize(); };
   const zoom = (k, cx = view.x + view.w / 2, cy = view.y + view.h / 2) => {
     const w = Math.max(60, Math.min(WORLD.w, view.w / k)), h = w * WORLD.h / WORLD.w;
     view = { x: cx - (cx - view.x) * w / view.w, y: cy - (cy - view.y) * h / view.h, w, h }; setView();
   };
+  const placeName = c => c.city || c.region || 'Lugar sin determinar';
   const paintMap = () => {
-    const max = Math.max(1, ...Object.values(mapVisits));
+    const max = Math.max(1, ...Object.values(mapVisits)), soft = mapMode === 'cities';
     $$('#map path[data-c]').forEach(p => {
       const v = mapVisits[p.dataset.c] || 0;
       p.classList.toggle('has', v > 0);
-      p.setAttribute('fill-opacity', v ? (0.45 + 0.55 * Math.sqrt(v / max)).toFixed(2) : '1');
+      p.setAttribute('fill-opacity', v ? (soft ? 0.22 : 0.45 + 0.55 * Math.sqrt(v / max)).toFixed(2) : '1');
     });
+    const dots = $('#dots'); if (!dots) return;
+    const places = soft ? mapCities.filter(c => c.lat || c.lon) : [], top = Math.max(1, ...places.map(c => c.n));
+    // the biggest are drawn first, so the small ones stay on top and can be hovered
+    dots.innerHTML = places.slice().sort((a, b) => b.n - a.n).map((c, i) => {
+      const [x, y] = project([c.lon, c.lat]), r = 1.6 + 4.4 * Math.sqrt(c.n / top);
+      return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" data-r="${r.toFixed(2)}" class="city${i < 3 ? ' big' : ''}" data-city="${text(placeName(c))}" data-where="${text([c.region && c.region !== c.city ? c.region : '', countryName(c.country)].filter(Boolean).join(', '))}" data-cc="${text(c.country)}" data-n="${c.n}"/>`;
+    }).join('');
+    dotSize();
+    $$('[data-mapmode]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.mapmode === mapMode)));
+    const n = soft ? places.length : Object.keys(mapVisits).length;
+    $('#map-count').textContent = soft ? (n === 1 ? '1 ciudad' : `${n} ciudades`) : (n === 1 ? '1 país' : `${n} países`);
+    $('#map-note').textContent = soft
+      ? 'Ciudad aproximada según la red del visitante (la de su operador, no su casa). No se guarda ninguna IP; no cuenta a quien pide no ser rastreado. Se cuentan desde el 18 de octubre de 2026.'
+      : 'Pasa por encima de un país para ver sus visitas. Arrastra para moverte; zoom con + y − (o Ctrl + rueda).';
   };
-  const renderMap = async rows => {
+  // «Ciudades» frames the dots (never closer than a region), «Países» goes back to the whole world
+  const fitCities = () => {
+    const pts = mapMode === 'cities' ? mapCities.filter(c => c.lat || c.lon).map(c => project([c.lon, c.lat])) : [];
+    if (!pts.length) { view = { ...WORLD }; return setView(); }
+    const xs = pts.map(p => p[0]), ys = pts.map(p => p[1]), cx = (Math.min(...xs) + Math.max(...xs)) / 2, cy = (Math.min(...ys) + Math.max(...ys)) / 2;
+    const w = Math.min(WORLD.w, Math.max(70, (Math.max(...xs) - Math.min(...xs)) * 1.5, (Math.max(...ys) - Math.min(...ys)) * 1.5 * WORLD.w / WORLD.h)), h = w * WORLD.h / WORLD.w;
+    view = { x: cx - w / 2, y: cy - h / 2, w, h }; setView();
+  };
+  const placesCard = () => {
+    $('#places-title').textContent = mapMode === 'cities' ? 'Ciudades' : 'Países';
+    $('#places-hint').textContent = mapMode === 'cities' ? 'Páginas vistas por ciudad aproximada. Vuelve a «Países» en el mapa para verlas por país.'
+      : 'Ordenados por visitas. Cambia a «Ciudades» en el mapa para verlas por ciudad.';
+    $('#countries').innerHTML = mapMode === 'cities'
+      ? (mapCities.length ? bars(mapCities.map(c => ({ ...c, visits: c.n })), c => `${flag(c.country)}${placeName(c)}${c.region && c.region !== c.city ? ` · ${c.region}` : ''}`)
+        : '<p class="empty">Aún no hay visitas con ciudad en este periodo: se cuentan desde el 18 de octubre de 2026.</p>')
+      : bars(last.countries, r => country(r.key));
+    sizeBars();
+  };
+  const renderMap = async (rows, places) => {
     mapVisits = Object.fromEntries(rows.filter(r => r.key && r.key !== 'XX').map(r => [r.key, r.visits]));
-    const n = Object.keys(mapVisits).length;
-    $('#map-count').textContent = n === 1 ? '1 país' : `${n} países`;
+    mapCities = places || [];
     if (!$('#map svg')) {
       try {
         const countries = await loadWorld();
         $('#map').innerHTML = `<svg viewBox="${view.x} ${view.y} ${view.w} ${view.h}" role="img" aria-label="Mapa del mundo con las visitas por país">
-${countries.map(c => `<path d="${c.d}" data-c="${c.code}" data-n="${text(c.name)}"/>`).join('')}</svg><div class="tip" id="maptip" hidden></div>
+${countries.map(c => `<path d="${c.d}" data-c="${c.code}" data-n="${text(c.name)}"/>`).join('')}<g id="dots"></g></svg><div class="tip" id="maptip" hidden></div>
 <div class="mapctl"><button class="btn btn-sm btn-icon" type="button" data-zoom="1.6" aria-label="Acercar">+</button><button class="btn btn-sm btn-icon" type="button" data-zoom="0.625" aria-label="Alejar">−</button><button class="btn btn-sm btn-icon" type="button" data-zoom="0" aria-label="Ver el mundo entero">⟲</button></div>`;
         wireMap();
       } catch { $('#map').innerHTML = '<p class="empty">No se ha podido cargar el mapa ahora mismo; tienes la lista de países al lado.</p>'; return; }
@@ -455,15 +519,16 @@ ${countries.map(c => `<path d="${c.d}" data-c="${c.code}" data-n="${text(c.name)
     let drag = null;
     svg.addEventListener('pointermove', ev => {
       if (drag) { const b = svg.getBoundingClientRect(); view.x = drag.vx - (ev.clientX - drag.x) / b.width * view.w; view.y = drag.vy - (ev.clientY - drag.y) / b.height * view.h; setView(); tip.hidden = true; return; }
-      const p = ev.target.closest('path[data-c]');
-      $$('#map path.on').forEach(x => x !== p && x.classList.remove('on'));
-      if (!p) { tip.hidden = true; return; }
-      p.classList.add('on');
-      const v = mapVisits[p.dataset.c] || 0, b = $('#map').getBoundingClientRect();
-      tip.innerHTML = `<b>${flag(p.dataset.c)}${text(countryName(p.dataset.c) || p.dataset.n)}</b><span>${v ? `${fmt(v)} visita${v === 1 ? '' : 's'}` : 'Sin visitas'}</span>`;
+      const dot = ev.target.closest('circle[data-city]'), p = dot ? null : ev.target.closest('path[data-c]');
+      $$('#map .on').forEach(x => x !== p && x !== dot && x.classList.remove('on'));
+      if (!p && !dot) { tip.hidden = true; return; }
+      (p || dot).classList.add('on');
+      const b = $('#map').getBoundingClientRect();
+      if (dot) { const v = Number(dot.dataset.n); tip.innerHTML = `<b>${flag(dot.dataset.cc)}${dot.dataset.city}</b><span>${dot.dataset.where}</span><span>${fmt(v)} página${v === 1 ? '' : 's'} vista${v === 1 ? '' : 's'}</span>`; }
+      else { const v = mapVisits[p.dataset.c] || 0; tip.innerHTML = `<b>${flag(p.dataset.c)}${text(countryName(p.dataset.c) || p.dataset.n)}</b><span>${v ? `${fmt(v)} visita${v === 1 ? '' : 's'}` : 'Sin visitas'}</span>`; }
       tip.hidden = false; tip.style.setProperty('--x', `${ev.clientX - b.left}px`); tip.style.setProperty('--y', `${ev.clientY - b.top}px`);
     });
-    svg.addEventListener('pointerleave', () => { tip.hidden = true; $$('#map path.on').forEach(x => x.classList.remove('on')); });
+    svg.addEventListener('pointerleave', () => { tip.hidden = true; $$('#map .on').forEach(x => x.classList.remove('on')); });
     svg.addEventListener('pointerdown', ev => { if (ev.pointerType === 'mouse' && ev.button !== 0) return; drag = { x: ev.clientX, y: ev.clientY, vx: view.x, vy: view.y }; svg.setPointerCapture(ev.pointerId); svg.classList.add('dragging'); });
     const stop = () => { drag = null; svg.classList.remove('dragging'); };
     svg.addEventListener('pointerup', stop); svg.addEventListener('pointercancel', stop);
@@ -495,6 +560,43 @@ ${countries.map(c => `<path d="${c.d}" data-c="${c.code}" data-n="${text(c.name)
 <a class="btn btn-sm btn-arrow" href="https://github.com/settings/security" target="_blank" rel="noopener">Seguridad de GitHub</a></div>`;
   };
 
+  // ---------- highlights: a few sentences that read the figures for you ----------
+  const KPI_HELP = ['Llegadas a tus webs desde fuera (Cloudflare cuenta una visita cada vez que alguien llega desde otra web, un buscador o un enlace)',
+    'Todas las páginas abiertas, también las que se ven dentro de una misma visita', 'Cuántas páginas abre de media cada visita',
+    'Mensajes que llegaron a tu correo desde los formularios; los bloqueados son bots o envíos sin la comprobación antibots'];
+  const longDay = s => new Date(s + 'T12:00:00Z').toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
+  const share = (part, all) => all ? Math.round(part / all * 100) : 0;
+  const insights = (d, sent, blocked) => {
+    const out = [], total = d.total.visits;
+    const best = d.daily.reduce((a, b) => (b.visits > a.visits ? b : a), d.daily[0] || { visits: 0 });
+    if (best.visits) out.push(['★', `Tu mejor día fue el <b>${longDay(best.key)}</b>, con <b>${fmt(best.visits)}</b> visitas.`]);
+    const today = d.daily.at(-1), before = d.daily.at(-2);
+    if (today) out.push(['◷', `Hoy llevas <b>${fmt(today.visits)}</b> visita${today.visits === 1 ? '' : 's'}${before ? ` (ayer, ${fmt(before.visits)})` : ''}.`]);
+    const from = new Map(); for (const r of d.sources) { const l = source(r.key); if (r.key && l !== 'Entre tus webs') from.set(l, (from.get(l) || 0) + r.visits); }
+    const topFrom = [...from].sort((a, b) => b[1] - a[1])[0];
+    if (topFrom && total) out.push(['↗', `<b>${text(topFrom[0])}</b> es lo que más visitas te trae desde fuera: el <b>${share(topFrom[1], total)} %</b>.`]);
+    const known = d.countries.filter(r => r.key && r.key !== 'XX'), topC = known[0];
+    if (topC && total) out.push(['◍', `El <b>${share(topC.visits, total)} %</b> llega desde ${text(country(topC.key))}; en total, <b>${known.length}</b> ${known.length === 1 ? 'país' : 'países'}.`]);
+    const city = d.cities?.rows?.find(c => c.city);
+    if (city) out.push(['⌖', `La ciudad que más te visita es <b>${text(city.city)}</b> (${fmt(city.n)} páginas vistas).`]);
+    const phone = d.devices.filter(r => String(r.key).toLowerCase() === 'mobile').reduce((a, r) => a + r.visits, 0);
+    if (total) out.push(['▯', `El <b>${share(phone, total)} %</b> te visita desde el móvil.`]);
+    const page = d.pages.find(p => !probe(p.key));
+    if (page) out.push(['❐', `La página más vista es <b>${text(pageName(page.key))}</b>, con ${fmt(page.views)} vistas.`]);
+    if (sent || blocked) out.push(['✉', `<b>${fmt(sent)}</b> mensaje${sent === 1 ? '' : 's'} recibido${sent === 1 ? '' : 's'} y <b>${fmt(blocked)}</b> intento${blocked === 1 ? '' : 's'} de bots frenado${blocked === 1 ? '' : 's'}.`]);
+    return out.slice(0, 8);
+  };
+  // trend per site: a small line for each web that draws itself, with a link to open it
+  const spark = (vals, i) => {
+    const W = 160, H = 40, max = Math.max(1, ...vals), x = k => 2 + k * (W - 4) / Math.max(1, vals.length - 1), y = v => H - 4 - v / max * (H - 8);
+    const line = vals.map((v, k) => `${k ? 'L' : 'M'}${x(k).toFixed(1)},${y(v).toFixed(1)}`).join('');
+    return `<svg class="spark" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-hidden="true"><path d="${line} L${x(vals.length - 1).toFixed(1)},${H} L2,${H} Z" class="sa c${i}f"/><path d="${line}" class="sl c${i}"/></svg>`;
+  };
+  const trends = d => ['inicio', 'cv', 'isacademy'].map((k, i) => {
+    const vals = d.siteDaily?.[k] || [], week = vals.slice(-7).reduce((a, v) => a + v, 0);
+    return `<li><a class="tw" href="${SITES[k][1]}" target="_blank" rel="noopener"><b>${SITES[k][0]}</b><small>${SITES[k][1].replace(/^https:\/\//, '')}</small></a>${spark(vals, i)}<span class="tn"><b>${fmt(d.sites[k]?.visits)}</b><small>${vals.length > 7 ? `${fmt(week)} en los últimos 7 días` : 'visitas'}</small></span></li>`;
+  }).join('');
+
   // ---------- render ----------
   let last = null, first = true, refreshedAt = 0;
   const render = d => {
@@ -505,18 +607,21 @@ ${countries.map(c => `<path d="${c.d}" data-c="${c.code}" data-n="${text(c.name)
       ['Páginas vistas', d.total.views, 0, delta(d.total.views, d.previous.views)],
       ['Páginas por visita', d.total.visits ? d.total.views / d.total.visits : 0, 1, '<span class="d">media</span>'],
       ['Mensajes recibidos', sent, 0, `<span class="d">${fmt(blocked)} bloqueados</span>`],
-    ].map(([k, v, dec, s]) => `<div class="card kpi"><span class="k">${k}</span><span class="v" data-count="${v}" data-dec="${dec}">0</span>${s}</div>`).join('');
+    ].map(([k, v, dec, s], i) => `<div class="card kpi" title="${KPI_HELP[i]}"><span class="k">${k}</span><span class="v" data-count="${v}" data-dec="${dec}">0</span>${s}</div>`).join('');
+    $('#insights').innerHTML = insights(d, sent, blocked).map(([icon, t], i) => `<li data-j="${i}"><span class="ii" aria-hidden="true">${icon}</span><span>${t}</span></li>`).join('');
+    $$('#insights li').forEach(li => li.style.setProperty('--j', li.dataset.j));
+    $('[data-action="more"]').hidden = $$('#insights li').length <= 4;
+    $('#trends').innerHTML = trends(d);
     $('#chart').innerHTML = chart(d.daily); $('#chart').classList.remove('static');
     $('#sites').innerHTML = donut(Object.entries(d.sites).map(([k, v]) => ({ key: SITES[k][0], visits: v.visits })), r => r.key);
     $('#sources').innerHTML = bars(d.sources, r => source(r.key));
-    $('#countries').innerHTML = bars(d.countries, r => country(r.key));
     $('#pages').innerHTML = bars(d.pages, r => pageName(r.key), r => r.views);
     $('#devices').innerHTML = donut(d.devices, r => device(r.key));
     $('#browsers').innerHTML = bars(d.browsers, r => tech(r.key));
     $('#systems').innerHTML = bars(d.systems, r => tech(r.key));
     $('#forms').innerHTML = formsCard(d.forms);
     $('#security').innerHTML = securityCard(d);
-    sizeBars(); drawDonuts(); countUp(); wireChart(); renderMap(d.countries);
+    last = d; mapCities = d.cities?.rows || []; placesCard(); sizeBars(); drawDonuts(); countUp(); wireChart(); renderMap(d.countries, d.cities?.rows);
     $$('.site-opt [data-n]').forEach(el => { const v = d.sites[el.dataset.n]?.visits; el.textContent = v == null ? '' : `${fmt(v)} visitas`; });
     if (first) { first = false; $$('main .card').forEach((el, n) => el.style.setProperty('--i', Math.min(n, 14))); document.body.classList.add('enter'); }
     const since = new Date(d.range.since + 'T12:00:00Z').toLocaleDateString('es-ES', { day: 'numeric', month: 'long' });
@@ -560,10 +665,12 @@ ${countries.map(c => `<path d="${c.d}" data-c="${c.code}" data-n="${text(c.name)
     else if (b.dataset.site) { site = b.dataset.site; store.set('panel-site', site); openMenu(false); load(false); }
     else if (b.dataset.action === 'custom') { custom.hidden = !custom.hidden; if (!custom.hidden) $('#custom-n').focus(); }
     else if (b.dataset.action === 'refresh') { b.classList.add('spin'); await load(true); b.classList.remove('spin'); }
+    else if (b.dataset.action === 'more') { $('#insights').classList.remove('short'); b.hidden = true; }
+    else if (b.dataset.mapmode) { mapMode = b.dataset.mapmode; store.set('panel-map', mapMode); if (last) { placesCard(); paintMap(); fitCities(); } }
     else if (b.dataset.zoom) { const k = Number(b.dataset.zoom); if (k) zoom(k); else { view = { ...WORLD }; setView(); } }
     else if (b.dataset.action === 'theme') {
       const dark = document.documentElement.dataset.theme ? document.documentElement.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
-      document.documentElement.dataset.theme = dark ? 'light' : 'dark'; store.set('ispanel-theme', document.documentElement.dataset.theme);
+      document.documentElement.dataset.theme = dark ? 'light' : 'dark'; store.set('ispanel-theme', document.documentElement.dataset.theme); window.syncIcon?.();
     }
     else if (b.dataset.action === 'logout-all' && confirm('¿Cerrar todas las sesiones abiertas de IsPanel, también esta? Tendrás que pedir un enlace nuevo.')) {
       const r = await fetch('/logout-all', { method: 'POST' }); if (r.ok) location.href = '/login';
@@ -636,6 +743,9 @@ svg{width:100%;height:auto;display:block}.grid{stroke:var(--line);stroke-dasharr
 #map svg{cursor:grab;touch-action:none;user-select:none}#map svg.dragging{cursor:grabbing}
 #map path{fill:color-mix(in srgb,var(--text) 7%,var(--surface));stroke:color-mix(in srgb,var(--text) 18%,var(--surface));stroke-width:.35;vector-effect:non-scaling-stroke;transition:fill .3s,stroke .2s,fill-opacity .6s}#map path.has{fill:var(--gold)}
 #map path.on{stroke:var(--gold-text);stroke-width:1.4}#maptip{top:var(--y);transform:translate(-50%,calc(-100% - 12px))}
+.maphead{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}.seg{display:inline-flex;gap:4px;padding:3px;border:1px solid var(--line);border-radius:999px;letter-spacing:0;text-transform:none}.seg .btn{min-height:30px;padding:3px 12px;border:0}
+#dots .city{fill:var(--gold);fill-opacity:.78;stroke:var(--surface);stroke-width:.7;vector-effect:non-scaling-stroke;cursor:pointer;transition:fill-opacity .2s}#dots .city.on{fill-opacity:1;stroke:var(--gold-text);stroke-width:2}
+#dots .city.big{animation:ping 2.4s ease-out infinite}@keyframes ping{0%,100%{stroke-width:.7;stroke-opacity:1}50%{stroke-width:5;stroke-opacity:.35}}
 .mapctl{position:absolute;right:10px;bottom:10px;display:flex;flex-direction:column;gap:6px}.mapctl .btn{min-height:34px;min-width:34px;padding:4px;background:var(--surface)}
 .bars{list-style:none;margin:0;padding:0;display:grid;gap:10px}.bars li{display:grid;grid-template-columns:1fr auto;gap:4px 10px}.bl{color:var(--text);font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.bn{font-weight:700;color:var(--text);font-size:14px;font-variant-numeric:tabular-nums}
 .bt{--w:0;grid-column:1/-1;height:7px;background:var(--bg-alt);border-radius:4px;overflow:hidden}.bt i{display:block;height:100%;width:var(--w);background:linear-gradient(90deg,var(--gold-600),var(--gold-300));border-radius:4px;transition:width 1s cubic-bezier(.2,.7,.2,1)}
@@ -650,7 +760,17 @@ svg{width:100%;height:auto;display:block}.grid{stroke:var(--line);stroke-dasharr
 .sec-kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:16px}.sec-kpis>div{background:var(--bg-alt);border-radius:14px;padding:12px 14px;display:grid;gap:2px}.sec-kpis b{font-size:20px;color:var(--text)}.sec-kpis small{font-size:12px;color:var(--text-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .sub{font-size:13px;color:var(--text);margin:0 0 8px}.log{list-style:none;margin:0 0 12px;padding:0;display:grid;gap:8px}.log li{display:grid;grid-template-columns:auto auto 1fr;gap:4px 8px;align-items:center;font-size:13.5px;color:var(--text)}.log .m{color:var(--text-2);font-size:12.5px;text-align:right}
 .note{font-size:12.5px;color:var(--text-2);margin:8px 0 12px}.sec-actions{display:flex;flex-wrap:wrap;gap:8px}.links{display:flex;flex-wrap:wrap;gap:8px}
-.foot{color:var(--text-2);font-size:12px;margin-top:26px;text-align:center}body.loading main .card{opacity:.6;transition:opacity .2s}
+.foot{color:var(--text-2);font-size:12px;margin-top:26px;text-align:center}
+.hint{font-size:12.5px;line-height:1.5;color:var(--text-2);margin:-6px 0 14px}.kpi{cursor:help}
+.insights{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px}
+.insights li{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:start;padding:12px 14px;border-radius:14px;background:var(--bg-alt);font-size:14px;line-height:1.45;color:var(--text);animation:up .6s calc(.25s + var(--j, 0) * 70ms) cubic-bezier(.2,.7,.2,1) both;transition:transform .2s}
+.insights li:hover{transform:translateY(-2px)}.insights b{color:var(--gold-text)}.ii{display:grid;place-items:center;width:28px;height:28px;border-radius:50%;background:color-mix(in srgb,var(--gold) 18%,transparent);color:var(--gold-text);font-size:14px}
+.trends{list-style:none;margin:0;padding:0;display:grid;gap:6px}.trends li{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,2fr) auto;gap:16px;align-items:center;padding:8px 10px;border-radius:12px;transition:background .2s}.trends li:hover{background:var(--bg-alt)}
+.tw{display:grid;color:var(--text);text-decoration:none}.tw b{font-weight:600}.tw small{font-size:12px;color:var(--text-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.tw:hover b{color:var(--gold-text)}
+.spark{width:100%;height:40px;clip-path:inset(0 100% 0 0);animation:ink 1.3s .4s cubic-bezier(.6,0,.2,1) forwards}.sl{fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke}.c0f{fill:color-mix(in srgb,var(--gold) 16%,transparent)}.c1f{fill:color-mix(in srgb,var(--accent) 14%,transparent)}.c2f{fill:color-mix(in srgb,var(--teal) 14%,transparent)}
+.tn{display:grid;text-align:right}.tn b{font-size:20px;color:var(--text);font-variant-numeric:tabular-nums}.tn small{font-size:12px;color:var(--text-2)}
+.more{display:none;margin-top:12px}@media (max-width:680px){.insights.short li:nth-child(n+5){display:none}.insights.short+.more:not([hidden]){display:inline-flex}}
+@media (max-width:680px){.trends li{grid-template-columns:1fr auto}.trends .spark{grid-column:1/-1;grid-row:2}}body.loading main .card{opacity:.6;transition:opacity .2s}
 body.enter main .card{animation:up .7s calc(var(--i, 0) * 60ms) cubic-bezier(.2,.7,.2,1) both}
 #intro{position:fixed;inset:0;z-index:40;display:grid;place-items:center;background:radial-gradient(120% 120% at 50% 30%,#2e3c74 0%,#1c2547 45%,#0b1026 100%);color:#f6f1e7;clip-path:inset(0 0 0 0);transition:clip-path .85s cubic-bezier(.7,0,.2,1);cursor:pointer}
 #intro.out{clip-path:inset(0 0 100% 0)}.intro-in{display:grid;grid-template-columns:auto auto;align-items:baseline;justify-content:center}
@@ -658,7 +778,7 @@ body.enter main .card{animation:up .7s calc(var(--i, 0) * 60ms) cubic-bezier(.2,
 .intro-p{font-size:clamp(52px,9vw,96px);font-weight:700;letter-spacing:-.03em;opacity:0;transform:translateY(16px);animation:rise .65s .85s cubic-bezier(.2,.7,.2,1) forwards}
 .intro-line{grid-column:1/-1;height:2px;margin-top:8px;background:linear-gradient(90deg,transparent,#e2b25c,transparent);transform:scaleX(0);animation:grow .8s 1.05s ease-out forwards}
 .intro-sub{grid-column:1/-1;text-align:center;margin-top:14px;font-size:12px;letter-spacing:.34em;text-transform:uppercase;color:#c9cde3;opacity:0;animation:rise .6s 1.2s ease-out forwards}
-@media (prefers-reduced-motion:reduce){#intro{display:none}.li,.lv{stroke-dashoffset:0}.area,.pt{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){#intro{display:none}.li,.lv{stroke-dashoffset:0}.area,.pt{opacity:1;transform:none}.spark{clip-path:none}}
 @media (max-width:980px){.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.grid3{grid-template-columns:1fr 1fr}.mapgrid{grid-template-columns:1fr}}
 @media (max-width:680px){.grid2,.grid3,.sec-kpis{grid-template-columns:1fr}.v{font-size:28px}.tag,.tools .btn-text{display:none}#site-btn{min-width:0;width:100%}.site-pick{flex-basis:100%}#site-menu{left:0;right:auto}.donut{grid-template-columns:110px 1fr}.donut svg{width:110px}.log li{grid-template-columns:auto 1fr}.log .m{grid-column:1/-1;text-align:left}}`,
   html: `<div id="intro" aria-hidden="true"><div class="intro-in"><span class="intro-is">Is</span><span class="intro-p">Panel</span><span class="intro-line"></span><span class="intro-sub">Tu universo en datos</span></div></div>
@@ -671,13 +791,15 @@ body.enter main .card{animation:up .7s calc(var(--i, 0) * 60ms) cubic-bezier(.2,
 <form id="custom" hidden><label for="custom-n">Ver los últimos</label><input id="custom-n" type="number" min="1" max="180" step="1" value="14" inputmode="numeric"><select id="custom-u" aria-label="Unidad"><option value="1">días</option><option value="7">semanas</option><option value="30">meses</option></select><button class="btn btn-sm btn-primary" type="submit">Aplicar</button><p id="custom-msg" role="alert"></p></form>
 <p id="range">Cargando…</p><p id="fresh" aria-live="polite"></p><p id="approx" hidden>Los 7 últimos días son exactos; los anteriores son una estimación de Cloudflare, que pasada una semana solo guarda 1 de cada 10 visitas. La comparación con el periodo anterior también es aproximada.</p><p id="error" hidden></p>
 <section class="kpis" id="kpis" aria-label="Resumen"></section>
-<section class="card"><h2>Visitas por día</h2><div id="chart"></div><div class="legend"><span><i></i>Visitas</span><span><i class="v2"></i>Páginas vistas</span></div></section>
-<div class="mapgrid"><section class="card"><h2>De dónde te visitan <small id="map-count"></small></h2><div id="map"><p class="empty">Cargando el mapa…</p></div><p class="note">Pasa por encima de un país para ver sus visitas. Arrastra para moverte; zoom con + y − (o Ctrl + rueda).</p></section><section class="card"><h2>Países</h2><div id="countries"></div></section></div>
-<div class="grid2"><section class="card" data-sites-only><h2>Por web</h2><div id="sites"></div></section><section class="card"><h2>Dispositivo</h2><div id="devices"></div></section>
-<section class="card"><h2>De dónde vienen</h2><div id="sources"></div></section><section class="card"><h2>Páginas más vistas</h2><div id="pages"></div></section></div>
-<div class="grid2"><section class="card"><h2>Navegador</h2><div id="browsers"></div></section><section class="card"><h2>Sistema</h2><div id="systems"></div></section></div>
-<div class="grid2"><section class="card"><h2>Formularios</h2><div id="forms"></div></section><section class="card"><h2>Seguridad</h2><div id="security"></div></section></div>
-<section class="card" id="quick"><h2>Accesos rápidos</h2><div class="links">
+<section class="card" id="highlights-card"><h2>Lo más destacado</h2><ul class="insights short" id="insights"></ul><button class="btn btn-sm more" type="button" data-action="more" hidden>Ver todo lo destacado</button></section>
+<section class="card"><h2>Visitas por día</h2><p class="hint">Visitas (llegadas a tus webs) y páginas vistas de cada día. Pasa el ratón o el dedo por la gráfica para ver un día concreto.</p><div id="chart"></div><div class="legend"><span><i></i>Visitas</span><span><i class="v2"></i>Páginas vistas</span></div></section>
+<section class="card" data-sites-only><h2>Tendencia por web <small>visitas por día</small></h2><p class="hint">La evolución de cada web en el periodo. Pulsa el nombre para abrirla.</p><ul class="trends" id="trends"></ul></section>
+<div class="mapgrid"><section class="card"><h2>De dónde te visitan <span class="maphead"><small id="map-count"></small><span class="seg" role="group" aria-label="Ver el mapa por"><button class="btn btn-sm" type="button" data-mapmode="countries" aria-pressed="true">Países</button><button class="btn btn-sm" type="button" data-mapmode="cities" aria-pressed="false">Ciudades</button></span></span></h2><div id="map"><p class="empty">Cargando el mapa…</p></div><p class="note" id="map-note"></p></section><section class="card"><h2 id="places-title">Países</h2><p class="hint" id="places-hint"></p><div id="countries"></div></section></div>
+<div class="grid2"><section class="card" data-sites-only><h2>Por web</h2><p class="hint">Cómo se reparten las visitas entre tus tres webs.</p><div id="sites"></div></section><section class="card"><h2>Dispositivo</h2><p class="hint">Desde qué aparato te visitan: ordenador, móvil o tableta.</p><div id="devices"></div></section>
+<section class="card"><h2>De dónde vienen</h2><p class="hint">La web o la app desde la que llegaron. «Directo» es quien escribe la dirección, usa un marcador o un enlace enviado por mensaje.</p><div id="sources"></div></section><section class="card"><h2>Páginas más vistas</h2><p class="hint">Páginas vistas por dirección. Las marcadas «no existe» son bots probando direcciones.</p><div id="pages"></div></section></div>
+<div class="grid2"><section class="card"><h2>Navegador</h2><p class="hint">Con qué navegador te visitan.</p><div id="browsers"></div></section><section class="card"><h2>Sistema</h2><p class="hint">Con qué sistema operativo te visitan.</p><div id="systems"></div></section></div>
+<div class="grid2"><section class="card"><h2>Formularios</h2><p class="hint">Qué pasó con cada envío de los formularios de contacto de CV Online e IsAcademy.</p><div id="forms"></div></section><section class="card"><h2>Seguridad</h2><p class="hint">Quién ha entrado en IsPanel y qué se ha frenado en tus webs.</p><div id="security"></div></section></div>
+<section class="card" id="quick"><h2>Accesos rápidos</h2><p class="hint">Tus webs y los servicios que las mueven, a un clic.</p><div class="links">
 <a class="btn btn-sm btn-arrow" href="${SITE}/" target="_blank" rel="noopener">Inicio</a><a class="btn btn-sm btn-arrow" href="${SITE}/cv/" target="_blank" rel="noopener">CV Online</a><a class="btn btn-sm btn-arrow" href="${SITE}/isacademy/" target="_blank" rel="noopener">IsAcademy</a>
 <a class="btn btn-sm btn-arrow" href="https://dash.cloudflare.com/" target="_blank" rel="noopener">Cloudflare</a><a class="btn btn-sm btn-arrow" href="https://resend.com/emails" target="_blank" rel="noopener">Resend</a>
 <a class="btn btn-sm btn-arrow" href="https://github.com/ismael-sarmiento" target="_blank" rel="noopener">GitHub</a><a class="btn btn-sm btn-arrow" href="https://www.linkedin.com/in/ismael-sarmiento/" target="_blank" rel="noopener">LinkedIn</a></div>

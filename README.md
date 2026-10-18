@@ -33,6 +33,7 @@ por todas sus webs.
 | `icons.svg` | Iconos comunes (WhatsApp, correo, LinkedIn, teléfono) como sprite: `<use href="/assets/ds/icons.svg#i-whatsapp"/>` |
 | `favicon.js` | El icono de la pestaña sigue el tema de la página en las tres webs (iconos en `assets/brand/favicon-{light,dark}`, generados con `tools/icons.py`). La imagen para compartir, los avatares «Is» y el banner de LinkedIn salen de `tools/social.py` |
 | `avatar.js`, `assistant.js`, `assistant.css` | Alan, el asistente local compartido (cada web le da su propio contenido) |
+| `views.js` | Una visita anónima por página para el mapa de ciudades de IsPanel (sin cookies ni IP; respeta Do Not Track y GPC) |
 | `fonts/` | Space Grotesk y Allura, servidas desde el propio dominio |
 
 Las tres webs viven en el mismo dominio, así que cargan estos ficheros con rutas absolutas (`/assets/ds/…`).
@@ -64,8 +65,8 @@ Para probar el universo completo, sirve una carpeta con este repositorio en la r
 ## IsPanel (panel privado)
 
 `tools/cloudflare/isa-panel.js` es IsPanel, el panel privado del universo en un Worker de Cloudflare: visitas por web,
-día, país (mapa interactivo), origen, página y dispositivo (Cloudflare Web Analytics, sin cookies), resultado de los
-formularios (Workers Analytics Engine) y seguridad (últimos accesos, bloqueos, rastreos). Se entra con un enlace de un
+día, país y ciudad aproximada (mapa interactivo), origen, página y dispositivo (Cloudflare Web Analytics, sin cookies),
+lo más destacado del periodo, resultado de los formularios (Workers Analytics Engine) y seguridad (últimos accesos, bloqueos, rastreos). Se entra con un enlace de un
 solo uso que llega al correo del propietario. La cabecera del fichero explica variables, secretos y despliegue.
 
 ## Despliegue

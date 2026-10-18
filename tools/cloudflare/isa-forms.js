@@ -14,6 +14,9 @@
 //   RESEND_API_KEY    secret  Resend API key «isa-forms» (sending access only)
 // Bindings: FORM_EVENTS (Workers Analytics Engine, dataset isa_forms_events): one anonymous event per request with
 // the site and the outcome, read by the private panel (isa-panel.js). No field of the message is stored.
+//           SITE_VIEWS (Workers Analytics Engine, dataset isa_site_views): POST /hit, sent once per page by
+// /assets/ds/views.js, adds one page view with the site and the approximate place Cloudflare derives from the network
+// (country, region, city and the city's coordinates rounded to 0.1°). No IP, cookie or identifier is stored.
 //
 // The forms post JSON: the visible fields (Nombre, Email, Mensaje…) plus _subject, _replyto, _page, _honey and
 // cf-turnstile-response. Fields starting with "_" steer the email and are not listed in it.
@@ -125,6 +128,22 @@ function renderEmail(data, { subject, replyTo, page }) {
 const siteOf = page => /\/isacademy\//.test(page || '') ? 'isacademy' : /\/cv\//.test(page || '') ? 'cv' : page ? 'inicio' : 'unknown';
 const track = (env, page, outcome) => { try { env.FORM_EVENTS?.writeDataPoint({ blobs: [siteOf(page), outcome], doubles: [1], indexes: [outcome] }); } catch { /* never block a message */ } };
 
+// one anonymous page view for the panel's map of cities (beacons get no useful answer, so it is always 204)
+async function countView(request, env, allowed, cors) {
+  const done = new Response(null, { status: 204, headers: cors });
+  if (request.method !== 'POST' || !allowed) return done;
+  let path = '';
+  try { path = String(JSON.parse((await request.text()).slice(0, 500)).p || '').slice(0, 200); } catch { return done; }
+  if (!path.startsWith('/')) return done;
+  const cf = request.cf || {};
+  const round = v => Math.round(Number(v) * 10) / 10 || 0;
+  try {
+    env.SITE_VIEWS?.writeDataPoint({ blobs: [siteOf(path), cf.country || 'XX', cf.region || '', cf.city || ''],
+      doubles: [round(cf.latitude), round(cf.longitude)], indexes: [siteOf(path)] });
+  } catch { /* never fail a page */ }
+  return done;
+}
+
 export default {
   async fetch(request, env) {
     const origin = request.headers.get('Origin') || '';
@@ -139,6 +158,7 @@ export default {
     };
     const reply = (status, body) => new Response(JSON.stringify(body), { status, headers: { ...cors, 'Content-Type': 'application/json' } });
 
+    if (new URL(request.url).pathname === '/hit') return countView(request, env, allowed, cors);
     if (request.method === 'OPTIONS') return new Response(null, { status: allowed ? 204 : 403, headers: cors });
     if (request.method !== 'POST') { track(env, '', 'invalid'); return reply(405, { success: 'false', message: 'method' }); }
     if (!allowed) { track(env, '', 'origin'); return reply(403, { success: 'false', message: 'origin' }); }
