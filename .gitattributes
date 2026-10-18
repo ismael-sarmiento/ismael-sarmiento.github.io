@@ -1,0 +1,3 @@
+# The Swift files in tools/brand are small image generators run by hand on a Mac, not an app: GitHub should not
+# count them as a language of the site, and CodeQL should not try to build them (it fails looking for an Xcode project).
+*.swift linguist-detectable=false
