@@ -52,7 +52,11 @@ export function initIntro({ i18n, steps = null, stepMs = 1600 } = {}) {
   const skip = intro.querySelector('[data-action="skip"]');
   let done = false, closing = false, shown = -1;
   // switching language during the intro keeps the current milestone, in the new language
-  i18n?.onChange(() => { joinBars(); if (shown >= 0 && stepText) renderStep(shown, false); });
+  i18n?.onChange(() => {
+    if (closing || intro.hidden) return;
+    joinBars();
+    if (shown >= 0 && stepText) { renderStep(shown, false); stepText.classList.remove('swap'); }
+  });
 
   const milestones = intro.querySelector('.intro-milestones');
   milestones?.style.setProperty('--step-ms', `${stepMs}ms`);
@@ -68,51 +72,106 @@ export function initIntro({ i18n, steps = null, stepMs = 1600 } = {}) {
   // consecutive milestones in the same place (Savana: Senior → Lead → Head) share one stretch of the bar
   const joinBars = () => { const p = parsed(); segs.forEach((s, k) => s.classList.toggle('joined', k > 0 && !!p[k].where && p[k].where === p[k - 1].where)); };
   joinBars();
-  let yearShown = 0, counting = 0, decoding = 0;
+  let yearShown = 0, counting = 0, decoding = 0, rendered = null;
+  const stopMilestoneFrames = () => {
+    cancelAnimationFrame(counting); cancelAnimationFrame(decoding);
+    counting = 0; decoding = 0;
+  };
   const countYear = (el, to) => {
     cancelAnimationFrame(counting);
+    counting = 0;
     if (!yearShown || to <= yearShown || reducedMotion()) { el.textContent = String(to); yearShown = to; return; }
     const from = yearShown, t0 = performance.now(), dur = 460;
-    const tick = now => { const p = Math.min(1, (now - t0) / dur); el.textContent = String(Math.round(from + (to - from) * (1 - (1 - p) ** 3))); if (p < 1) counting = requestAnimationFrame(tick); };
+    const tick = now => {
+      if (closing || intro.hidden || !el.isConnected) { counting = 0; return; }
+      const p = Math.min(1, (now - t0) / dur);
+      el.textContent = String(Math.round(from + (to - from) * (1 - (1 - p) ** 3)));
+      counting = p < 1 ? requestAnimationFrame(tick) : 0;
+    };
     tick(t0); yearShown = to;
   };
   // the place is decoded like the name in the signature: letters settle one by one out of random glyphs
   const GLYPHS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
   const decode = (el, word) => {
     cancelAnimationFrame(decoding);
+    decoding = 0;
     if (reducedMotion()) { el.textContent = word; return; }
     const t0 = performance.now(), per = 32;
     const tick = now => {
-      const done = Math.floor((now - t0) / per);
-      el.textContent = [...word].map((c, i) => (i < done || c === ' ' ? c : GLYPHS[(Math.random() * GLYPHS.length) | 0])).join('');
-      if (done < word.length) decoding = requestAnimationFrame(tick);
+      if (closing || intro.hidden || !el.isConnected) { decoding = 0; return; }
+      const letters = Math.floor((now - t0) / per);
+      el.textContent = [...word].map((c, i) => (i < letters || c === ' ' ? c : GLYPHS[(Math.random() * GLYPHS.length) | 0])).join('');
+      decoding = letters < word.length ? requestAnimationFrame(tick) : 0;
     };
     tick(t0);
   };
   const renderStep = (i, animate) => {
     const all = parsed(), m = all[i];
-    stepText.replaceChildren();
-    const meta = document.createElement('span'); meta.className = 'st-meta';
-    if (m.year) { const y = document.createElement('b'); y.className = 'st-year'; meta.append(y); animate ? countYear(y, Number(m.year)) : (y.textContent = m.year); }
-    if (m.where) { const w = document.createElement('span'); w.className = 'st-where'; meta.append(w); animate ? decode(w, m.where) : (w.textContent = m.where); }
-    stepText.append(meta);
-    // a career inside one place: its roles as a small ladder, the current one lit and the earlier ones ticked
-    const group = all.map((x, k) => ({ ...x, k })).filter(x => x.where && x.where === m.where && x.role);
-    if (m.role && group.length > 1) {
-      const ladder = document.createElement('span'); ladder.className = 'st-ladder';
-      group.forEach((x, n) => {
-        const r = document.createElement('span');
-        r.className = `st-rung${x.k < i ? ' past' : x.k === i ? ' now' : ''}`;
-        r.textContent = x.role.replace(/ (Data Engineer|of Data Management)$/, '');
-        if (n) { const sep = document.createElement('i'); sep.className = 'st-sep'; sep.textContent = '›'; ladder.append(sep); }
-        ladder.append(r);
-      });
-      stepText.append(ladder);
-    } else if (m.role) { const r = document.createElement('span'); r.className = 'st-role'; r.textContent = m.role; meta.append(r); }
+    if (!m) return;
+    // Only consecutive roles form a career. Its company and ladder stay mounted while its year, state and sentence
+    // change: Senior → Lead → Head is one continuous progression, rather than three new company introductions.
+    let first = i, last = i;
+    if (m.where && m.role) {
+      while (first > 0 && all[first - 1].where === m.where && all[first - 1].role) first--;
+      while (last + 1 < all.length && all[last + 1].where === m.where && all[last + 1].role) last++;
+    }
+    const group = all.slice(first, last + 1), career = group.length > 1;
+    const key = `${first}:${last}:${m.where || ''}`;
+    const continuing = career && rendered?.key === key;
+    stopMilestoneFrames();
+    stepText.classList.toggle('continuing', continuing);
+    stepText.classList.toggle('settled', !animate);
+    if (!continuing) {
+      stepText.replaceChildren();
+      const meta = document.createElement('span'); meta.className = 'st-meta';
+      const year = m.year ? document.createElement('b') : null;
+      if (year) { year.className = 'st-year'; meta.append(year); }
+      const where = m.where ? document.createElement('span') : null;
+      if (where) { where.className = 'st-where'; meta.append(where); }
+      stepText.append(meta);
+      rendered = { key, year, where, rungs: [], links: [], text: null, ladder: null };
+      if (career) {
+        const ladder = document.createElement('span'); ladder.className = 'st-ladder';
+        ladder.style.setProperty('--rungs', group.length);
+        group.forEach((x, n) => {
+          if (n) {
+            const link = document.createElement('i'); link.className = 'st-sep';
+            link.style.setProperty('--link-start', `${(n - .5) / group.length * 100}%`);
+            ladder.append(link); rendered.links.push(link);
+          }
+          const rung = document.createElement('span'); rung.className = 'st-rung';
+          const dot = document.createElement('span'); dot.className = 'st-rung-dot';
+          const label = document.createElement('span'); label.className = 'st-rung-label';
+          rung.append(dot, label); ladder.append(rung); rendered.rungs.push({ rung, label });
+        });
+        stepText.append(ladder); rendered.ladder = ladder;
+      } else if (m.role) { const role = document.createElement('span'); role.className = 'st-role'; role.textContent = m.role; meta.append(role); }
+    }
+    if (rendered.year) {
+      if (animate) countYear(rendered.year, Number(m.year));
+      else { rendered.year.textContent = m.year; yearShown = Number(m.year); }
+    }
+    if (rendered.where) {
+      if (animate && !continuing) decode(rendered.where, m.where);
+      else rendered.where.textContent = m.where;
+    }
+    rendered.rungs.forEach(({ rung, label }, n) => {
+      const k = first + n;
+      label.textContent = group[n].role.replace(/ (Data Engineer|of Data Management)$/, '');
+      rung.classList.toggle('past', k < i); rung.classList.toggle('now', k === i); rung.classList.toggle('next', k > i);
+      if (k === i) rung.setAttribute('aria-current', 'step'); else rung.removeAttribute('aria-current');
+    });
+    rendered.links.forEach((link, n) => {
+      const to = first + n + 1;
+      link.classList.toggle('reached', to <= i);
+      link.classList.toggle('advance', animate && continuing && to === i);
+    });
+    rendered.ladder?.classList.toggle('complete', i === last);
     // the sentence comes word by word, from blurred to sharp
     const text = document.createElement('span'); text.className = 'st-text';
     m.text.split(' ').forEach((w, n) => { const s = document.createElement('span'); s.className = 'st-w'; s.textContent = w; s.style.setProperty('--n', n); text.append(s, ' '); });
-    stepText.append(text);
+    if (rendered.text) rendered.text.replaceWith(text); else stepText.append(text);
+    rendered.text = text;
   };
   const showMilestone = (i, last = false) => {
     if (!stepText) return;
@@ -121,9 +180,15 @@ export function initIntro({ i18n, steps = null, stepMs = 1600 } = {}) {
     shown = i;
     stepText.classList.remove('swap'); void stepText.offsetWidth; stepText.classList.add('swap');
   };
-  const complete = () => { segs.forEach(s => { s.classList.remove('run'); s.classList.add('on'); }); intro.querySelector('.intro-segs')?.classList.add('complete'); };
+  const complete = () => {
+    segs.forEach(s => { s.classList.remove('run'); s.classList.add('on'); });
+    intro.querySelector('.intro-segs')?.classList.add('complete');
+    // Once its story is told, the small ladder gives way to the final year, company and sentence.
+    stepText?.classList.add('career-complete');
+  };
   const finish = () => {
     done = true;
+    stopMilestoneFrames();
     skipSignature(svg);
     if (list().length) { showMilestone(list().length - 1, true); complete(); }
     intro.classList.add('after', 'ready');
@@ -131,6 +196,7 @@ export function initIntro({ i18n, steps = null, stepMs = 1600 } = {}) {
   };
   // the end state, whatever happened before: page visible, hero risen, intro gone, focus on the page title
   const settle = () => {
+    stopMilestoneFrames();
     document.body.classList.remove('intro-open', 'entering');
     intro.hidden = true;
     document.querySelectorAll('.intro-flyer').forEach(el => el.remove());
@@ -142,7 +208,9 @@ export function initIntro({ i18n, steps = null, stepMs = 1600 } = {}) {
   const close = async () => {
     if (closing) return;
     closing = true;
+    intro.classList.add('leaving');
     done = true;
+    stopMilestoneFrames();
     skipSignature(svg);
     if (reducedMotion()) {
       await settled(intro.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 300, fill: 'forwards' }));
@@ -227,7 +295,7 @@ export function initIntro({ i18n, steps = null, stepMs = 1600 } = {}) {
   document.body.classList.add('intro-open');
   // the focus rests on the intro itself: no button looks pressed before the visitor touches anything
   intro.tabIndex = -1;
-  const rest = () => intro.focus({ preventScroll: true });
+  const rest = () => { if (!closing && !intro.hidden) intro.focus({ preventScroll: true }); };
   rest();   // from the first frame: Escape jumps to the end, Tab reaches «Saltar intro»
   enter?.addEventListener('click', close);
   intro.addEventListener('click', e => {
@@ -245,14 +313,19 @@ export function initIntro({ i18n, steps = null, stepMs = 1600 } = {}) {
     // drawn on every visit, as IsAcademy's logo; only a visitor who has just seen it written in the intro of another
     // site (Inicio → CV Online) finds it complete, carried over by the page transition
     if (handoff) skipSignature(svg);
-    else { await sleep(200); await playSignature(svg); }
+    else {
+      await sleep(200);
+      if (done || closing || intro.hidden) return;
+      await playSignature(svg);
+    }
     if (done) return;
     intro.classList.add('after');
     await sleep(600);
+    if (done || closing || intro.hidden) return;
     intro.classList.add('ready');          // the actions are available while the milestones run
     for (let i = 0; i < list().length && !done; i++) { showMilestone(i); await sleep(stepMs); }
-    if (!done) { done = true; complete(); if (skip) skip.hidden = true; }
-    if (!intro.contains(document.activeElement)) rest();
+    if (!done) { done = true; stopMilestoneFrames(); complete(); if (skip) skip.hidden = true; }
+    if (!closing && !intro.hidden && !intro.contains(document.activeElement)) rest();
   })();
   return { close };
 }
