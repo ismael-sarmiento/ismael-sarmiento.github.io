@@ -31,6 +31,15 @@ initDesignSystem();
 // intro is open it waits underneath and rises when the intro closes (/assets/ds/intro.css)
 document.querySelectorAll('.hero .reveal').forEach(el => el.classList.add('in'));
 initAlan();
+// The privacy page shares the site's language controls, with its own document title.
+if (document.body.classList.contains('privacy-page')) {
+  i18n.onChange(lang => {
+    document.title = `${lang === 'en' ? 'Privacy' : 'Privacidad'} · Ismael Sarmiento`;
+    document.querySelector('meta[name="description"]')?.setAttribute('content', lang === 'en'
+      ? 'Data, retention, providers and rights across Ismael Sarmiento’s websites.'
+      : 'Datos, conservación, proveedores y derechos de las webs de Ismael Sarmiento.');
+  });
+}
 i18n.start();
 initIntro({ i18n });
 document.querySelectorAll('[data-year]').forEach(el => { el.textContent = String(new Date().getFullYear()); });

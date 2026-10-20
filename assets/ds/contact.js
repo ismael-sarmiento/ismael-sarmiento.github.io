@@ -103,7 +103,10 @@ export function initContactForm({ form, texts, buildEmail, onSent }) {
       if (!res.ok || String(json.success) !== 'true') throw new Error(json.message || res.status);
       form.reset();
       onSent?.();
-      status.textContent = tx.ok; status.classList.add('ok');
+      // A stored request is received even when its email notification failed or is unconfirmed.
+      const savedWithoutMail = json.stored === true && json.notification !== 'accepted';
+      status.textContent = savedWithoutMail ? (tx.saved || tx.ok) : tx.ok;
+      status.classList.add('ok');
     } catch {
       status.textContent = tx.error; status.classList.add('err');
     } finally {
