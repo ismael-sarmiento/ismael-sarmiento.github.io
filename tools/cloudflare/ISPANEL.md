@@ -1,8 +1,14 @@
 # IsPanel v2.2 — contratos y operación
 
-Estado: revisión local aceptada y publicación autorizada el 2026-10-20. Despliegue en curso: D1 creada y migraciones aplicadas; código de `isa-forms` publicado con captura apagada. El nuevo `isa-panel`, GitHub Pages, flags, cron y pruebas reales de correo aún requieren completar y registrar su verificación. No se debe interpretar este estado intermedio como una publicación terminada.
+**Estado documental al 26/10/2026 — D20 aprobado:**
+
+- **Última publicación acreditada: 20/10/2026, versión estática `20261020a`.** El registro maestro contiene su cierre posterior al estado intermedio conservado abajo.
+- **Código local posterior:** D01–D19 aprobados y comprobados en local; incluye acceso D1 de D17, cierre de D18 y formularios de D19. Estos cambios y la migración `0004` no se han publicado ni aplicado remotamente durante esta revisión. La aceptación visual global y la preparación de la siguiente publicación siguen pendientes.
+- **Estado remoto actual:** no se ha vuelto a consultar la cuenta ni se han revalidado sus bindings, flags, versiones, cron o correo en esta auditoría. Lo acreditado el 20/10 no equivale a una comprobación del 26/10.
 
 ## Registro de publicación · 2026-10-20
+
+### Estado intermedio histórico, superado por el cierre siguiente
 
 - Base `isa-panel-private`, ID `de14e84d-a0d8-4fa0-881a-a33114ba1cc6`, jurisdicción **Unión Europea**, región mostrada Eastern Europe. Time Travel confirmado en el panel de Cloudflare: **7 días**.
 - Migraciones `0001` → `0002` → `0003` ejecutadas correctamente; `sqlite_master` confirma `contacts`, `traffic_events`, `panel_link_tokens` y `panel_reports`.
@@ -11,7 +17,18 @@ Estado: revisión local aceptada y publicación autorizada el 2026-10-20. Despli
 - Código nuevo de `isa-forms`: versión de código `b43eb363`, cotejado con el archivo local antes de publicar. Las modificaciones posteriores de bindings generan sus propias versiones; verificar la versión final activa al cerrar el despliegue.
 - Suite de publicación: **73/73** contratos locales y ocho comprobaciones de sintaxis, además de diff de los tres repositorios. La red está sustituida en los contratos.
 - Versión estática preparada: `20261020a`. Avisos ES/EN de conservación y resultado guardado/notificación incierta; HTML de IsAcademy obtenido mediante Chrome/CUA y las funciones de su prerender, sin iniciar un navegador alternativo.
-- Pendiente de cierre: versión final de ambos Workers, publicación de los tres repositorios, activación, cron, acceso privado y pruebas reales de formularios/informe. Evidencias en `/private/tmp/ispanel-produccion-2026-10-20/`; se copiarán a Descargas al terminar.
+- Pendiente en aquel punto intermedio: versión final de ambos Workers, publicación de los tres repositorios, activación, cron, acceso privado y pruebas reales de formularios/informe. Evidencias en `/private/tmp/ispanel-produccion-2026-10-20/`; se copiarán a Descargas al terminar.
+
+### Cierre acreditado del 20/10/2026
+
+Fuente: registro maestro local `../../../AUDITORIA-UNIVERSO.md`, sección «IsPanel · producción 20261020a publicada y probada (2026-10-20)», que sustituye el estado intermedio anterior. Entrega original: `~/Downloads/IsPanel-produccion-2026-10-20/ESTADO-PUBLICACION.md`.
+
+- GitHub Pages: portada `34304423afe89d0a382d543288a1f83efe4fa185`, CV `485d7c6229e6c1706189ca26f57f31751df04b00` e IsAcademy `877aee053d8d0e45a2d9d4cd2efe6bd1609f0fe2`, publicados por GitHub web/Codespaces.
+- Workers: código cotejado del panel `a0f123ea` y formularios `b43eb363`; versiones finales con configuración `add3809b` / `cfd42e78`, respectivamente. Constaban 100 % Ready aquel día. Los puntos de reversión iniciales del registro histórico no son un plan de reversión del código D17.
+- Ambos bindings `CONTACTS_DB` y captura de contactos/tráfico activos; informes activos en el panel. Migraciones `0001`–`0003`, jurisdicción UE y Time Travel de siete días comprobados. Previews separados de la base privada.
+- Cron guardado y comprobado tras recargar: limpieza diaria `15 2 * * *` y candidatos semanales `0 8 * * MON` / `0 9 * * MON`, con filtro de las 09:00 de Canarias y deduplicación en código.
+- Validación registrada: 37/37 comprobaciones HTTPS, 73/73 contratos locales y 16 estados visuales del panel online. Dos formularios ficticios autorizados guardados y recibidos en Gmail, informe manual recibido y acceso por enlace con segundo uso rechazado. El registro acredita la revisión del HTML en Gmail aquel día; Outlook no se verificó.
+- Límites que continúan abiertos: primera ejecución semanal y purga física no observadas en esta revisión; incidencia intermitente de Turnstile del login sin causa o solución acreditadas. No se ha creado vigilancia automática. La cuenta, el buzón y la configuración remota no se han revisitado para D20.
 
 ## Componentes
 
@@ -22,6 +39,7 @@ Estado: revisión local aceptada y publicación autorizada el 2026-10-20. Despli
 | `migrations/0001_contacts.sql` | Tabla privada e índices de contactos. |
 | `migrations/0002_panel_activity.sql` | Señales detalladas de tráfico y huellas de acceso de un uso. |
 | `migrations/0003_panel_reports.sql` | Metadatos de intentos de informe y deduplicación, durante 30 días. |
+| `migrations/0004_panel_auth.sql` | Época autoritativa de sesión y reserva de acceso; preparada solo en local por D17. |
 | `assets/ds/views.js` | Señal única de página, procedencia e idioma; respeta DNT y GPC. |
 | `qa/contacts.test.mjs` | Contratos locales con SQLite real y red sustituida. |
 | `qa/preview.mjs` | Vista local con datos ficticios y escenarios de revisión. |
@@ -38,7 +56,9 @@ Los sitios estáticos siguen en GitHub Pages. Los dos Workers se publican median
 | Ambos | `CONTACTS_ENABLED` | Activación explícita de su respectiva funcionalidad. |
 | Ambos | `TRAFFIC_ENABLED` | La cadena `"true"` activa captura/lectura privada de señales detalladas. |
 | `isa-panel` | `REPORTS_ENABLED` | La cadena `"true"` habilita envío manual y semanal; ausente, no envía informes. |
-| `isa-panel` | `PANEL_KV`, `PANEL_SECRET` | Sesiones, revocación, acceso y caché de agregados. |
+| `isa-panel` | `PANEL_KV` | Caché agregada e historial de accesos; binding requerido, sin época ni bloqueo de login. |
+| `isa-panel` | `PANEL_SECRET` | Firma de enlaces y cookies. |
+| `isa-panel` | `CONTACTS_DB` | Estado autoritativo de acceso, con0004 y withSession, independiente de los flags de captura. |
 | `isa-panel` | `ACCOUNT_ID`, `SITE_TAG`, `CF_API_TOKEN` | Lectura de Web Analytics y Analytics Engine. |
 | `isa-panel` | `PANEL_EMAIL`, `TURNSTILE_SECRET`, `RESEND_API_KEY` | Acceso por correo y desafío. |
 | `isa-forms` | `FORM_TO`, `ALLOWED_ORIGIN`, `ALLOWED_HOSTS` | Destinatario y procedencias permitidas. |
@@ -74,6 +94,21 @@ Se guarda antes de solicitar el correo. Un fallo de D1 devuelve error y no anunc
 
 `accepted` significa que el proveedor aceptó la solicitud, **no** que el correo llegó a la bandeja de destino. Esta versión no incorpora webhooks de entrega ni una cola de reintentos. Un reenvío idéntico durante la ventana no reintenta una notificación fallida.
 
+### Plazos y resultados del código local aprobado · D15/D16/D19
+
+| Operación | Plazo propio | Alcance |
+| --- | --- | --- |
+| Cargar el script de Turnstile en el navegador | 10 s | D16: cancela la carga fallida y permite recuperación manual; éxito compartido. |
+| Verificar Turnstile en `isa-forms` | 8 s | D15: cabeceras y lectura JSON; rechazo antes de guardar o enviar. |
+| POST del formulario desde el navegador | 30 s | D19: desde el intento de POST hasta leer JSON. No limita todo el preflight o carga de diccionarios. |
+| Solicitar correo de contacto o correo legado | 10 s | D19: cabeceras y JSON de Resend; el aviso de contactos ya tenía este plazo. |
+
+Una respuesta HTTP correcta con `success` verdadero confirma recepción y limpia el formulario; si `stored` es verdadero, el contacto se confirma aunque su correo quede `failed` o `unknown`. Una excepción posterior del refresco visual no convierte esa recepción en fallo de entrega. Rechazos explícitos anteriores a la entrega mantienen el error existente. Transporte interrumpido, plazo agotado, JSON inválido o respuesta ambigua muestran un aviso de recepción incierta y conservan borrador y consentimiento en el DOM actual; no se persisten borradores ni se reenvía automáticamente. Cambiar de idioma traduce el estado existente sin enviar otra solicitud.
+
+Resend solo se considera `accepted` tras una respuesta correcta con ID válido (1–128 caracteres de letras ASCII, cifras, guion o guion bajo). Un rechazo 4xx salvo 408 se clasifica `failed`; transporte, 408, 5xx, JSON inválido o ID ausente/inválido quedan `unknown`. Esto no reescribe estados históricos. En el flujo legado, sin bandeja, el rechazo explícito devuelve `502/mail_rejected`; incertidumbre devuelve `503/mail_unknown`. No incorpora deduplicación duradera ni reenvío automático en ese flujo anterior. Las etiquetas históricas `mail_error` se presentan como incidencia, sin afirmar que el proveedor lo rechazara con certeza.
+
+Una operación lenta puede terminar después del plazo del navegador o perder su respuesta tras ser aceptada por el proveedor; el aviso de incertidumbre no afirma pérdida. El bloque final de versiones/build coordinará biblioteca, adaptadores y diccionarios generados del CV; no se editan esos generados a mano ni se presupone una actualización simultánea entre repositorios.
+
 Respuesta de formulario cuando queda guardado:
 
 ```json
@@ -84,7 +119,7 @@ Un duplicado añade `"duplicate": true`. Las respuestas conservan los valores de
 
 ## API privada
 
-Las rutas se autentican antes de comprobar flags o consultar D1. La API de contactos además exige `PANEL_KV`: si falta el binding o falla la consulta de sesión, devuelve `503 session_unavailable` y no consulta D1. No permite acceder usando la época de sesión por defecto cuando KV no está disponible. Todas las respuestas privadas llevan `Cache-Control: no-store`. No se habilita CORS en el panel. La cookie conserva los atributos `HttpOnly; Secure; SameSite=Lax`. El acceso v2.1 usa enlaces con nonce y consumo atómico en D1, descritos en Acceso; ya no usa KV como control de un uso.
+Las rutas se autentican antes de comprobar flags o consultar fichas. La autorización requiere PANEL_SECRET, PANEL_KV y CONTACTS_DB con withSession: falta de binding, esquema0004, fila de estado o lectura de época válida devuelve `503 session_unavailable`. La época se consulta en D1, sin valor por defecto ni fallback KV. Una falta de disponibilidad del estado impide leer o cambiar datos privados. Todas las respuestas privadas llevan `Cache-Control: no-store`. No se habilita CORS en el panel. La cookie conserva los atributos `HttpOnly; Secure; SameSite=Lax`. El acceso v2.1 usa enlaces con nonce y consumo atómico en D1, descritos en Acceso; ya no usa KV como control de un uso.
 
 ### Listado y resumen
 
@@ -131,7 +166,7 @@ Los elementos usan nombres de columna `snake_case`, salvo que `details_json` y `
 
 Exige sesión, `Origin` idéntico al origen del panel, `Content-Type: application/json`, cuerpo de hasta 1024 bytes y un estado permitido. Devuelve el contacto actualizado. No existe una operación de borrado manual en esta API.
 
-Errores: `401` sin sesión válida; `403` por origen de escritura; `400` por filtros/cuerpo/estado; `404` para un contacto inexistente o caducado; `405` por método; `413` por tamaño; `415` por tipo de contenido. `503 session_unavailable` impide el acceso cuando falta o falla KV; `503 contacts_disabled` indica desactivación; `503 contacts_unavailable`, falta de binding o indisponibilidad de D1. Los errores no incluyen datos personales, parámetros SQL ni mensajes internos del proveedor.
+Errores: `401` sin sesión válida; `403` por origen de escritura; `400` por filtros/cuerpo/estado; `404` para un contacto inexistente o caducado; `405` por método; `413` por tamaño; `415` por tipo de contenido. `503 session_unavailable` impide el acceso si faltan los bindings de acceso o falla el estado D1; `503 contacts_disabled` indica desactivación una vez autenticado; `503 contacts_unavailable`, fallo de consulta de datos después de autorizar. Los errores no incluyen datos personales, parámetros SQL ni mensajes internos del proveedor.
 
 ### Métricas
 
@@ -143,11 +178,11 @@ Errores: `401` sin sesión válida; `403` por origen de escritura; `400` por fil
 
 `sources` sigue siendo el ranking de procedencias. El filtro de web se aplica también a formularios y ciudades. Una respuesta HTTP 400/422 de Analytics Engine se considera error de fuente; solamente un resultado válido vacío representa ausencia de datos. Las consultas externas de métricas tienen un límite de 12 segundos por petición.
 
-Las claves de caché de métricas en KV conservan exclusivamente agregados durante dos minutos y una copia de recuperación de cada fuente de hasta un día, delimitada por web y periodo. Si falla una fuente, las otras siguen disponibles. Una copia anterior se identifica como `stale`; no se presenta como una consulta actual. La bandeja de contactos nunca entra en esta caché. Otras claves de `PANEL_KV` conservan la información administrativa de sesiones y accesos descrita en los bindings.
+Las claves de caché de métricas en KV conservan exclusivamente agregados durante dos minutos y una copia de recuperación de cada fuente de hasta un día, delimitada por web y periodo. Si falla una fuente, las otras siguen disponibles. Una copia anterior se identifica como `stale`; no se presenta como una consulta actual. La bandeja de contactos nunca entra en esta caché. Otras claves de `PANEL_KV` conservan el historial administrativo de accesos descrito en los bindings; las antiguas session-epoch/login-lock no se usan para autorizar ni reservar enlaces en D17.
 
 ## Tráfico detallado (v2.1)
 
-El propietario ha elegido **30 días para las señales de visitas detalladas**, independientemente de los **90 días de la ficha de contacto**. Ambas funciones permanecen desactivadas en producción hasta su plan de publicación y avisos. TRAFFIC_ENABLED debe valer exactamente la cadena true en cada Worker para habilitar su captura o lectura.
+El propietario ha elegido **30 días para las señales de visitas detalladas**, independientemente de los **90 días de la ficha de contacto**. El cierre del 20/10 acredita ambas funciones activadas tras publicar los avisos; su configuración remota actual no se ha revisitado durante esta auditoría. TRAFFIC_ENABLED debe valer exactamente la cadena true en cada Worker para habilitar su captura o lectura.
 
 La señal de la página llega a la ruta /hit del Worker. D1 conserva UUID, creación, caducidad exacta a 30 días, web, ruta sin parámetros ni fragmento, hostname de procedencia y un objeto context. El script compartido envía solamente ruta, origen de procedencia e idioma. No usa un identificador persistente ni almacenamiento del navegador; respeta Do Not Track, Global Privacy Control y la exclusión actual de automatizaciones.
 
@@ -180,33 +215,38 @@ GET /api/traffic/events devuelve items, nextCursor, enabled y retentionDays. Cad
 
 Los filtros admitidos son site (all/inicio/cv/isacademy), days (entero 1–30, por defecto 30), country (dos letras), asn (entero positivo hasta 4294967295), q (fragmento literal de hasta 200 caracteres), limit (1–50, por defecto 25) y cursor opaco. q busca IP, ciudad, región, operador, ASN y ruta sin interpretar comodines SQL. El mismo filtro se aplica al resumen. La ordenación de eventos es created_at DESC, id DESC.
 
-Las rutas se autentican antes de consultar D1, fallan de forma cerrada ante indisponibilidad de sesión y llevan no-store, noindex y sin CORS. Desactivación: 503 traffic_disabled. D1 ausente o fallido: 503 traffic_unavailable. Filtros inválidos: 400 invalid_filters. Registro inexistente/caducado: 404. Métodos de escritura: 405. Los errores no revelan IP, SQL ni contenido del registro.
+Las rutas se autentican mediante el estado D1 antes de consultar eventos, fallan de forma cerrada ante indisponibilidad de sesión y llevan no-store, noindex y sin CORS. Desactivación tras autenticar: 503 traffic_disabled. Falta/fallo de estado de autorización: 503 session_unavailable. Fallo de consulta de eventos tras autorizar: 503 traffic_unavailable. Filtros inválidos: 400 invalid_filters. Registro inexistente/caducado: 404. Métodos de escritura: 405. Los errores no revelan IP, SQL ni contenido del registro.
 
-### Acceso privado v2.1
+### Acceso privado · código local aprobado D17/D18
 
-POST /login exige Origin del panel, JSON acotado, Turnstile válido para el hostname del panel, configuración completa y disponibilidad de KV y D1. El destinatario es siempre PANEL_EMAIL; un email enviado en el cuerpo no cambia ese destinatario. Las peticiones a Turnstile y Resend tienen límite de diez segundos. La limitación de un enlace por minuto usa KV: al ser eventual no constituye un límite global atómico ante peticiones simultáneas.
+POST /login exige Origin del panel, JSON acotado, Turnstile válido para el hostname del panel, configuración completa y disponibilidad de KV y D1. El destinatario es siempre PANEL_EMAIL; un email enviado en el cuerpo no cambia ese destinatario. Las peticiones a Turnstile y Resend tienen límite de diez segundos. El estado de autorización debe existir y ser válido. El límite de un enlace por minuto se reserva con un único UPDATE condicionado y RETURNING sobre panel_auth_state; usa la hora de SQLite y conserva la espera si el correo falla. Solo el ganador emite un enlace; los demás reciben429/wait. No hay reintentos automáticos. Si falta/falla el estado se responde503, sin tratarlo como espera normal.
 
 El enlace tiene formato expiración.nonce.firma, un nonce UUID aleatorio, HMAC SHA-256 sobre ambos valores y caducidad a 15 minutos. D1 almacena únicamente la huella SHA-256 del token, las fechas y used_at; no guarda el enlace en claro. GET /auth verifica formato, firma y caducidad y consume mediante una actualización condicionada a used_at vacío y expiración futura. Solo una actualización ganadora puede crear la sesión, incluso con usos concurrentes del mismo enlace.
 
-La cookie de sesión firmada dura como máximo 30 días y se contrasta con la época de revocación en KV. Cerrar todas las sesiones eleva la época de revocación; invalida las existentes tras su propagación en KV, no de forma instantánea entre ubicaciones. Los antiguos enlaces sin nonce dejan de aceptarse; las sesiones vigentes conservan su formato. La limpieza borra huellas de enlaces caducados.
+La cookie firmada dura como máximo30d, mantiene __Host-/HttpOnly/Secure/SameSite=Lax y usa época de32hex. Cada comprobación abre una sesión D1 nueva first-primary y su primera SELECT consulta la época, sin caché/bookmark recibido del cliente. Cerrar todas las sesiones escribe una época aleatoria nueva y confirma200 solo si cambió una fila; las comprobaciones nuevas posteriores ven la época principal. No cancela peticiones ya autorizadas ni enlaces aún válidos. Una escritura fallida/no confirmada devuelve503 y no borra la cookie ni confirma cierre. Los antiguos enlaces sin nonce siguen rechazados; las cookies numéricas anteriores se rechazan y al publicar habrá que identificarse otra vez. La limpieza de huellas caducadas conserva su alcance.
 
-El código limita el envío al correo configurado; **el valor de producción de PANEL_EMAIL todavía debe comprobarse sin exponerlo en evidencias**. Quien tenga un enlace válido sin consumir o una cookie válida puede acceder. La revisión local no acredita la seguridad del buzón, la autenticación de Cloudflare ni que la configuración publicada coincida con este código.
+D17 requiere aplicar0004 antes del futuro código, mediante plan de publicación propio. La migración es aditiva e idempotente: conserva época/espera al repetirla, sin tocar contactos, tráfico, enlaces ni informes. La autorización añade una consulta principal y depende de D1 incluso si la captura está apagada; latencia/consumo reales no medidos. Un rollback al código KV antiguo no es seguro por sí solo: podría reactivar su estado de sesión y debe planificarse con invalidación de credenciales e intervención humana si se rotan secretos. [D1 first-primary](https://developers.cloudflare.com/d1/worker-api/d1-database/).
+
+
+El cliente del cierre global (D18) mantiene un estado ocupado y espera como máximo **15 segundos**, incluida la lectura JSON. Solo confirma cierre y navega al acceso si HTTP es correcto y `ok === true`; ante HTTP, red, plazo o cuerpo fallidos avisa que no puede confirmar el cierre, conserva el contexto y no reintenta automáticamente. Una respuesta perdida puede seguir a una rotación ya realizada; el aviso no presupone que las sesiones sigan abiertas. Este plazo es del cliente y no cambia la política de acceso de D17.
+
+El código limita el envío al correo configurado; **su comprobación funcional quedó registrada el 20/10; el valor remoto actual de PANEL_EMAIL no se ha revisitado y deberá cotejarse antes de la próxima publicación sin exponerlo en evidencias**. Quien tenga un enlace válido sin consumir o una cookie válida puede acceder. La revisión local no acredita la seguridad del buzón, la autenticación de Cloudflare ni que la configuración publicada coincida con este código.
 
 ### Vista local y pruebas v2.1
 
 La vista normal incluye siete contactos y 42 señales sintéticas; el escenario 1500 señales permite revisar agrupación y carga. Los teléfonos usan el rango NANP reservado para ficción, las IP pertenecen a redes de documentación y los correos a example.com. No se debe llamar, enviar correos ni usar estos ejemplos como datos reales. Los escenarios y reinicios restablecen los cambios de estado.
 
-El adaptador firma únicamente las peticiones de la vista local; el Worker conserva su autenticación. Usa SQLite en memoria con ambas migraciones, red del Worker sustituida y recursos estáticos locales. Esto no certifica renderizado, permisos ni rendimiento de producción. La revisión visual con Chrome se registra por separado.
+El adaptador firma cada petición de la vista local con la época de la D1 ficticia; el Worker conserva su autenticación. Usa SQLite en memoria con0001–0004, red del Worker sustituida y recursos estáticos locales. El escenario Fuentes caídas mantiene autorización ficticia válida y hace fallar las consultas de datos. El cierre real de sesión no se demuestra con esta firma automática: las pruebas del Worker usan cookies explícitas y dos vistas KV antiguas sobre el mismo estado D1. Esto no certifica renderizado, permisos ni rendimiento de producción. La revisión visual con Chrome se registra por separado.
 
 Para revisar el componente compartido en las webs se sirven copias de lectura en /__sites/inicio/, /cv/ y /isacademy/ (también /__sites/cv/ y /__sites/isacademy/ redirigen a sus copias locales). Se usan los assets modificados del workspace sin reescribir los HTML generados. Solo en estas copias se retira el beacon externo de Web Analytics y se bloquea por CSP la conexión al Worker real de formularios. Las llamadas de la web estática no deben usarse para verificar entrega de correo. El dominio local tampoco dispara la señal de visitas, por su guard de hostname; el contrato de payload y preferencias se verifica con el DOM simulado de Node.
 
 Los ejemplos HTTP/3 muestran RTT QUIC y los HTTP/2 RTT TCP. El escenario 1500 señales dispersa coordenadas sintéticas alrededor de ciudades para comprobar agrupación, zoom y el límite de grupos; no describe ubicaciones reales.
 
-La suite conserva las 57 pruebas de v2.1 y añade geometría, coordenadas ausentes, informes y horario de Canarias: 72 pruebas, incluidas cuatro subpruebas de resultados del proveedor. No hace peticiones reales a Cloudflare o Resend.
+Última suite registrada: **178/178 contratos el 26/10/2026**, en `tests-d19.txt` de la entrega de auditoría. Incluye subcasos; no equivale a 178 recorridos visuales ni pruebas de seguridad independientes. Usa DOM/reloj/red sustituidos, SQLite en memoria y HTTP de loopback para el adaptador local. No consulta Cloudflare ni envía correo real. Los 73/73 del cierre del 20/10 se conservan como evidencia histórica de aquella publicación.
 
 ## Informe semanal y manual (v2.2)
 
-Decisión del propietario: **lunes a las 09:00, Atlantic/Canary**. Código preparado localmente; cron y envío de producción siguen pendientes de configurar y validar. El informe siempre cubre los últimos siete días y las tres webs, independientemente de los filtros del panel. Web Analytics utiliza fechas UTC de calendario; las señales D1 y contactos utilizan una ventana móvil. Ambas coberturas se indican y no se presentan como una única medida idéntica.
+Decisión del propietario: **lunes a las 09:00, Atlantic/Canary**. El cierre del 20/10 acredita cron configurado e informe manual recibido; la primera ejecución semanal y el borrado físico siguen sin observarse en esta revisión. El código posterior de la auditoría continúa local. El informe siempre cubre los últimos siete días y las tres webs, independientemente de los filtros del panel. Web Analytics utiliza fechas UTC de calendario; las señales D1 y contactos utilizan una ventana móvil. Ambas coberturas se indican y no se presentan como una única medida idéntica.
 
 La tarjeta Resumen permite **Ver informe**, **Enviármelo ahora** y **Actualizar estado**. La vista previa usa el mismo renderizador que el correo, con HTML de tablas de hasta 600 px, estilos de marca inline y una alternativa de texto. No contiene JavaScript ni recursos remotos de seguimiento. Incluye tráfico por web, contactos recibidos y pendientes de la bandeja activa, señales/geografía, redes/protocolos, procedencias/páginas/dispositivos/navegadores/sistemas, resultados de formularios y salud de fuentes. Los rankings indican su límite; las fichas, IP y mensajes completos permanecen dentro del panel. Los enlaces privados abren las pestañas mediante `#contacts`, `#traffic` y `#system`.
 
@@ -220,15 +260,23 @@ El botón genera una clave por acción y el servidor hace una reserva atómica D
 
 Estados: `preparing`, `sending`, `accepted`, `failed`, `unknown`. `accepted` requiere respuesta correcta con ID válido y significa aceptación del proveedor, no entrega ni lectura. Rechazos 4xx salvo 408 se marcan fallidos; errores de transporte, 408, 5xx o respuesta sin ID quedan sin confirmar. Un intento abandonado durante más de dos minutos se presenta sin confirmar. No hay reintentos automáticos de correo; comprobar Resend antes de una nueva acción consciente. La API almacena solo metadatos, huella del payload y códigos fijos de error; no conserva HTML, cuerpo, destinatario, mensajes o IP en `panel_reports` ni en logs/KV. Los metadatos caducan a los 30 días y se ocultan antes de su purga.
 
-Cloudflare ejecuta cron en UTC. Configuración propuesta, aún no aplicada: `0 8 * * MON` y `0 9 * * MON`. El código usa `scheduledTime` y `Intl.DateTimeFormat` en Atlantic/Canary para aceptar solo la ejecución de las 09:00 locales; cubre el cambio de verano/invierno sin editar cron dos veces al año. Descarta eventos de más de 24 horas o excesivamente futuros. La fecha de generación y ventana móvil reflejan el momento efectivo de preparación. [Cron Triggers](https://developers.cloudflare.com/workers/configuration/cron-triggers/).
+Cloudflare ejecuta cron en UTC. Configuración guardada y comprobada según el cierre del 20/10: `0 8 * * MON` y `0 9 * * MON`; no se ha revalidado en la cuenta durante esta auditoría. El código usa `scheduledTime` y `Intl.DateTimeFormat` en Atlantic/Canary para aceptar solo la ejecución de las 09:00 locales; cubre el cambio de verano/invierno sin editar cron dos veces al año. Descarta eventos de más de 24 horas o excesivamente futuros. La fecha de generación y ventana móvil reflejan el momento efectivo de preparación. [Cron Triggers](https://developers.cloudflare.com/workers/configuration/cron-triggers/).
 
-Mantener además un cron diario de limpieza, por ejemplo `15 2 * * *`, sin activar informes por ese mero hecho. La limpieza de las cuatro tablas se ejecuta aunque los flags estén apagados. Si falta D1 no hay envío. Antes de producción hay que comprobar destinatario, permiso de Resend y sus límites reales; la vista local sustituye la red y no envía correo. No se ha certificado el render nativo de Gmail/Outlook.
+El cierre del 20/10 acredita también el cron diario de limpieza `15 2 * * *`; configurarlo no activa informes por sí mismo. La limpieza de las cuatro tablas se ejecuta aunque los flags estén apagados. Si falta D1 no hay envío. Antes de la próxima publicación habrá que cotejar destinatario, permisos y límites de Resend con un plan acordado; la vista local sustituye la red y no envía correo. El cierre del 20/10 registra revisión del HTML recibido en Gmail; Outlook no está verificado y el correo posterior no se ha enviado realmente.
 
 ## Pulido visual v2.2
 
 El eslogan permanece 1,8 segundos tras terminar la firma; la cortina sale en 1,2 segundos y libera foco/controles a los 1,25 segundos. El límite de seguridad es 8,5 segundos. Saltar/Escape y movimiento reducido se conservan. La cabecera usa fondo opaco del tema y sombra del sistema de diseño. El mapa trata el meridiano por anillo: desenvuelve, recorta en ±180°, descarta degenerados y densifica el cierre antes de proyectar. Conserva el JSON/SRI; EE. UU., Alaska y Hawái no se desplazan por las Aleutianas. Rusia/Fiji conservan ambos lados del meridiano.
 
-La página reserva 88 px al desplazar controles para que no queden bajo la cabecera. Las pestañas mantienen el fragmento de URL correspondiente; se puede guardar el enlace privado de la sección. En la fuente agregada, una coordenada ausente o inválida permanece ausente, no se convierte en cero; seleccionar un lugar sin coordenadas no acerca el mapa a una posición inventada. Los ceros válidos se conservan. Los valores cero que ya hubieran sido codificados en Analytics Engine como sustituto de una coordenada ausente no pueden distinguirse retrospectivamente de un cero real: se revisará la cobertura con datos de producción.
+La página reserva 88 px al desplazar controles para que no queden bajo la cabecera. Las pestañas mantienen el fragmento de URL correspondiente; se puede guardar el enlace privado de la sección. El lector de la fuente agregada conserva como ausentes las coordenadas nulas o inválidas que recibe; seleccionar un lugar sin coordenadas no acerca el mapa a una posición inventada.
+
+### Coordenadas agregadas · D02 · revisión local del 24/10/2026
+
+La revisión completa detectó que el escritor anterior de `/hit` sustituía coordenadas ausentes por cero, aunque el lector ya distinguía `null` de cero. La corrección local añade `blob6` al esquema posicional de `isa_site_views`: `geo-v1` indica una pareja válida y `geo-missing-v1` una pareja ausente, parcial o inválida. `double1` y `double2` siguen siendo latitud y longitud aproximadas, redondeadas a una décima; cuando falta la pareja se omite el array numérico. Se conserva un evento agregado con web, país, región, ciudad y resultado de captura, sin IP. El contexto privado D1 y su conservación no cambian.
+
+La consulta de ciudades admite parejas marcadas `geo-v1` dentro de ±90/±180, incluido el cero legítimo. Para los eventos anteriores sin marca admite parejas en rango distintas de `(0,0)`. Excluye del mapa los `(0,0)` históricos ambiguos, sin borrarlos: no es posible distinguir un cero real del sustituto anterior. Tampoco se pueden reconstruir coordenadas históricas parciales que hayan quedado codificadas como un cero y otro valor distinto de cero; su localización continúa siendo aproximada. No se trata de un mapa de todas las visitas ni de su ubicación física exacta.
+
+La nota del mapa de ciudades agregado explica esas exclusiones. La caché y las instantáneas pasan al espacio `data:v3` para impedir que reaparezcan puntos de resultados anteriores. No hay migración D1, modificación de plazos ni publicación en este bloque. Las pruebas recorren captura → consulta SQL → respuesta del panel, cubriendo ausencia, valores parciales/inválidos, ceros válidos, histórico ambiguo y caché anterior; la API real de Analytics Engine queda pendiente de validación al publicar.
 
 ## Ampliaciones útiles pendientes de verificar en la cuenta
 
@@ -239,36 +287,39 @@ La página reserva 88 px al desplazar controles para que no queden bajo la cabec
 
 ## Retención, copias y recuperación
 
-La tabla de contactos exige `expires_at = created_at + 7776000000`. El listado, detalle y cambio de estado excluyen contactos caducados incluso si la tarea de limpieza se retrasa. El `scheduled` de `isa-panel` elimina las filas caducadas de contactos, tráfico, huellas de acceso e intentos de informe en un batch D1. Sigue limpiando si se desactiva la captura. **El cron diario todavía debe configurarse y verificarse en Cloudflare.**
+La tabla de contactos exige `expires_at = created_at + 7776000000`. El listado, detalle y cambio de estado excluyen contactos caducados incluso si la tarea de limpieza se retrasa. El `scheduled` de `isa-panel` elimina las filas caducadas de contactos, tráfico, huellas de acceso e intentos de informe en un batch D1. Sigue limpiando si se desactiva la captura. **El cron diario consta configurado y comprobado el 20/10; la ejecución física de la limpieza no se ha observado en esta revisión.**
 
-Los 90 días de contactos y los 30 días de señales detalladas describen la disponibilidad y su almacenamiento activo. El borrado físico depende de que se ejecute la limpieza. Además, Cloudflare mantiene Time Travel: hasta **7 días en Workers Free** o **30 en Paid**, activado por el proveedor. Por tanto, un registro eliminado podría seguir en el histórico de recuperación durante esa ventana. El plan real de la cuenta debe comprobarse antes de activar producción. [Time Travel de D1](https://developers.cloudflare.com/d1/reference/time-travel/).
+Los 90 días de contactos y los 30 días de señales detalladas describen la disponibilidad y su almacenamiento activo. El borrado físico depende de que se ejecute la limpieza. Además, Cloudflare mantiene Time Travel: hasta **7 días en Workers Free** o **30 en Paid**, activado por el proveedor. Por tanto, un registro eliminado podría seguir en el histórico de recuperación durante esa ventana. El cierre del 20/10 acredita una ventana de siete días; el plan y la ventana remotos actuales deberán cotejarse antes de la próxima publicación. [Time Travel de D1](https://developers.cloudflare.com/d1/reference/time-travel/).
 
 El informe periódico preparado es un resumen con enlaces privados, no una exportación de fichas o IP. La conservación activa del panel no borra sus resúmenes ni los otros mensajes de Gmail o registros de Resend bajo sus propias condiciones. El histórico agregado anterior no permite reconstruir fichas de contacto.
 
 Una recuperación de D1 puede recuperar también filas que ya habían caducado: los filtros de la API continúan ocultándolas y hay que ejecutar la limpieza antes de reabrir el servicio. Restaurar una base sobrescribe su estado; requiere un plan propio con la fecha/bookmark elegida, efecto sobre envíos recientes y aprobación del propietario. Nunca restaurar ni borrar la base como parte de una revisión visual.
 
-## Orden de publicación pendiente
+## Próxima publicación · checklist para un plan propio
 
-1. Obtener la aceptación visual del panel local y cerrar los resultados de QA.
-2. Actualizar y publicar los avisos de los formularios y sus mensajes de resultado en el siguiente bloque aprobado.
-3. Comprobar versiones activas y conservar un punto de reversión de los dos Workers, sin extraer secretos.
-4. Crear la base con jurisdicción UE, aplicar `0001_contacts.sql`, `0002_panel_activity.sql` y `0003_panel_reports.sql` en ese orden, y vincularla como `CONTACTS_DB` en ambos Workers.
-5. Publicar el código revisado con captura desactivada. Probar acceso, métricas y compatibilidad del formulario anterior.
-6. Configurar y verificar el cron diario y los dos candidatos semanales de `isa-panel`. Confirmar plan, destinatario, permiso de Resend y ventana Time Travel. `REPORTS_ENABLED` permanece apagado hasta comprobar el correo mediante una prueba acordada.
-7. Activar la lectura privada y la captura solo cuando estén completos los avisos y las verificaciones. Validar un envío de prueba acordado y su caducidad, sin confundir aceptación de Resend con entrega.
-8. Registrar versiones, bindings sin valores secretos, resultado de pruebas y limitaciones de la publicación.
+Esta lista prepara decisiones posteriores; D20 no autoriza ni ejecuta publicación, cambios de flags, cron o migración remota.
 
-En una reversión, desactivar la captura devuelve los formularios al correo anterior; no elimina la bandeja existente. Mantener una ruta de limpieza de los registros ya guardados. Retirar o revertir `isa-panel` a una versión sin `scheduled` también retiraría su limpieza, por lo que ese paso requiere resolver la retención antes.
+1. Obtener aceptación visual global de los cambios locales y cerrar los resultados de QA. Comparar estado remoto, esquema y versiones con el cierre acreditado del 20/10; no asumir que siguen iguales.
+2. Conservar código y configuración necesarios para una reversión planificada, sin extraer secretos. Resolver la invalidación de credenciales antes de considerar código KV anterior a D17 como vuelta atrás.
+3. Preparar versiones, build, cuatro PDF del CV y prerender de Academia, con sus comprobaciones. Coordinar biblioteca compartida, adaptadores y diccionarios; publicar portada antes de CV/Academia y verificar compatibilidad de consumidores cacheados. Los avisos del 20/10 ya fueron publicados; cotejar su cobertura vigente, sin tratarlos como una instalación nueva.
+4. En la base existente, comprobar `0001`–`0003` y aplicar `0004_panel_auth.sql` antes del nuevo panel D17, conservando datos. Requiere su propio plan/aprobación remotos. El nuevo acceso dependerá de D1 y exigirá identificarse otra vez.
+5. Publicar los paquetes revisados mediante el procedimiento autorizado GitHub/Codespaces y editor de Cloudflare, con secuencia y reversión concretas. Revisar los flags existentes; no apagarlos ni activarlos automáticamente por esta checklist.
+6. Cotejar bindings, destinatario sin exponerlo, permisos, cron diario/semanal y Time Travel. Comprobar las APIs privadas y las pruebas reales de formularios/informe que se acuerden expresamente; aceptación de Resend no acredita entrega por sí sola.
+7. Registrar versiones finales, comprobaciones online, aceptación del propietario y límites. La primera ejecución semanal y purga física requieren observación real; no marcarlas como realizadas por haber guardado un cron o superado un test local.
+
+**Instalación nueva, caso separado:** crear D1 con jurisdicción UE y aplicar `0001_contacts.sql`, `0002_panel_activity.sql`, `0003_panel_reports.sql` y `0004_panel_auth.sql`, en orden, antes del código que las necesita. Vincular ambos Workers y comprobar avisos/configuración antes de decidir la activación. Este caso no describe la base existente del propietario ni autoriza crear recursos.
+
+En una reversión, apagar captura devolvería formularios a la ruta anterior y no eliminaría los datos guardados; retirar un `scheduled` también retiraría su limpieza. La reversión debe resolver retención y acceso, incluida invalidación de credenciales si vuelve a la lógica KV anterior. No revertir automáticamente ni restaurar/borrar la base como parte de la auditoría.
 
 ## Validación local y límites
 
 Desde la raíz del repositorio, con Node 24 o posterior:
 
 ```bash
-node --check tools/cloudflare/isa-panel.js
-node --check tools/cloudflare/isa-forms.js
-node --test tools/cloudflare/qa/contacts.test.mjs
-node tools/cloudflare/qa/preview.mjs --port 8788
+rtk proxy node --check tools/cloudflare/isa-panel.js
+rtk proxy node --check tools/cloudflare/isa-forms.js
+rtk proxy node --test tools/cloudflare/qa/contacts.test.mjs tools/cloudflare/qa/form-loader.test.mjs tools/cloudflare/qa/preview.test.mjs tools/cloudflare/qa/dialog.test.mjs ../cv/tools/qa/view.test.mjs ../isacademy/tools/qa/python-runtime.test.mjs
+rtk proxy node tools/cloudflare/qa/preview.mjs --port 8790
 rtk git diff --check
 ```
 

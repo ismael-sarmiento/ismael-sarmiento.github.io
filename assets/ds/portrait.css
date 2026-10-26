@@ -17,8 +17,11 @@
 /* the glow: a soft gold halo that grows on hover (the photo itself or the card that holds it) */
 .portrait::after { content: ""; position: absolute; inset: 0; z-index: -2; border-radius: 50%; box-shadow: 0 0 0 0 var(--gold-glow);
   transition: box-shadow .4s ease; }
-.portrait:hover::after, .card:hover .portrait::after { box-shadow: 0 0 0 7px var(--gold-glow), 0 0 28px var(--gold-glow); }
-.portrait:hover img, .card:hover .portrait img { transform: scale(1.03); }
+.portrait:hover::after, .portrait:focus-visible::after, .card:hover .portrait::after { box-shadow: 0 0 0 7px var(--gold-glow), 0 0 28px var(--gold-glow); }
+.portrait:hover img, .portrait:focus-visible img, .card:hover .portrait img { transform: scale(1.03); }
+
+a.portrait { text-decoration: none; }
+a.portrait:focus-visible { outline: 3px solid var(--gold-text); outline-offset: 5px; border-radius: 50%; }
 
 /* before it appears the ring is empty; .in (on the portrait or on a reveal around it) draws it */
 .js .portrait.reveal:not(.in)::before, .js .reveal:not(.in) .portrait::before,

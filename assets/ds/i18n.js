@@ -4,6 +4,7 @@
 //
 //   const i18n = createI18n({ base: 'https://ismael-sarmiento.github.io/cv/', dict: code => `/cv/i18n/${code}.json?v=…` });
 //   await i18n.start();      // applies ?lang / the stored choice; [data-action="lang"] buttons switch and remember it
+import { rememberReadingPosition } from './ds.js';
 const SUPPORTED = ['es', 'en'];
 const KEY = 'isa-lang';  // shared by every site on the origin (IsAcademy's historical key)
 
@@ -37,6 +38,7 @@ export function createI18n({ base, dict: dictUrl }) {
   async function setLang(next, persist = false) {
     lang = SUPPORTED.includes(next) ? next : 'es';
     dict = await load(lang);
+    const restorePosition = persist ? rememberReadingPosition() : () => {};
     if (persist) store(lang);   // only an explicit choice is remembered
     document.documentElement.lang = lang;
     syncUrl();
@@ -49,6 +51,7 @@ export function createI18n({ base, dict: dictUrl }) {
     document.querySelectorAll('[data-i18n-alt]').forEach(el => { el.alt = t(el.dataset.i18nAlt); });
     document.querySelectorAll('[data-i18n-href]').forEach(el => { el.setAttribute('href', t(el.dataset.i18nHref)); });
     listeners.forEach(fn => fn(lang));
+    restorePosition();
   }
 
   async function start() {

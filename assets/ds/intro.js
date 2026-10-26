@@ -11,7 +11,7 @@
 // previous one) and the place (decoded like the signature) above the sentence, which arrives word by word; several
 // milestones in one place with a role («2023 · Savana · Lead Data Engineer — …») draw that career as a small ladder
 // and share one stretch of the bar. Each bar fills while its milestone is on screen; at the end they join into one line.
-import { reducedMotion } from './ds.js';
+import { reducedMotion, isolateDialog, releaseDialog } from './ds.js';
 import { playSignature, skipSignature } from './signature.js';
 import { ink, pixels } from './fx.js';
 
@@ -185,6 +185,7 @@ export function initIntro({ i18n, steps = null, stepMs = 1600 } = {}) {
     intro.querySelector('.intro-segs')?.classList.add('complete');
     // Once its story is told, the small ladder gives way to the final year, company and sentence.
     stepText?.classList.add('career-complete');
+    rendered?.ladder?.setAttribute('aria-hidden', 'true');
   };
   const finish = () => {
     done = true;
@@ -199,6 +200,7 @@ export function initIntro({ i18n, steps = null, stepMs = 1600 } = {}) {
     stopMilestoneFrames();
     document.body.classList.remove('intro-open', 'entering');
     intro.hidden = true;
+    releaseDialog(intro);
     document.querySelectorAll('.intro-flyer').forEach(el => el.remove());
     const h1 = document.querySelector('main h1');
     h1?.setAttribute('tabindex', '-1');
@@ -295,6 +297,7 @@ export function initIntro({ i18n, steps = null, stepMs = 1600 } = {}) {
   document.body.classList.add('intro-open');
   // the focus rests on the intro itself: no button looks pressed before the visitor touches anything
   intro.tabIndex = -1;
+  isolateDialog(intro);
   const rest = () => { if (!closing && !intro.hidden) intro.focus({ preventScroll: true }); };
   rest();   // from the first frame: Escape jumps to the end, Tab reaches «Saltar intro»
   enter?.addEventListener('click', close);

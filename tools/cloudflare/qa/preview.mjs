@@ -13,11 +13,11 @@ import formsWorker from '../isa-forms.js';
 const DAY = 86400000;
 const SITE = 'https://ismael-sarmiento.github.io';
 const SECRET = 'local-preview-signing-key-never-use-in-production';
-const SCENARIOS = ['normal', 'intro', 'many', 'empty', 'partial', 'error', 'slow', 'disabled', 'mail-failed', 'mail-unknown'];
-const LABELS = { normal: 'Con datos', intro: 'Repetir presentación', many: '1500 señales', empty: 'Sin datos', partial: 'Datos parciales', error: 'Fuentes caídas', slow: 'Respuesta lenta', disabled: 'Captura desactivada', 'mail-failed':'Correo rechazado', 'mail-unknown':'Correo sin confirmar' };
+const SCENARIOS = ['normal', 'intro', 'many', 'empty', 'partial', 'error', 'slow', 'disabled', 'mail-failed', 'mail-unknown', 'logout-failed', 'logout-unknown'];
+const LABELS = { normal: 'Con datos', intro: 'Repetir presentación', many: '1500 señales', empty: 'Sin datos', partial: 'Datos parciales', error: 'Fuentes caídas', slow: 'Respuesta lenta', disabled: 'Captura desactivada', 'mail-failed':'Correo rechazado', 'mail-unknown':'Correo sin confirmar', 'logout-failed':'Cierre rechazado', 'logout-unknown':'Cierre sin confirmar' };
 const ASSETS = resolve(fileURLToPath(new URL('../../../assets/', import.meta.url)));
 const PUBLIC_ROOTS = { inicio: resolve(ASSETS, '..'), cv: resolve(ASSETS, '../../cv'), isacademy: resolve(ASSETS, '../../isacademy') };
-const schema = (await Promise.all(['0001_contacts.sql', '0002_panel_activity.sql', '0003_panel_reports.sql'].map(name => readFile(new URL(`../migrations/${name}`, import.meta.url), 'utf8')))).join('\n');
+const schema = (await Promise.all(['0001_contacts.sql', '0002_panel_activity.sql', '0003_panel_reports.sql', '0004_panel_auth.sql'].map(name => readFile(new URL(`../migrations/${name}`, import.meta.url), 'utf8')))).join('\n');
 const json = (body, status = 200) => new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' } });
 const esc = value => String(value).replace(/[&<>"']/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[character]);
 
@@ -37,6 +37,10 @@ class MemoryKV {
 // The D1 contract is exercised against SQLite, including migration constraints and transactional batches.
 class MemoryD1 {
   constructor() { this.sqlite = new DatabaseSync(':memory:'); this.sqlite.exec(schema); }
+  withSession(constraint) {
+    if (constraint !== 'first-primary') throw new Error('Preview auth must request the primary');
+    return { prepare: sql => this.prepare(sql) };
+  }
   prepare(sql) {
     const native = this.sqlite.prepare(sql);
     let values = [];
@@ -259,14 +263,17 @@ function previewHTML(body, scene) {
 
 // Read-only copies for shared-component visual QA. Generated source files are never rewritten.
 // Only known public paths are exposed; production mail endpoints are blocked by the preview-only CSP.
-async function publicSiteFile(url) {
+async function publicSiteFile(url, { home = false } = {}) {
   const alias = url.pathname.match(/^\/__sites\/(inicio|cv|isacademy)\/?$/);
   const natural = url.pathname.match(/^\/(cv|isacademy)(\/.*)?$/);
-  if (!alias && !natural && !/^\/(?:data|i18n)\//.test(url.pathname)) return null;
+  const rootPage = ({ '/': home ? 'index.html' : null, '/index.html': 'index.html', '/404.html': '404.html',
+    '/privacy/': 'privacy/index.html', '/privacy/index.html': 'privacy/index.html',
+    '/articles/': 'articles/index.html', '/articles/index.html': 'articles/index.html', '/index_en.html': 'index_en.html' })[url.pathname];
+  if (!alias && !natural && !rootPage && !/^\/(?:data|i18n)\//.test(url.pathname)) return null;
   const site = alias?.[1] || natural?.[1] || 'inicio', root = PUBLIC_ROOTS[site];
-  let relative = alias ? 'index.html' : natural ? (natural[2] || '/').slice(1) || 'index.html' : url.pathname.slice(1);
+  let relative = alias ? 'index.html' : natural ? (natural[2] || '/').slice(1) || 'index.html' : rootPage || url.pathname.slice(1);
   if (relative.endsWith('/')) relative += 'index.html';
-  if (!/^(?:index\.html|en\/index\.html|(?:assets|css|js|i18n|data|articles)\/[^\\]*|[a-zA-Z0-9-]+\.pdf)$/.test(relative)
+  if (!/^(?:index(?:_en)?\.html|404\.html|privacy\/index\.html|en\/index\.html|(?:assets|css|js|i18n|data|articles)\/[^\\]*|[a-zA-Z0-9-]+\.pdf)$/.test(relative)
     || relative.split('/').some(part => part.startsWith('.') || part === '..')) return { status: 404, body: 'Public file not available' };
   const path = await realpath(resolve(root, relative)).catch(() => null);
   if (!path || !path.startsWith(root + sep) || !(await stat(path)).isFile()) return { status: 404, body: 'Public file not found' };
@@ -285,16 +292,27 @@ async function publicSiteFile(url) {
   return { status: 200, mime, body };
 }
 
-export function createPreview({ port = 8788, host = '127.0.0.1' } = {}) {
+export function createPreview({ port = 8788, host = '127.0.0.1', publicOnly = false } = {}) {
   if (host !== '127.0.0.1' && host !== '::1') throw new Error('Preview must bind to loopback');
   const requestScope = new AsyncLocalStorage(), databases = new Set(), originalFetch = globalThis.fetch;
   let scene = 'normal', currentEnv, started = false, server;
   const reset = name => {
     scene = name;
     const db = new MemoryD1(); databases.add(db); seed(db, name);
+    const failedLogoutDB = {
+      prepare: sql => db.prepare(sql),
+      withSession: constraint => {
+        const session = db.withSession(constraint);
+        return { prepare: sql => sql.startsWith('UPDATE panel_auth_state SET epoch')
+          ? { bind() { return { async run() { throw new Error('Simulated revocation write failure'); } }; } }
+          : session.prepare(sql) };
+      },
+    };
     const events = [], views = [];
     currentEnv = { CONTACTS_ENABLED: name === 'disabled' ? 'false' : 'true', TRAFFIC_ENABLED: name === 'disabled' ? 'false' : 'true', REPORTS_ENABLED: name === 'disabled' ? 'false' : 'true',
-      CONTACTS_DB: name === 'error' ? { prepare() { throw new Error('Simulated unavailable D1'); } } : db,
+      // Keep authorization available while this scene exercises failures of the data sources.
+      CONTACTS_DB: name === 'error' ? { withSession: constraint => db.withSession(constraint),
+        prepare() { throw new Error('Simulated unavailable data source'); } } : name === 'logout-failed' ? failedLogoutDB : db,
       PANEL_KV: new MemoryKV(), PANEL_SECRET: SECRET, PANEL_EMAIL: 'owner.demo@example.com', FORM_TO: 'owner.demo@example.com',
       ACCOUNT_ID: 'local-preview-account', SITE_TAG: 'local-preview-site', CF_API_TOKEN: 'local-preview-only',
       TURNSTILE_SECRET: 'local-preview-only', RESEND_API_KEY: 'local-preview-only',
@@ -342,7 +360,11 @@ export function createPreview({ port = 8788, host = '127.0.0.1' } = {}) {
       }
       const siteAlias = url.pathname.match(/^\/__sites\/(cv|isacademy)\/?$/);
       if (siteAlias) { outgoing.writeHead(303, { Location: '/' + siteAlias[1] + '/' + url.search, 'Cache-Control': 'no-store' }); outgoing.end(); return; }
-      const publicFile = await publicSiteFile(url);
+      let publicFile = await publicSiteFile(url, { home: publicOnly });
+      if (publicOnly && !publicFile && !url.pathname.startsWith('/assets/')) {
+        const missing = await publicSiteFile(new URL('/404.html', base));
+        publicFile = { ...missing, status: 404 };
+      }
       if (publicFile) {
         if (!['GET', 'HEAD'].includes(incoming.method)) { outgoing.writeHead(405, { Allow: 'GET, HEAD' }); outgoing.end(); return; }
         outgoing.writeHead(publicFile.status, { 'Content-Type': publicFile.mime || 'text/plain', 'Cache-Control': 'no-store',
@@ -363,7 +385,8 @@ export function createPreview({ port = 8788, host = '127.0.0.1' } = {}) {
       for (const [key, value] of Object.entries(incoming.headers)) if (value != null && key !== 'host') headers.set(key, Array.isArray(value) ? value.join(', ') : value);
       const env = currentEnv, activeScene = scene;
       if (url.pathname !== '/login') {
-        const epoch = await env.PANEL_KV.get('session-epoch') || '1', expires = Date.now() + DAY;
+        const epoch = await env.CONTACTS_DB.withSession('first-primary')
+          .prepare('SELECT epoch FROM panel_auth_state WHERE id = 1').first('epoch'), expires = Date.now() + DAY;
         const signature = createHmac('sha256', SECRET).update(`session.${epoch}.${expires}`).digest('base64url');
         headers.set('Cookie', `__Host-isa_panel=${epoch}.${expires}.${signature}`);
       } else headers.delete('Cookie');
@@ -377,9 +400,12 @@ export function createPreview({ port = 8788, host = '127.0.0.1' } = {}) {
       Object.defineProperty(request, 'cf', { value: { country: 'ES', region: 'Canarias', city: 'Ciudad de demostración', latitude: '28.1', longitude: '-15.4' } });
       const response = await requestScope.run({ scene: activeScene, path: url.pathname, hostname: url.hostname, signal: abort.signal }, async () => {
         if (activeScene === 'slow' && (url.pathname.startsWith('/api/contacts') || url.pathname.startsWith('/api/traffic'))) await wait(8000, abort.signal);
+        if (activeScene === 'logout-unknown' && url.pathname === '/logout-all') await wait(8000, abort.signal);
         return url.pathname.startsWith('/__preview/forms') || url.pathname === '/hit'
           ? formsWorker.fetch(request, env) : panelWorker.fetch(request, env);
       });
+      // This selected local scene drops only the response after the real synthetic revocation completed.
+      if (activeScene === 'logout-unknown' && url.pathname === '/logout-all') { outgoing.destroy(); return; }
       const resultHeaders = Object.fromEntries(response.headers);
       let bytes;
       if (response.headers.get('Content-Type')?.includes('text/html')) {
@@ -414,14 +440,19 @@ export function createPreview({ port = 8788, host = '127.0.0.1' } = {}) {
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const args = process.argv.slice(2);
   if (args.includes('--help')) {
-    process.stdout.write('Usage: node tools/cloudflare/qa/preview.mjs [--port 8788]\nLoopback only; synthetic data, in-memory storage and no real mail or Worker network requests.\n');
+    process.stdout.write('Usage: node tools/cloudflare/qa/preview.mjs [--public] [--port 8788]\n--public: homepage at /, sibling sites and privacy; no panel endpoints.\nLoopback only; synthetic data, in-memory storage and no real mail or Worker network requests.\n');
   } else {
-    const port = args.length ? Number(args[1]) : 8788;
-    if (args.length && (args.length !== 2 || args[0] !== '--port') || !Number.isInteger(port) || port < 1 || port > 65535) throw new Error('Use --port followed by a free TCP port');
-    const preview = createPreview({ port });
+    let port = 8788, publicOnly = false;
+    for (let i = 0; i < args.length; i++) {
+      if (args[i] === '--public' && !publicOnly) publicOnly = true;
+      else if (args[i] === '--port' && args[i + 1]) port = Number(args[++i]);
+      else throw new Error('Use [--public] [--port followed by a free TCP port]');
+    }
+    if (!Number.isInteger(port) || port < 1 || port > 65535) throw new Error('Use --port followed by a free TCP port');
+    const preview = createPreview({ port, publicOnly });
     try {
       const address = await preview.start();
-      process.stdout.write(`IsPanel local: ${address}\nVista local · datos ficticios · sin correos reales. Cambiar escenario o reiniciar restablece los ejemplos.\n`);
+      process.stdout.write(`${publicOnly ? 'Universo Is público local' : 'IsPanel local'}: ${address}\nVista local · datos ficticios · sin correos reales. Cambiar escenario o reiniciar restablece los ejemplos.\n`);
       for (const signal of ['SIGINT', 'SIGTERM']) process.once(signal, async () => { await preview.close(); process.exit(0); });
     } catch (error) { process.stderr.write(`Preview not started: ${error.code === 'EADDRINUSE' ? `port ${port} is already in use; no process was stopped` : error.message}\n`); process.exitCode = 1; }
   }

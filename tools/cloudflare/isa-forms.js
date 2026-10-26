@@ -28,6 +28,9 @@
 // The forms post JSON: the visible fields (Nombre, Email, Mensaje…) plus _subject, _replyto, _page, _honey and
 // cf-turnstile-response. Fields starting with "_" steer the email and are not listed in it.
 const MAX_BODY = 10_000;
+const TURNSTILE_TIMEOUT_MS = 8_000;
+const MAIL_TIMEOUT_MS = 10_000;
+const validProviderId = value => typeof value === 'string' && /^[A-Za-z0-9_-]{1,128}$/.test(value);
 const MAX_HIT_BODY = 1_024;
 const FROM = 'Formularios Ismael Sarmiento <onboarding@resend.dev>';
 const EMAIL = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
@@ -327,15 +330,15 @@ async function notifyContact(env, contact) {
   try {
     const sent = await fetch('https://api.resend.com/emails', {
       method: 'POST',
-      signal: AbortSignal.timeout(10_000),
+      signal: AbortSignal.timeout(MAIL_TIMEOUT_MS),
       headers: { Authorization: `Bearer ${env.RESEND_API_KEY || ''}`, 'Content-Type': 'application/json',
         'Idempotency-Key': `contact-${contact.id}` },
       body: JSON.stringify({ from: FROM, to: [env.FORM_TO], subject, html, text, reply_to: contact.email }),
     });
-    if (!sent.ok) notification = 'failed';
+    if (!sent.ok) notification = sent.status >= 400 && sent.status < 500 && sent.status !== 408 ? 'failed' : 'unknown';
     else {
       const response = await sent.json().catch(() => ({}));
-      if (typeof response.id === 'string' && /^[A-Za-z0-9_-]{1,128}$/.test(response.id)) {
+      if (validProviderId(response?.id)) {
         notification = 'accepted'; providerId = response.id;
       }
     }
@@ -394,10 +397,12 @@ async function countView(request, env, allowed, cors, ctx) {
         } catch { outcome = 'storage_error'; }
       }
     }
-    const round = value => Number.isFinite(value) ? Math.round(value * 10) / 10 : 0;
+    const located = Number.isFinite(context.latitude) && Number.isFinite(context.longitude);
+    const round = value => Math.round(value * 10) / 10;
     try {
-      env.SITE_VIEWS?.writeDataPoint({ blobs: [site, context.country || 'XX', context.region || '', context.city || '', outcome],
-        doubles: [round(context.latitude), round(context.longitude)], indexes: [site] });
+      // blob6 versions the coordinate pair: omitted numeric fields must never imply a real (0,0).
+      env.SITE_VIEWS?.writeDataPoint({ blobs: [site, context.country || 'XX', context.region || '', context.city || '', outcome, located ? 'geo-v1' : 'geo-missing-v1'],
+        doubles: located ? [round(context.latitude), round(context.longitude)] : [], indexes: [site] });
     } catch { /* never fail a page */ }
   };
   const pending = record();
@@ -475,7 +480,9 @@ export default {
     form.append('response', token);
     const ip = request.headers.get('CF-Connecting-IP');
     if (ip) form.append('remoteip', ip);
-    const check = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', { method: 'POST', body: form })
+    const check = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+      method: 'POST', body: form, signal: AbortSignal.timeout(TURNSTILE_TIMEOUT_MS),
+    })
       .then(r => r.json()).catch(() => ({ success: false }));
     const hosts = list(env.ALLOWED_HOSTS);
     if (!check.success || (hosts.length && !hosts.includes(check.hostname))) { track(env, at, 'turnstile'); return reply(403, { success: 'false', message: 'turnstile' }); }
@@ -502,12 +509,21 @@ export default {
     const page = at || `${SITE}/`;
     const { html, text } = renderEmail(data, { subject, replyTo: replyTo?.trim(), page });
 
-    const sent = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${env.RESEND_API_KEY || ''}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ from: FROM, to: [env.FORM_TO], subject, html, text, ...(replyTo ? { reply_to: replyTo.trim() } : {}) }),
-    });
-    if (!sent.ok) { track(env, page, 'mail_error'); return reply(502, { success: 'false', message: 'mail' }); }
+    try {
+      const sent = await fetch('https://api.resend.com/emails', {
+        method: 'POST', signal: AbortSignal.timeout(MAIL_TIMEOUT_MS),
+        headers: { Authorization: `Bearer ${env.RESEND_API_KEY || ''}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ from: FROM, to: [env.FORM_TO], subject, html, text, ...(replyTo ? { reply_to: replyTo.trim() } : {}) }),
+      });
+      if (!sent.ok && sent.status >= 400 && sent.status < 500 && sent.status !== 408) {
+        track(env, page, 'mail_error');
+        return reply(502, { success: 'false', message: 'mail_rejected' });
+      }
+      if (!sent.ok || !validProviderId((await sent.json())?.id)) throw new Error('mail_unknown');
+    } catch {
+      track(env, page, 'mail_unknown');
+      return reply(503, { success: 'false', message: 'mail_unknown' });
+    }
     track(env, page, 'sent');
     return reply(200, { success: 'true', message: 'sent' });
   },

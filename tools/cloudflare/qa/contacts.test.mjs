@@ -1,4 +1,5 @@
-// Local contracts for the two Workers. Every fetch is replaced: this suite cannot send mail or reach Cloudflare.
+// Local contracts for the two Workers. Worker fetches are replaced; HTTP adapter checks use loopback only.
+// This suite cannot send mail or reach Cloudflare.
 // Run with Node 24+: node --test tools/cloudflare/qa/contacts.test.mjs
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -7,14 +8,20 @@ import { createHash, createHmac, randomUUID } from 'node:crypto';
 import { DatabaseSync } from 'node:sqlite';
 import { runInNewContext } from 'node:vm';
 import formsWorker from '../isa-forms.js';
-import panelWorker, { decodeWorldCountries, reportClock, renderPanelReport } from '../isa-panel.js';
+import panelWorker, { decodeWorldCountries, reportClock, renderPanelReport, requestSessionRevocation } from '../isa-panel.js';
+import { createPreview } from './preview.mjs';
+
+const loopbackFetch = globalThis.fetch;
 
 const DAY = 86400000;
 const ORIGIN = 'https://ismael-sarmiento.github.io';
 const PANEL = 'https://ispanel.example';
 const FORMS = 'https://isa-forms.example';
 const SECRET = 'local-qa-signing-key-not-a-production-secret';
-const schema = (await Promise.all(['0001_contacts.sql', '0002_panel_activity.sql', '0003_panel_reports.sql'].map(name => readFile(new URL(`../migrations/${name}`, import.meta.url), 'utf8')))).join('\n');
+const QA_EPOCH = 'a'.repeat(32);
+const migrations = await Promise.all(['0001_contacts.sql', '0002_panel_activity.sql', '0003_panel_reports.sql', '0004_panel_auth.sql']
+  .map(name => readFile(new URL(`../migrations/${name}`, import.meta.url), 'utf8')));
+const schema = migrations.join('\n');
 
 test('shared contact form: stored requests survive email failure and legacy success remains compatible', async () => {
   const source = (await readFile(new URL('../../../assets/ds/contact.js', import.meta.url), 'utf8')).replaceAll('export function ', 'function ');
@@ -33,7 +40,7 @@ test('shared contact form: stored requests survive email failure and legacy succ
       : { success: 'true', stored: true, notification };
     runInNewContext(source + '\ninitContactForm({form, texts:()=>tx, buildEmail:async()=>({})});', {
       form, tx: { ok: 'received', saved: 'saved, email unconfirmed', error: 'failed', send: 'send' },
-      location: { origin: ORIGIN, pathname: '/cv/' }, setTimeout() {},
+      location: { origin: ORIGIN, pathname: '/cv/' }, setTimeout() {}, clearTimeout() {}, AbortController,
       document: { createElement: () => ({}), head: { appendChild(script) { script.onload(); } } },
       window: { turnstile: { render(_box, options) { callback = options.callback; return 1; }, reset() {}, execute() { callback('mock-token'); } } },
       fetch: async () => ({ ok: notification !== 'storage_error', status: 503, json: async () => payload }),
@@ -43,6 +50,106 @@ test('shared contact form: stored requests survive email failure and legacy succ
     assert.equal(resets, notification === 'storage_error' ? 0 : 1);
     assert.equal(classes.has(notification === 'storage_error' ? 'err' : 'ok'), true);
     assert.equal(button.disabled, false);
+  }
+});
+
+// The shared form's language refresh must never submit, reset values or move keyboard focus.
+async function contactLanguageFixture(fields = [], notification = 'accepted') {
+  const source = (await readFile(new URL('../../../assets/ds/contact.js', import.meta.url), 'utf8')).replaceAll('export function ', 'function ');
+  const listeners = {}, focused = [], requests = [];
+  let lang = 'es', callback, release, began;
+  const started = new Promise(resolve => { began = resolve; });
+  const response = new Promise(resolve => { release = resolve; });
+  const tx = Object.fromEntries(['es', 'en'].map(code => [code, Object.fromEntries(
+    ['required', 'badEmail', 'needPrivacy', 'send', 'sending', 'ok', 'saved', 'error', 'uncertain'].map(key => [key, `${code}:${key}`]))]));
+  const status = { textContent: '', className: '', classList: { add() {} } };
+  const button = { disabled: false, textContent: 'es:send' };
+  const form = {
+    id: 'language-form', elements: {}, appendChild() {},
+    querySelector: selector => selector === '.f-status' ? status : button,
+    querySelectorAll: () => fields,
+    addEventListener(type, handler) { listeners[type] = handler; },
+    reset() { for (const field of fields) { field.value = ''; field.checked = false; } },
+  };
+  for (const field of fields) {
+    const attrs = new Map();
+    const label = { error: null, querySelector() { return this.error; }, appendChild(error) { this.error = error; error.remove = () => { this.error = null; }; } };
+    Object.assign(field, {
+      form, label, closest: () => label, getAttribute: key => attrs.get(key) ?? null,
+      setAttribute: (key, value) => attrs.set(key, value), removeAttribute: key => attrs.delete(key),
+      focus() { focused.push(this.name); },
+    });
+    form.elements[field.name] = field;
+  }
+  const contact = runInNewContext(source + '\ninitContactForm({form, texts, buildEmail:async()=>({})});', {
+    form, texts: () => tx[lang], location: { origin: ORIGIN, pathname: '/cv/' }, setTimeout() {}, clearTimeout() {}, AbortController,
+    document: { createElement: () => ({}), head: { appendChild(script) { script.onload(); } } },
+    window: { turnstile: { render(_box, options) { callback = options.callback; return 1; }, reset() {}, execute() { callback('mock-token'); } } },
+    fetch: async (...args) => { requests.push(args); began(); await response; return {
+      ok: notification !== 'storage_error', status: 503,
+      json: async () => ({ success: notification === 'storage_error' ? 'false' : 'true', stored: true, notification }),
+    }; },
+  });
+  return { contact, fields, focused, requests, status, button, started, release,
+    language(code) { lang = code; contact.refreshTexts(); },
+    submit: () => listeners.submit({ preventDefault() {} }),
+  };
+}
+
+test('shared form language: visible required/email/privacy errors translate without moving focus or changing values', async () => {
+  const h = await contactLanguageFixture([
+    { name: 'name', type: 'text', value: '' },
+    { name: 'email', type: 'email', value: 'invalid-address' },
+    { name: 'privacy', type: 'checkbox', value: '', checked: false },
+  ]);
+  await h.submit();
+  assert.deepEqual(h.focused, ['name']);
+  const descriptions = h.fields.map(f => f.getAttribute('aria-describedby'));
+  h.language('en');
+  assert.deepEqual(h.fields.map(f => f.label.error.textContent), ['en:required', 'en:badEmail', 'en:needPrivacy']);
+  assert.deepEqual(h.fields.map(f => f.getAttribute('aria-describedby')), descriptions);
+  assert.equal(h.fields[1].value, 'invalid-address');
+  assert.deepEqual(h.focused, ['name']);
+  assert.equal(h.requests.length, 0);
+  h.language('es');
+  assert.deepEqual(h.fields.map(f => f.label.error.textContent), ['es:required', 'es:badEmail', 'es:needPrivacy']);
+});
+
+test('shared form language: untouched fields stay quiet and corrected feedback clears without focus changes', async () => {
+  const h = await contactLanguageFixture([{ name: 'name', type: 'text', value: '' }]);
+  h.language('en');
+  assert.equal(h.fields[0].label.error, null);
+  assert.deepEqual(h.focused, []);
+  await h.submit();
+  h.fields[0].value = 'Example person';
+  h.language('es');
+  assert.equal(h.fields[0].label.error, null);
+  assert.equal(h.fields[0].getAttribute('aria-invalid'), null);
+  assert.equal(h.fields[0].getAttribute('aria-describedby'), null);
+  assert.equal(h.fields[0].value, 'Example person');
+  assert.deepEqual(h.focused, ['name']);
+});
+
+test('shared form language: pending send and final success/saved/error follow current language without duplicate requests', async () => {
+  for (const notification of ['accepted', 'failed', 'unknown', 'storage_error']) {
+    const h = await contactLanguageFixture([], notification);
+    const pending = h.submit();
+    await h.started;
+    assert.equal(h.button.disabled, true);
+    h.language('en');
+    assert.equal(h.button.textContent, 'en:sending');
+    assert.equal(h.status.textContent, '');
+    await h.submit();
+    assert.equal(h.requests.length, 1);
+    h.release(); await pending;
+    const key = notification === 'storage_error' ? 'uncertain' : notification === 'accepted' ? 'ok' : 'saved';
+    assert.equal(h.status.textContent, `en:${key}`);
+    assert.equal(h.button.textContent, 'en:send');
+    assert.equal(h.button.disabled, false);
+    h.language('es');
+    assert.equal(h.status.textContent, `es:${key}`);
+    assert.equal(h.button.textContent, 'es:send');
+    assert.equal(h.requests.length, 1);
   }
 });
 
@@ -61,7 +168,16 @@ class MemoryKV {
 
 // D1's prepared-statement/result shapes, backed by real SQLite constraints and atomic batches.
 class MemoryD1 {
-  constructor() { this.sqlite = new DatabaseSync(':memory:'); this.sqlite.exec(schema); }
+  sessions = [];
+  constructor() {
+    this.sqlite = new DatabaseSync(':memory:'); this.sqlite.exec(schema);
+    this.sqlite.prepare('UPDATE panel_auth_state SET epoch = ? WHERE id = 1').run(QA_EPOCH);
+  }
+  withSession(constraint) {
+    const session = { constraint, queries: [] };
+    this.sessions.push(session);
+    return { prepare: sql => { session.queries.push(sql); return this.prepare(sql); } };
+  }
   prepare(sql) {
     const native = this.sqlite.prepare(sql);
     let values = [];
@@ -125,7 +241,7 @@ function formRequest(payload = submission(), extra = {}) {
     latitude: '28.1234', longitude: '-15.4321', timezone: 'Atlantic/Canary', asn: 64500, secretUnknownField: 'discard-me' } });
   return request;
 }
-function sessionCookie(epoch = '1', expires = Date.now() + DAY, secret = SECRET) {
+function sessionCookie(epoch = QA_EPOCH, expires = Date.now() + DAY, secret = SECRET) {
   const signature = createHmac('sha256', secret).update(`session.${epoch}.${expires}`).digest('base64url');
   return `__Host-isa_panel=${epoch}.${expires}.${signature}`;
 }
@@ -176,7 +292,8 @@ function network(t, options = {}) {
     }
     if (url === 'https://api.resend.com/emails') {
       if (options.mailThrows) throw new Error('simulated transport failure');
-      return responseJSON(options.mailBody || { id: 'qa-email-1' }, options.mailStatus || 200);
+      if (options.mailBadJSON) return new Response('{', { status: 200 });
+      return responseJSON(Object.hasOwn(options, 'mailBody') ? options.mailBody : { id: 'qa-email-1' }, options.mailStatus || 200);
     }
     if (url === 'https://api.cloudflare.com/client/v4/graphql') {
       if (options.visitsFail) throw new Error('simulated analytics failure');
@@ -188,6 +305,7 @@ function network(t, options = {}) {
       const status = isForms ? options.formsStatus : options.citiesStatus;
       if (status) return responseJSON({ error: 'simulated source failure' }, status);
       return responseJSON({ data: isForms ? options.formRows || [{ site: 'cv', outcome: 'accepted', n: 2 }]
+        : options.citySql ? options.citySql(String(init.body))
         : options.cityRows || [{ country: 'ES', region: 'Canarias', city: 'Las Palmas', lat: 28.1, lon: -15.4, n: 3 }] });
     }
     assert.fail(`Unexpected network request blocked: ${url}`);
@@ -247,6 +365,45 @@ test('forms: honeypot and failed Turnstile discard contacts', async t => {
   await json(await formsWorker.fetch(formRequest(), e), 403);
   assert.equal(db.rows().length, 0); assert.equal(net.emails().length, 0);
 });
+
+for (const phase of ['headers', 'body']) {
+  test(`forms: Turnstile deadline rejects stalled ${phase} before storage or email`, async t => {
+    const db = database(t), e = env(db), controller = new AbortController();
+    const deadlines = [], calls = [];
+    let bodyRead = false, inserts = 0;
+    const prepare = db.prepare.bind(db);
+    t.mock.method(db, 'prepare', sql => {
+      if (/\bINSERT\s+(?:OR\s+\w+\s+)?INTO\s+contacts\b/i.test(sql)) inserts++;
+      return prepare(sql);
+    });
+    t.mock.method(AbortSignal, 'timeout', milliseconds => {
+      deadlines.push(milliseconds);
+      return controller.signal;
+    });
+    t.mock.method(globalThis, 'fetch', async (input, init = {}) => {
+      const url = String(input);
+      calls.push(url);
+      assert.equal(url, 'https://challenges.cloudflare.com/turnstile/v0/siteverify');
+      assert.equal(init.signal, controller.signal);
+      const stalled = () => new Promise((_resolve, reject) => {
+        init.signal.addEventListener('abort', () => reject(init.signal.reason), { once: true });
+        queueMicrotask(() => controller.abort(new DOMException('Simulated deadline', 'TimeoutError')));
+      });
+      if (phase === 'headers') return stalled();
+      return { json() { bodyRead = true; return stalled(); } };
+    });
+
+    const body = await json(await formsWorker.fetch(formRequest(), e), 403);
+    assert.deepEqual(deadlines, [8_000]);
+    assert.equal(controller.signal.aborted, true);
+    assert.equal(bodyRead, phase === 'body');
+    assert.equal(body.success, 'false');
+    assert.equal(body.message, 'turnstile');
+    assert.equal(inserts, 0);
+    assert.equal(db.rows().length, 0);
+    assert.deepEqual(calls, ['https://challenges.cloudflare.com/turnstile/v0/siteverify']);
+  });
+}
 
 test('forms: invalid visible fields, source and reply-to are rejected', async t => {
   const db = database(t), e = env(db), net = network(t);
@@ -311,7 +468,7 @@ test('forms: enabled storage must exist and fail before attempting email', async
 });
 
 test('forms: failed notification keeps the successfully stored request', async t => {
-  const db = database(t), e = env(db); network(t, { mailStatus: 503 });
+  const db = database(t), e = env(db); network(t, { mailStatus: 422 });
   const body = await json(await formsWorker.fetch(formRequest(), e));
   assert.equal(body.stored, true); assert.equal(body.notification, 'failed');
   const [row] = db.rows(); assert.equal(row.notification_status, 'failed'); assert.equal(row.provider_id, null);
@@ -335,18 +492,20 @@ test('panel: session signature, expiry and revocation protect every contacts end
   const db = database(t), row = seed(db), e = env(db); network(t);
   for (const request of [panelRequest('/api/contacts', { auth: false }), panelRequest(`/api/contacts/${row.id}`, { auth: false }),
     panelRequest(`/api/contacts/${row.id}`, { auth: false, method: 'PATCH', body: { status: 'resolved' } }),
-    panelRequest('/api/contacts', { headers: { Cookie: sessionCookie('1', Date.now() - 1) } }),
-    panelRequest('/api/contacts', { headers: { Cookie: sessionCookie('1', Date.now() + DAY, 'wrong-secret') } })]) {
+    panelRequest('/api/contacts', { headers: { Cookie: sessionCookie(QA_EPOCH, Date.now() - 1) } }),
+    panelRequest('/api/contacts', { headers: { Cookie: sessionCookie(QA_EPOCH, Date.now() + DAY, 'wrong-secret') } }),
+    panelRequest('/api/contacts', { headers: { Cookie: sessionCookie('1') } })]) {
     await json(await panelWorker.fetch(request, e), 401);
   }
-  await e.PANEL_KV.put('session-epoch', '2');
+  db.sqlite.prepare('UPDATE panel_auth_state SET epoch = ? WHERE id = 1').run('b'.repeat(32));
   await json(await panelWorker.fetch(panelRequest(), e), 401);
 });
 
 test('panel: missing or unavailable revocation storage fails closed for every contacts operation', async t => {
   const db = database(t), row = seed(db), net = network(t);
-  for (const kv of [undefined, { async get() { throw new Error('revocation store unavailable'); } }]) {
-    const e = env(db, { PANEL_KV: kv });
+  for (const overrides of [{ PANEL_KV: undefined }, { CONTACTS_DB: undefined },
+    { CONTACTS_DB: { withSession() { throw new Error('revocation store unavailable'); } } }]) {
+    const e = env(db, overrides);
     for (const request of [panelRequest('/api/contacts'), panelRequest(`/api/contacts/${row.id}`),
       panelRequest(`/api/contacts/${row.id}`, { method: 'PATCH', body: { status: 'resolved' } })]) {
       const body = await json(await panelWorker.fetch(request, e), 503);
@@ -357,10 +516,11 @@ test('panel: missing or unavailable revocation storage fails closed for every co
 });
 
 test('panel: feature disabled and unavailable storage are explicit source states', async t => {
-  network(t);
-  const disabled = await json(await panelWorker.fetch(panelRequest(), env(undefined, { CONTACTS_ENABLED: 'false' })), 503);
+  const db = database(t); network(t);
+  const disabled = await json(await panelWorker.fetch(panelRequest(), env(db, { CONTACTS_ENABLED: 'false' })), 503);
   assert.equal(disabled.error, 'contacts_disabled'); assert.equal(disabled.enabled, false);
-  const unavailable = await json(await panelWorker.fetch(panelRequest(), env(undefined)), 503);
+  const dataUnavailable = { withSession: constraint => db.withSession(constraint), prepare() { throw new Error('Unavailable source'); } };
+  const unavailable = await json(await panelWorker.fetch(panelRequest(), env(dataUnavailable)), 503);
   assert.equal(unavailable.error, 'contacts_unavailable');
 });
 
@@ -488,7 +648,7 @@ test('panel: forms and cities analytics use the selected web, with aggregate-onl
 });
 
 test('panel: a failed analytics source keeps successful sources and never becomes a zero', async t => {
-  const e = env(undefined); network(t, { visitsFail: true });
+  const e = env(database(t)); network(t, { visitsFail: true });
   const body = await json(await panelWorker.fetch(panelRequest('/api/data?days=7&site=cv&fresh=1'), e));
   assert.equal(body.partial, true); assert.equal(body.sourceHealth.visits.status, 'error');
   assert.equal(body.total.visits, null); assert.equal(body.total.views, null);
@@ -497,7 +657,7 @@ test('panel: a failed analytics source keeps successful sources and never become
 });
 
 test('panel: failed previous period never turns into a misleading zero comparison', async t => {
-  const e = env(undefined); network(t, { previousFail: true });
+  const e = env(database(t)); network(t, { previousFail: true });
   const body = await json(await panelWorker.fetch(panelRequest('/api/data?days=7&site=cv&fresh=1'), e));
   assert.equal(body.sourceHealth.visits.status, 'ok'); assert.equal(body.total.visits, 10);
   assert.equal(body.comparison.status, 'error'); assert.equal(body.previous.visits, null); assert.equal(body.previous.views, null);
@@ -505,13 +665,13 @@ test('panel: failed previous period never turns into a misleading zero compariso
 });
 
 test('panel: empty analytics and failed analytics remain distinguishable', async t => {
-  const e = env(undefined); network(t, { formsStatus: 422, cityRows: [] });
+  const e = env(database(t)); network(t, { formsStatus: 422, cityRows: [] });
   const body = await json(await panelWorker.fetch(panelRequest('/api/data?days=7&fresh=1'), e));
   assert.equal(body.sourceHealth.forms.status, 'error'); assert.equal(body.sourceHealth.cities.status, 'empty'); assert.equal(body.partial, true);
 });
 
 test('panel: recent snapshots are labelled stale and old snapshots are not silently reused', async t => {
-  const e = env(undefined), net = network(t);
+  const e = env(database(t)), net = network(t);
   const initial = await json(await panelWorker.fetch(panelRequest('/api/data?days=7&site=cv&fresh=1'), e));
   assert.equal(initial.sourceHealth.forms.status, 'ok');
   t.mock.method(globalThis, 'fetch', async (input, init = {}) => {
@@ -520,7 +680,7 @@ test('panel: recent snapshots are labelled stale and old snapshots are not silen
   });
   const stale = await json(await panelWorker.fetch(panelRequest('/api/data?days=7&site=cv&fresh=1'), e));
   assert.equal(stale.sourceHealth.forms.status, 'stale'); assert.equal(stale.forms.rows[0].n, 2); assert.equal(stale.stale, true);
-  const key = 'snapshot:data:v2:7:cv', saved = await e.PANEL_KV.get(key, 'json');
+  const key = 'snapshot:data:v3:7:cv', saved = await e.PANEL_KV.get(key, 'json');
   for (const source of Object.values(saved)) source.generated = new Date(Date.now() - 2 * DAY).toISOString();
   await e.PANEL_KV.put(key, JSON.stringify(saved));
   const expired = await json(await panelWorker.fetch(panelRequest('/api/data?days=7&site=cv&fresh=1'), e));
@@ -592,7 +752,8 @@ test('traffic API: every endpoint is private and missing KV or signing key fails
   const db = database(t), row = seedTraffic(db), net = network(t);
   for (const path of ['/api/traffic/summary', '/api/traffic/events', '/api/traffic/events/' + row.id]) {
     await json(await panelWorker.fetch(panelRequest(path, { auth: false }), env(db)), 401);
-    for (const overrides of [{ PANEL_KV: undefined }, { PANEL_KV: { get() { throw new Error('Unavailable'); } } }, { PANEL_SECRET: undefined }]) {
+    for (const overrides of [{ PANEL_KV: undefined }, { CONTACTS_DB: undefined },
+      { CONTACTS_DB: { withSession() { throw new Error('Unavailable'); } } }, { PANEL_SECRET: undefined }]) {
       const body = await json(await panelWorker.fetch(panelRequest(path), env(db, overrides)), 503);
       assert.equal(body.error, 'session_unavailable');
     }
@@ -601,11 +762,12 @@ test('traffic API: every endpoint is private and missing KV or signing key fails
 });
 
 test('traffic API: disabled and unavailable storage are distinct from an empty history', async t => {
-  network(t);
+  const db = database(t); network(t);
+  const dataUnavailable = { withSession: constraint => db.withSession(constraint), prepare() { throw new Error('Unavailable source'); } };
   for (const path of ['/api/traffic/summary', '/api/traffic/events']) {
-    const disabled = await json(await panelWorker.fetch(panelRequest(path), env(undefined, { TRAFFIC_ENABLED: 'false' })), 503);
+    const disabled = await json(await panelWorker.fetch(panelRequest(path), env(db, { TRAFFIC_ENABLED: 'false' })), 503);
     assert.equal(disabled.error, 'traffic_disabled'); assert.equal(disabled.enabled, false);
-    const unavailable = await json(await panelWorker.fetch(panelRequest(path), env(undefined)), 503);
+    const unavailable = await json(await panelWorker.fetch(panelRequest(path), env(dataUnavailable)), 503);
     assert.equal(unavailable.error, 'traffic_unavailable');
   }
 });
@@ -732,13 +894,252 @@ test('access: altered, missing, old, expired and unpersisted links grant no sess
 test('access: missing stores or signing key fail closed before issuance or consumption', async t => {
   const db = database(t), token = linkToken(); seedLink(db, token);
   const net = network(t, { turnstile: { success: true, hostname: 'ispanel.example' } });
-  for (const overrides of [{ CONTACTS_DB: undefined }, { PANEL_KV: undefined }, { PANEL_SECRET: undefined }, { PANEL_KV: { get() { throw new Error('Unavailable'); } } }]) {
+  for (const overrides of [{ CONTACTS_DB: undefined }, { PANEL_KV: undefined }, { PANEL_SECRET: undefined },
+    { CONTACTS_DB: { withSession() { throw new Error('Unavailable'); } } }]) {
     const e = env(db, overrides);
     assert.equal((await panelWorker.fetch(panelRequest('/auth?t=' + token, { auth: false }), e)).status, 503);
     assert.equal((await panelWorker.fetch(loginRequest(), e)).status, 503);
   }
   assert.equal(net.emails().length, 0); assert.equal(db.sqlite.prepare('SELECT used_at FROM panel_link_tokens').get().used_at, null);
 });
+
+test('access state: additive migration preserves private rows and does not rotate on reapplication', t => {
+  const sqlite = new DatabaseSync(':memory:'); t.after(() => sqlite.close());
+  sqlite.exec(migrations.slice(0, -1).join('\n'));
+  const db = { sqlite }, contact = seed(db), traffic = seedTraffic(db), token = linkToken(); seedLink(db, token);
+  const beforeSchema = sqlite.prepare("SELECT name, sql FROM sqlite_master WHERE type = 'table' ORDER BY name").all();
+  const beforeData = Object.fromEntries(['contacts', 'traffic_events', 'panel_link_tokens', 'panel_reports']
+    .map(table => [table, sqlite.prepare(`SELECT * FROM ${table}`).all()]));
+  sqlite.exec(migrations.at(-1));
+  const first = { ...sqlite.prepare('SELECT * FROM panel_auth_state').get() };
+  assert.match(first.epoch, /^[0-9a-f]{32}$/); assert.equal(first.id, 1); assert.equal(first.login_until_ms, 0);
+  sqlite.prepare('UPDATE panel_auth_state SET login_until_ms = 123456 WHERE id = 1').run();
+  sqlite.exec(migrations.at(-1));
+  assert.deepEqual({ ...sqlite.prepare('SELECT * FROM panel_auth_state').get() }, { ...first, login_until_ms: 123456 });
+  for (const row of beforeSchema) assert.deepEqual(sqlite.prepare('SELECT name, sql FROM sqlite_master WHERE name = ?').get(row.name), row);
+  for (const [table, rows] of Object.entries(beforeData)) assert.deepEqual(sqlite.prepare(`SELECT * FROM ${table}`).all(), rows);
+  assert.equal(contact.expires_at - contact.created_at, 90 * DAY);
+  assert.equal(traffic.expires_at - traffic.created_at, 30 * DAY);
+  assert.throws(() => sqlite.prepare('INSERT INTO panel_auth_state VALUES (2, ?, 0)').run(QA_EPOCH), /CHECK/);
+  assert.throws(() => sqlite.prepare("UPDATE panel_auth_state SET epoch = '1'").run(), /CHECK/);
+  assert.throws(() => sqlite.prepare('UPDATE panel_auth_state SET login_until_ms = -1').run(), /CHECK/);
+});
+
+test('access state: confirmed revocation rejects both stale-KV sessions using fresh primary reads', async t => {
+  const db = database(t), first = env(db), second = env(db), net = network(t), authKVReads = [];
+  for (const e of [first, second]) {
+    await e.PANEL_KV.put('session-epoch', QA_EPOCH); await e.PANEL_KV.put('login-lock', 'stale-lock');
+    const get = e.PANEL_KV.get.bind(e.PANEL_KV);
+    t.mock.method(e.PANEL_KV, 'get', (key, ...args) => {
+      if (['session-epoch', 'login-lock'].includes(key)) authKVReads.push(key);
+      return get(key, ...args);
+    });
+    assert.equal((await panelWorker.fetch(panelRequest('/api/data', { method: 'POST' }), e)).status, 405);
+  }
+  const response = await panelWorker.fetch(panelRequest('/logout-all', { method: 'POST', headers: { Origin: PANEL } }), first);
+  assert.equal(response.status, 200); assert.equal((await response.json()).ok, true);
+  assert.match(response.headers.get('Set-Cookie'), /Max-Age=0/);
+  const current = db.sqlite.prepare('SELECT epoch FROM panel_auth_state WHERE id = 1').get().epoch;
+  assert.match(current, /^[0-9a-f]{32}$/); assert.notEqual(current, QA_EPOCH);
+  for (const e of [first, second]) {
+    assert.equal((await panelWorker.fetch(panelRequest('/api/data', { method: 'POST' }), e)).status, 401);
+    assert.equal((await panelWorker.fetch(panelRequest('/api/contacts'), e)).status, 401);
+    assert.equal(e.PANEL_KV.values.get('session-epoch').value, QA_EPOCH);
+    assert.equal((await panelWorker.fetch(panelRequest('/api/data', {
+      method: 'POST', headers: { Cookie: sessionCookie(current) },
+    }), e)).status, 405);
+  }
+  assert.deepEqual(authKVReads, []); assert.equal(net.calls.length, 0);
+  assert.ok(db.sessions.length >= 9);
+  for (const session of db.sessions) {
+    assert.equal(session.constraint, 'first-primary'); assert.equal(session.queries.length, 1);
+    assert.match(session.queries[0], /^(SELECT epoch FROM panel_auth_state|UPDATE panel_auth_state SET epoch)/);
+  }
+});
+
+test('access state: logout enforces origin, method and authentication before rotating', async t => {
+  const db = database(t), e = env(db), net = network(t);
+  for (const [request, status] of [
+    [panelRequest('/logout-all'), 405],
+    [panelRequest('/logout-all', { method: 'POST', auth: false, headers: { Origin: PANEL } }), 403],
+    [panelRequest('/logout-all', { method: 'POST', headers: { Origin: 'https://untrusted.example' } }), 403],
+  ]) assert.equal((await panelWorker.fetch(request, e)).status, status);
+  assert.equal(db.sqlite.prepare('SELECT epoch FROM panel_auth_state').get().epoch, QA_EPOCH);
+  assert.equal(net.calls.length, 0);
+});
+
+test('access state: failed or unconfirmed rotation never confirms logout or clears the cookie', async t => {
+  for (const fails of [true, false]) {
+    const db = database(t), e = env(db), prepare = db.prepare.bind(db);
+    t.mock.method(db, 'prepare', sql => sql.startsWith('UPDATE panel_auth_state SET epoch')
+      ? { bind() { return { async run() { if (fails) throw new Error('private database details'); return { meta: { changes: 0 } }; } }; } }
+      : prepare(sql));
+    const response = await panelWorker.fetch(panelRequest('/logout-all', { method: 'POST', headers: { Origin: PANEL } }), e);
+    assert.equal(response.status, 503); assert.equal(response.headers.get('Set-Cookie'), null);
+    assert.ok(!(await response.text()).includes('private database details'));
+    assert.equal(db.sqlite.prepare('SELECT epoch FROM panel_auth_state').get().epoch, QA_EPOCH);
+  }
+});
+
+test('access state: missing schema, row, session support or primary access fail closed without KV fallback', async t => {
+  const net = network(t, { turnstile: { success: true, hostname: 'ispanel.example' } });
+  const cases = [
+    db => { db.sqlite.exec('DROP TABLE panel_auth_state'); return db; },
+    db => { db.sqlite.exec('DELETE FROM panel_auth_state'); return db; },
+    db => { db.sqlite.exec("PRAGMA ignore_check_constraints=ON; UPDATE panel_auth_state SET epoch='malformed'"); return db; },
+    db => ({ prepare: db.prepare.bind(db) }),
+    () => ({ withSession() { throw new Error('private primary failure'); } }),
+  ];
+  for (const alter of cases) {
+    const db = database(t), token = linkToken(); seedLink(db, token); seed(db); seedTraffic(db);
+    const e = env(alter(db));
+    await e.PANEL_KV.put('session-epoch', QA_EPOCH);
+    for (const path of ['/api/data', '/api/contacts', '/api/traffic/events', '/api/traffic/summary', '/api/reports/status', '/api/reports/preview']) {
+      const response = await panelWorker.fetch(panelRequest(path), e);
+      assert.equal(response.status, 503, path);
+      assert.deepEqual(await response.json(), { error: 'session_unavailable' });
+    }
+    assert.equal((await panelWorker.fetch(loginRequest(), e)).status, 503);
+    assert.equal((await panelWorker.fetch(panelRequest('/auth?t=' + token, { auth: false }), e)).status, 503);
+    assert.equal(db.sqlite.prepare('SELECT used_at FROM panel_link_tokens').get().used_at, null);
+    assert.equal(db.sqlite.prepare('SELECT COUNT(*) n FROM panel_link_tokens').get().n, 1);
+  }
+  assert.equal(net.emails().length, 0);
+});
+
+test('access state: concurrent verified logins grant only one database reservation and one email', async t => {
+  const db = database(t), e = env(db), net = network(t, { turnstile: { success: true, hostname: 'ispanel.example' } });
+  const responses = await Promise.all(Array.from({ length: 24 }, () => panelWorker.fetch(loginRequest(), e)));
+  assert.equal(responses.filter(r => r.status === 200).length, 1);
+  assert.equal(responses.filter(r => r.status === 429).length, 23);
+  assert.equal(net.emails().length, 1);
+  assert.equal(db.sqlite.prepare('SELECT COUNT(*) n FROM panel_link_tokens').get().n, 1);
+  assert.equal(e.PANEL_KV.values.has('login-lock'), false);
+  assert.deepEqual(Object.keys(db.sqlite.prepare('SELECT * FROM panel_auth_state').get()).sort(), ['epoch', 'id', 'login_until_ms']);
+  for (const session of db.sessions) {
+    assert.equal(session.constraint, 'first-primary'); assert.equal(session.queries.length, 1);
+  }
+});
+
+test('access state: database clock controls the cooldown and expiry permits a new manual request', async t => {
+  const db = database(t), e = env(db), realNow = Date.now.bind(Date), before = realNow();
+  const net = network(t, { turnstile: { success: true, hostname: 'ispanel.example' } });
+  t.mock.method(Date, 'now', () => realNow() + 12 * 3600000);
+  assert.equal((await panelWorker.fetch(loginRequest(), e)).status, 200);
+  const deadline = db.sqlite.prepare('SELECT login_until_ms FROM panel_auth_state').get().login_until_ms;
+  assert.ok(deadline >= before + 59000 && deadline <= realNow() + 61000);
+  t.mock.method(Date, 'now', () => realNow() - 12 * 3600000);
+  assert.equal((await panelWorker.fetch(loginRequest(), e)).status, 429);
+  assert.equal(net.emails().length, 1);
+  db.sqlite.exec('UPDATE panel_auth_state SET login_until_ms = 0 WHERE id = 1');
+  assert.equal((await panelWorker.fetch(loginRequest(), e)).status, 200);
+  assert.equal(net.emails().length, 2);
+});
+
+for (const failure of ['rejected', 'transport']) {
+  test(`access state: ${failure} email keeps its reservation without retrying`, async t => {
+    const db = database(t), e = env(db), net = network(t, {
+      turnstile: { success: true, hostname: 'ispanel.example' },
+      ...(failure === 'rejected' ? { mailStatus: 422 } : { mailThrows: true }),
+    });
+    assert.equal((await panelWorker.fetch(loginRequest(), e)).status, failure === 'rejected' ? 502 : 503);
+    assert.equal((await panelWorker.fetch(loginRequest(), e)).status, 429);
+    assert.equal(net.emails().length, 1);
+    assert.equal(db.sqlite.prepare('SELECT COUNT(*) n FROM panel_link_tokens').get().n, 1);
+  });
+}
+
+test('session close client: only explicit success confirms, including the serialized browser helper', async t => {
+  const calls = [], deadlines = [], controller = new AbortController();
+  t.mock.method(AbortSignal, 'timeout', milliseconds => { deadlines.push(milliseconds); return controller.signal; });
+  const fetch = async (url, init) => { calls.push({ url, init }); return responseJSON({ ok: true }); };
+  t.mock.method(globalThis, 'fetch', fetch);
+  const serialized = runInNewContext(`(${requestSessionRevocation})`, { fetch, AbortSignal });
+  for (const invoke of [requestSessionRevocation, serialized]) {
+    calls.length = 0; deadlines.length = 0;
+    assert.equal(await invoke(), true);
+    assert.equal(calls.length, 1); assert.deepEqual(deadlines, [15_000]);
+    assert.equal(calls[0].url, '/logout-all'); assert.equal(calls[0].init.method, 'POST');
+    assert.equal(calls[0].init.headers.Accept, 'application/json');
+    assert.equal(calls[0].init.signal, controller.signal);
+  }
+});
+
+test('session close client: HTTP rejection never confirms or retries', async t => {
+  for (const status of [401, 403, 500, 503]) {
+    let calls = 0;
+    t.mock.method(globalThis, 'fetch', async () => { calls++; return responseJSON({ ok: true }, status); });
+    assert.equal(await requestSessionRevocation(), false); assert.equal(calls, 1);
+  }
+});
+
+test('session close client: malformed or non-confirming success bodies stay unconfirmed', async t => {
+  for (const body of ['not-json', JSON.stringify({ ok: false }), JSON.stringify({ ok: 'true' }), 'null', '{}']) {
+    let calls = 0;
+    t.mock.method(globalThis, 'fetch', async () => { calls++; return new Response(body, { status: 200 }); });
+    assert.equal(await requestSessionRevocation(), false); assert.equal(calls, 1);
+  }
+});
+
+test('session close client: a transport exception is unconfirmed without retry or leaked details', async t => {
+  let calls = 0;
+  t.mock.method(globalThis, 'fetch', async () => { calls++; throw new Error('private transport details'); });
+  assert.equal(await requestSessionRevocation(), false); assert.equal(calls, 1);
+});
+
+for (const phase of ['headers', 'body']) {
+  test(`session close client: the fifteen-second deadline covers stalled ${phase}`, async t => {
+    const controller = new AbortController(), deadlines = [];
+    let calls = 0, bodyRead = false;
+    t.mock.method(AbortSignal, 'timeout', milliseconds => { deadlines.push(milliseconds); return controller.signal; });
+    t.mock.method(globalThis, 'fetch', async (_url, init) => {
+      calls++; assert.equal(init.signal, controller.signal);
+      const stalled = () => new Promise((_resolve, reject) => {
+        init.signal.addEventListener('abort', () => reject(init.signal.reason), { once: true });
+        queueMicrotask(() => controller.abort(new DOMException('Simulated deadline', 'TimeoutError')));
+      });
+      if (phase === 'headers') return stalled();
+      return { ok: true, json() { bodyRead = true; return stalled(); } };
+    });
+    assert.equal(await requestSessionRevocation(), false);
+    assert.deepEqual(deadlines, [15_000]); assert.equal(controller.signal.aborted, true);
+    assert.equal(bodyRead, phase === 'body'); assert.equal(calls, 1);
+  });
+}
+
+for (const scenario of ['logout-failed', 'logout-unknown']) {
+  test(`session close preview: ${scenario} preserves the real Worker result and contains the fault locally`, async t => {
+    const original = panelWorker.fetch.bind(panelWorker);
+    let observed;
+    t.mock.method(panelWorker, 'fetch', async (request, e, ...args) => {
+      if (new URL(request.url).pathname !== '/logout-all') return original(request, e, ...args);
+      const readEpoch = () => e.CONTACTS_DB.withSession('first-primary')
+        .prepare('SELECT epoch FROM panel_auth_state WHERE id = 1').first('epoch');
+      const before = await readEpoch(), response = await original(request, e, ...args);
+      observed = { before, after: await readEpoch(), status: response.status };
+      return response;
+    });
+    const preview = createPreview({ port: 0 });
+    const origin = await preview.start();
+    assert.match(origin, /^http:\/\/127\.0\.0\.1:\d+$/);
+    try {
+      const selected = await loopbackFetch(`${origin}/__preview/scenario?name=${scenario}`, { redirect: 'manual' });
+      assert.equal(selected.status, 303);
+      const request = () => loopbackFetch(origin + '/logout-all', { method: 'POST', headers: { Origin: origin },
+        signal: AbortSignal.timeout(12_000) });
+      if (scenario === 'logout-failed') {
+        const response = await request();
+        assert.equal(response.status, 503); assert.equal(response.headers.get('Set-Cookie'), null);
+        assert.equal(observed.status, 503); assert.equal(observed.after, observed.before);
+      } else {
+        await assert.rejects(request, TypeError);
+        assert.equal(observed.status, 200); assert.notEqual(observed.after, observed.before);
+      }
+      // Subsequent, unrelated demo requests still work; the adapter signs only its synthetic session.
+      assert.equal((await loopbackFetch(origin + '/api/contacts')).status, 200);
+    } finally { await preview.close(); }
+  });
+}
 
 test('traffic API: period and long literal searches stay compatible with D1 and filter summary alike', async t => {
   const db = database(t), e = env(db); network(t);
@@ -825,6 +1226,63 @@ test('aggregate map: missing coordinates are absent while valid zero coordinates
   assert.equal(result.cities.rows[0].lat,null);assert.equal(result.cities.rows[0].lon,null);
   assert.equal(result.cities.rows[1].lat,0);assert.equal(result.cities.rows[1].lon,0);
 });
+test('aggregate map: captured coordinate validity survives the cities query without false points or diluted averages', async t => {
+  const e = env(database(t), { TRAFFIC_ENABLED: 'false' });
+  const cases = [
+    { city: 'Mixed coverage', latitude: '40', longitude: '-3' },
+    { city: 'Mixed coverage' },
+    { city: 'Null pair', latitude: null, longitude: null },
+    { city: 'Partial pair', latitude: '40' },
+    { city: 'Invalid pair', latitude: '91', longitude: '-3' },
+    { city: 'Empty pair', latitude: '', longitude: '' },
+    { city: 'Genuine zero', latitude: '0', longitude: '0' },
+    { city: 'Boundary pair', latitude: '-90', longitude: '180' },
+    { city: 'Equator', latitude: '0', longitude: '20' },
+  ];
+  for (const cf of cases) assert.equal((await formsWorker.fetch(hitRequest(undefined, { cf: { country: 'ES', ...cf } }), e)).status, 204);
+  assert.equal(e._views.length, cases.length);
+  for (const index of [1, 2, 3, 4, 5]) {
+    assert.deepEqual(e._views[index].doubles, [], cases[index].city);
+    assert.equal(e._views[index].blobs[5], 'geo-missing-v1');
+    assert.equal(e._views[index].blobs[1], 'ES');
+    assert.equal(e._views[index].blobs[3], cases[index].city);
+  }
+  assert.deepEqual(e._views[6].doubles, [0, 0]);
+  assert.equal(e._views[6].blobs[5], 'geo-v1');
+  assert.ok(!JSON.stringify(e._views).includes('192.0.2.10'));
+
+  // Execute the actual cities SQL over captured points. Only the provider-specific time/format
+  // syntax is adapted; filtering, grouping and averages run in SQLite, not in a copied JS predicate.
+  const store = new DatabaseSync(':memory:'); t.after(() => store.close());
+  store.exec(`CREATE TABLE isa_site_views (blob1 TEXT, blob2 TEXT, blob3 TEXT, blob4 TEXT, blob5 TEXT, blob6 TEXT,
+    double1 REAL, double2 REAL, _sample_interval INTEGER)`);
+  const insert = store.prepare('INSERT INTO isa_site_views VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)');
+  for (const point of e._views) insert.run(...point.blobs, point.doubles[0] ?? 0, point.doubles[1] ?? 0, 1);
+  for (const [city, marker, lat, lon] of [
+    ['Legacy located', '', 28, -15], ['Legacy ambiguous', '', 0, 0],
+    ['Legacy out of range', '', 100, 10], ['Unknown schema', 'geo-future', 40, 10],
+  ]) insert.run('cv', 'ES', '', city, 'aggregate_only', marker, lat, lon, 1);
+  network(t, { citySql: sql => store.prepare(sql
+    .replace(/timestamp > NOW\(\) - INTERVAL '\d+' DAY/, '1 = 1')
+    .replace(/ FORMAT JSON$/, '')).all().map(row => ({ ...row })) });
+  const result = await json(await panelWorker.fetch(panelRequest('/api/data?days=7&site=cv&fresh=1'), e));
+  const rows = result.cities.rows;
+  assert.deepEqual(rows.map(row => row.city).sort(), ['Boundary pair', 'Equator', 'Genuine zero', 'Legacy located', 'Mixed coverage'].sort());
+  assert.deepEqual(rows.find(row => row.city === 'Mixed coverage'), { country: 'ES', region: '', city: 'Mixed coverage', lat: 40, lon: -3, n: 1 });
+  assert.equal(rows.find(row => row.city === 'Genuine zero').lat, 0);
+  assert.equal(rows.find(row => row.city === 'Genuine zero').lon, 0);
+  assert.equal(store.prepare('SELECT COUNT(*) AS n FROM isa_site_views').get().n, cases.length + 4);
+});
+test('aggregate map: old cached cities and stale snapshots cannot restore ambiguous points', async t => {
+  const e = env(database(t)), legacy = { cities: { rows: [{ city: 'False point', lat: 0, lon: 0, n: 1 }] } };
+  await e.PANEL_KV.put('data:v2:7:cv', JSON.stringify(legacy));
+  await e.PANEL_KV.put('snapshot:data:v2:7:cv', JSON.stringify({ cities: { value: legacy.cities, generated: new Date().toISOString() } }));
+  network(t, { citiesStatus: 503 });
+  const result = await json(await panelWorker.fetch(panelRequest('/api/data?days=7&site=cv'), e));
+  assert.deepEqual(result.cities.rows, []);
+  assert.equal(result.sourceHealth.cities.status, 'error');
+  assert.equal(result.cached, false);
+});
 const requestReport=(id=randomUUID(),extra={})=>panelRequest('/api/reports/send',{method:'POST',headers:{Origin:PANEL,'Content-Type':'application/json'},body:{requestId:id},...extra});
 const reportRows=db=>db.sqlite.prepare('SELECT * FROM panel_reports').all();
 
@@ -895,4 +1353,161 @@ test('reports: source failures remain labelled and external strings are escaped 
   const response=await panelWorker.fetch(panelRequest('/api/reports/preview'),e),body=await response.text();assert.match(body,/Fuente no disponible|no disponible/);assert.ok(!body.includes('persona@example.test'));assert.equal(net.emails().length,0);
   const now=Date.now(),d={generated:now,period:{since:now-7*DAY,until:now},contacts:{status:'disabled'},traffic:{status:'disabled'},aggregate:{range:{since:'2026-10-12',until:'2026-10-19'},total:{visits:1,views:2},sites:{},sources:[{key:'<script>alert(1)</script>',visits:1}],pages:[],devices:[],sourceHealth:{visits:{status:'ok'}}}};
   const rendered=renderPanelReport(d);assert.ok(!rendered.html.includes('<script>'));assert.match(rendered.html,/&lt;script&gt;/);assert.match(rendered.text,/<script>/);
+});
+
+
+// D19: the component runs with its real code, substituted DOM/network and a deterministic browser clock.
+function submissionFixture({ phase, status = 200, payload = { success: true }, badJSON = false,
+  transport = false, onSentThrows = false, preflightThrows = false } = {}) {
+  const timers = new Map(), requests = [], warnings = [], listeners = {};
+  let now = 0, nextTimer = 0, callback, language = 'es', resets = 0, sent = 0;
+  const statusNode = { textContent: '', className: '', classList: { add() {} } };
+  const button = { disabled: false, textContent: '' };
+  const fields = [{ name: 'message', type: 'textarea', value: 'Synthetic draft only.' },
+    { name: 'privacy', type: 'checkbox', checked: true }];
+  for (const field of fields) Object.assign(field, { getAttribute: () => null, removeAttribute() {},
+    closest: () => ({ querySelector: () => null }) });
+  const form = { id: 'deadline-form', elements: Object.fromEntries(fields.map(f => [f.name, f])),
+    appendChild() {}, querySelectorAll: () => fields,
+    querySelector: selector => selector === '.f-status' ? statusNode : button,
+    addEventListener(type, handler) { listeners[type] = handler; },
+    reset() { resets++; fields[0].value = ''; fields[1].checked = false; } };
+  const context = {
+    form, location: { origin: ORIGIN, pathname: '/cv/' }, AbortController,
+    console: { warn: message => warnings.push(message) },
+    texts: () => Object.fromEntries(['send','sending','ok','saved','error','uncertain'].map(k => [k, `${language}:${k}`])),
+    buildEmail: async () => { if (preflightThrows) throw new Error('synthetic preparation failure'); return { Mensaje: fields[0].value }; },
+    onSent: () => { sent++; if (onSentThrows) throw new Error('private synthetic callback details'); },
+    document: { createElement: () => ({}), head: { appendChild: script => script.onload() } },
+    window: { turnstile: { render(_box, options) { callback = options.callback; return 1; }, reset() {}, execute() { callback('synthetic-token'); } } },
+    setTimeout(fn, ms) { const id = ++nextTimer; timers.set(id, { fn, at: now + ms }); return id; },
+    clearTimeout: id => timers.delete(id),
+    fetch: async (url, options) => {
+      requests.push({ url, options });
+      const stalled = () => new Promise((_resolve, reject) => {
+        options.signal.addEventListener('abort', () => reject(options.signal.reason), { once: true });
+      });
+      if (transport) throw new Error('synthetic response lost');
+      if (phase === 'headers') return stalled();
+      return { ok: status >= 200 && status < 300, status, json: async () => {
+        if (phase === 'body') return stalled();
+        if (badJSON) throw new SyntaxError('synthetic malformed body');
+        return payload;
+      } };
+    },
+  };
+  return readFile(new URL('../../../assets/ds/contact.js', import.meta.url), 'utf8').then(source => {
+    const contact = runInNewContext(source.replaceAll('export function ', 'function ') +
+      '\ninitContactForm({form,texts,buildEmail,onSent})', context);
+    return { fields, requests, warnings, button, status: statusNode, timers,
+      get resets() { return resets; }, get sent() { return sent; },
+      language(code) { language = code; contact.refreshTexts(); },
+      submit: () => listeners.submit({ preventDefault() {} }),
+      advance(ms) {
+        const end = now + ms;
+        for (;;) {
+          const entry = [...timers].filter(([,v]) => v.at <= end).sort((a,b) => a[1].at-b[1].at)[0];
+          if (!entry) break;
+          const [id, timer] = entry; now = timer.at; timers.delete(id); timer.fn();
+        }
+        now = end;
+      },
+    };
+  });
+}
+const flushForm = async () => { for (let i=0;i<24;i++) await Promise.resolve(); };
+function preservedDraft(h) {
+  assert.equal(h.fields[0].value, 'Synthetic draft only.'); assert.equal(h.fields[1].checked, true);
+  assert.equal(h.resets, 0); assert.equal(h.sent, 0); assert.equal(h.button.disabled, false);
+}
+for (const phase of ['headers', 'body']) {
+  test(`D19 client: stalled POST ${phase} stops at 30s, preserves consent/draft and never resends`, async () => {
+    const h = await submissionFixture({ phase }), pending = h.submit(); await flushForm();
+    assert.equal(h.requests.length, 1); assert.equal(h.button.disabled, true);
+    const signal = h.requests[0].options.signal;
+    h.language('en'); await h.submit(); assert.equal(h.requests.length, 1);
+    h.advance(29_999); await flushForm(); assert.equal(signal.aborted, false); assert.equal(h.button.disabled, true);
+    h.advance(1); await pending; assert.equal(signal.aborted, true);
+    preservedDraft(h); assert.equal(h.status.textContent, 'en:uncertain');
+    h.language('es'); assert.equal(h.status.textContent, 'es:uncertain');
+    h.advance(60_000); await flushForm(); assert.equal(h.requests.length, 1); assert.equal(h.timers.size, 0);
+  });
+}
+test('D19 client: explicit rejection pairs alone select the rejection feedback', async () => {
+  for (const [status, message] of [[400,'json'],[400,'fields'],[403,'origin'],[403,'turnstile'],[405,'method'],[413,'size'],[502,'mail_rejected']]) {
+    const h = await submissionFixture({ status, payload: {success:false,message} }); await h.submit();
+    preservedDraft(h); assert.equal(h.status.textContent, 'es:error', `${status}/${message}`);
+  }
+});
+test('D19 client: lost, invalid and ambiguous responses retain the draft with uncertain feedback', async () => {
+  for (const options of [{transport:true},{badJSON:true},{payload:null},{payload:{}},{payload:{success:false}},
+    {status:503,payload:{success:false,message:'storage'}},{status:503,payload:{success:false,message:'mail_unknown'}},
+    {status:502,payload:{success:false,message:'mail'}},{status:500,payload:{success:false,message:'fields'}}]) {
+    const h = await submissionFixture(options); await h.submit(); preservedDraft(h);
+    assert.equal(h.status.textContent, 'es:uncertain', JSON.stringify(options));
+    assert.equal(h.requests.length, 1); h.advance(60_000); assert.equal(h.requests.length, 1);
+  }
+});
+test('D19 client: preflight failures do not claim uncertain receipt or start a POST', async () => {
+  const h = await submissionFixture({preflightThrows:true}); await h.submit(); preservedDraft(h);
+  assert.equal(h.status.textContent, 'es:error'); assert.equal(h.requests.length, 0); assert.equal(h.timers.size,0);
+});
+test('D19 client: confirmed receipt survives a presentation exception and clears the POST deadline', async () => {
+  for (const notification of ['accepted','failed','unknown']) {
+    const h = await submissionFixture({payload:{success:true,stored:true,notification},onSentThrows:true});
+    await h.submit(); assert.equal(h.resets,1);assert.equal(h.sent,1);
+    assert.equal(h.status.textContent, notification==='accepted'?'es:ok':'es:saved');
+    assert.deepEqual(h.warnings,['Contact received; presentation refresh could not complete.']);
+    h.advance(60_000); assert.equal(h.requests[0].options.signal.aborted,false); assert.equal(h.requests.length,1);
+  }
+});
+for (const active of [false,true]) {
+  for (const phase of ['headers','body']) {
+    test(`D19 mail: ${active?'stored':'legacy'} stalled ${phase} uses 10s and preserves outcome/deduplication`, async t => {
+      const db=database(t),e=env(db,{CONTACTS_ENABLED:String(active)}),deadlines=[],controller=new AbortController();
+      let emails=0,bodyRead=false;
+      t.mock.method(AbortSignal,'timeout',ms=>{deadlines.push(ms);return ms===10_000?controller.signal:new AbortController().signal;});
+      t.mock.method(globalThis,'fetch',async (url,init)=>{
+        if(String(url).includes('/siteverify')) return responseJSON({success:true,hostname:'ismael-sarmiento.github.io'});
+        assert.equal(String(url),'https://api.resend.com/emails'); emails++; assert.equal(init.signal,controller.signal);
+        const stalled=()=>new Promise((_resolve,reject)=>{
+          init.signal.addEventListener('abort',()=>reject(init.signal.reason),{once:true});
+          queueMicrotask(()=>controller.abort(new DOMException('Synthetic deadline','TimeoutError')));
+        });
+        if(phase==='headers')return stalled();
+        return {ok:true,status:200,json(){bodyRead=true;return stalled();}};
+      });
+      const body=await json(await formsWorker.fetch(formRequest(),e),active?200:503);
+      assert.deepEqual(deadlines,[8_000,10_000]);assert.equal(bodyRead,phase==='body');assert.equal(emails,1);
+      if(active){assert.equal(body.stored,true);assert.equal(body.notification,'unknown');assert.equal(db.rows().length,1);
+        const duplicate=await json(await formsWorker.fetch(formRequest(),e));assert.equal(duplicate.duplicate,true);assert.equal(emails,1);
+      }else{assert.equal(body.success,'false');assert.equal(body.message,'mail_unknown');assert.equal(db.rows().length,0);}
+    });
+  }
+}
+for (const active of [false,true]) {
+  test(`D19 mail: ${active?'stored':'legacy'} classifies rejection, uncertainty and validated provider IDs`, async t => {
+    const cases=[{mailStatus:422,kind:'failed'},{mailStatus:429,kind:'failed'},{mailStatus:408,kind:'unknown'},
+      {mailStatus:503,kind:'unknown'},{mailThrows:true,kind:'unknown'},{mailBadJSON:true,kind:'unknown'},
+      ...[{},null,{id:''},{id:'a'.repeat(129)},{id:'bad id'},{id:42}].map(mailBody=>({mailBody,kind:'unknown'})),
+      {mailBody:{id:'a'.repeat(128)},kind:'accepted'},{mailBody:{id:'abc_123-X'},kind:'accepted'}];
+    for (const spec of cases) await t.test(JSON.stringify(spec),async child=>{
+      const db=database(child),e=env(db,{CONTACTS_ENABLED:String(active)}),net=network(child,spec);
+      const result=await json(await formsWorker.fetch(formRequest(),e),active||spec.kind==='accepted'?200:spec.kind==='failed'?502:503);
+      if(active){assert.equal(result.stored,true);assert.equal(result.notification,spec.kind);assert.equal(db.rows()[0].notification_status,spec.kind);
+        const again=await json(await formsWorker.fetch(formRequest(),e));assert.equal(again.duplicate,true);assert.equal(net.emails().length,1);
+      }else{assert.equal(result.message,spec.kind==='accepted'?'sent':spec.kind==='failed'?'mail_rejected':'mail_unknown');
+        assert.equal(db.rows().length,0);assert.equal(e._events.at(-1).blobs[1],spec.kind==='accepted'?'sent':spec.kind==='failed'?'mail_error':'mail_unknown');}
+      assert.equal(net.emails().length,1);
+      assert.equal(JSON.stringify(result).includes('mock-resend'),false);
+    });
+  });
+}
+test('D19 report: historical incidents and uncertain legacy mail have cautious labels',()=>{
+  const now=Date.now(),d={generated:now,period:{since:now-DAY,until:now},contacts:{status:'disabled'},traffic:{status:'disabled'},
+    aggregate:{range:{since:'2026-10-25',until:'2026-10-26'},total:{visits:0,views:0},sites:{},sourceHealth:{},
+      forms:{rows:[{outcome:'mail_error',n:1},{outcome:'mail_unknown',n:2}]}}};
+  const result=renderPanelReport(d);
+  for(const label of ['Incidencia de correo (flujo anterior)','Correo sin confirmar (flujo anterior)']){
+    assert.ok(result.html.includes(label));assert.ok(result.text.includes(label));}
 });

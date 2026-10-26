@@ -10,6 +10,61 @@ const media = matchMedia('(prefers-color-scheme: dark)');
 const themeListeners = [];
 export const reducedMotion = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+// Intro overlays share one focus boundary. Only restore inert attributes owned by this boundary;
+// IsAcademy's opening also owns the page's inert state during its transition.
+const dialogSessions = new WeakMap();
+export function isolateDialog(dialog) {
+  releaseDialog(dialog);
+  const roots = [...document.body.children].filter(el =>
+    el !== dialog && !el.contains(dialog) && !el.inert && !['SCRIPT', 'STYLE', 'LINK'].includes(el.tagName));
+  roots.forEach(el => { el.inert = true; });
+  const attributes = ['role', 'aria-modal'].map(name => [name, dialog.getAttribute(name)]);
+  dialog.setAttribute('role', 'dialog');
+  dialog.setAttribute('aria-modal', 'true');
+  const trap = event => {
+    if (event.key !== 'Tab' || event.ctrlKey || event.metaKey || event.altKey) return;
+    const controls = [...dialog.querySelectorAll('a[href], button, input, select, textarea, [tabindex]')]
+      .filter(el => !el.disabled && el.tabIndex >= 0 && !el.closest('[inert]') && el.getClientRects().length && getComputedStyle(el).visibility !== 'hidden');
+    const first = controls[0], last = controls.at(-1), active = document.activeElement;
+    if (!first || !controls.includes(active) || (event.shiftKey ? active === first : active === last)) {
+      event.preventDefault();
+      (event.shiftKey ? last : first)?.focus();
+      if (!first) dialog.focus({ preventScroll: true });
+    }
+  };
+  dialog.addEventListener('keydown', trap);
+  dialogSessions.set(dialog, { roots, attributes, trap });
+}
+export function releaseDialog(dialog) {
+  const session = dialogSessions.get(dialog);
+  if (!session) return;
+  session.roots.forEach(el => { el.inert = false; });
+  session.attributes.forEach(([name, value]) => value === null ? dialog.removeAttribute(name) : dialog.setAttribute(name, value));
+  dialog.removeEventListener('keydown', session.trap);
+  dialogSessions.delete(dialog);
+}
+
+// Translating a long page changes the height of everything above the reader.
+// Keep the current section at the same viewport offset without moving focus.
+export function rememberReadingPosition() {
+  const intro = document.getElementById('intro');
+  if (!scrollY || (intro && !intro.hidden && !intro.classList.contains('gone') && getComputedStyle(intro).display !== 'none')) return () => {};
+  const edge = (document.querySelector('.topbar')?.getBoundingClientRect().bottom || 0) + 24;
+  const sections = [...document.querySelectorAll('main > section, #site > section')];
+  const section = sections.find(el => {
+    const rect = el.getBoundingClientRect();
+    return rect.height && rect.bottom > edge;
+  });
+  if (!section) return () => {};
+  const before = section.getBoundingClientRect().top;
+  const previousAnchor = document.documentElement.style.overflowAnchor;
+  document.documentElement.style.overflowAnchor = 'none';
+  return () => {
+    if (section.isConnected) window.scrollBy({ top: section.getBoundingClientRect().top - before, behavior: 'instant' });
+    requestAnimationFrame(() => { document.documentElement.style.overflowAnchor = previousAnchor; });
+  };
+}
+
 function stored() { try { return localStorage.getItem(THEME_KEY); } catch { return null; } }
 function store(v) { try { localStorage.setItem(THEME_KEY, v); } catch { /* storage unavailable */ } }
 

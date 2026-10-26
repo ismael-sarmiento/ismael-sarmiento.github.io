@@ -60,22 +60,24 @@ export function skipSignature(svg) {
 export async function playSignature(svg) {
   await document.fonts.ready;
   fitSignature(svg);
+  if (svg.dataset.skipped) return; // skipping while fonts load must preserve the final word and hidden cursor
   if (reducedMotion()) { skipSignature(svg); return; }
   const stroke = svg.querySelector('.is-stroke'), ink = svg.querySelector('.ink'), word = svg.querySelector('.word');
+  const cursor = svg.querySelector('.cursor');
   const fill = svg.querySelector('.is-fill').getBBox();
   const target = svg.dataset.word;
   stroke.style.strokeDasharray = String(DASH);
   stroke.style.strokeDashoffset = String(DASH);
   ink.setAttribute('width', '0');
   word.textContent = '';
+  cursorAfter(svg);
+  cursor.setAttribute('opacity', '1');
   svg.classList.add('is-live');   // from here the drawing owns every piece (intro.css kept them hidden until now)
   // same rhythm as IsAcademy: 1) the outline of "Is" is sketched, 2) ink fills it from left to right
   await animate(svg, 1500, p => { stroke.style.strokeDashoffset = String(DASH * (1 - easeInOut(p))); });
   await animate(svg, 700, p => { ink.setAttribute('x', String(fill.x - 20)); ink.setAttribute('width', String((fill.width + 60) * easeInOut(p))); });
   if (svg.dataset.skipped) return;   // skipped while drawing: skipSignature already left the final state
   // 3) the rest of the name is decoded letter by letter behind a blinking cursor
-  const cursor = svg.querySelector('.cursor');
-  cursor.setAttribute('opacity', '1');
   // the decoding lasts the same (~0.76 s) whatever the word, as "Academy" in IsAcademy; it follows the screen's own
   // frames (one change per frame at most), so the letters advance evenly instead of jumping with timer jitter
   await animate(svg, 760, p => {

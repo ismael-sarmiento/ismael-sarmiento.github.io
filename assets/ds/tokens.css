@@ -32,6 +32,8 @@
   --gold: var(--gold-600); --gold-2: var(--gold-500); --gold-text: var(--gold-700);
   --bg: var(--cream-50); --bg-alt: var(--cream-100); --surface: #fffdf9;
   --text: var(--ink-700); --text-2: #4a5170; --line: rgba(28, 37, 71, .12);
+  --control-border: var(--mist-600); --control-hover-border: var(--ink-700);
+  --control-placeholder: var(--text-2); --success-text: #28623d; --danger-text: #9b3929;
   --glass: rgba(251, 247, 239, .82);
   --shadow: 0 18px 50px rgba(122, 82, 18, .08); --shadow-hover: 0 24px 60px rgba(122, 82, 18, .14);
   --shadow-sm: 0 6px 18px rgba(122, 82, 18, .10); --bar-shadow: 0 10px 30px rgba(122, 82, 18, .07);
@@ -47,6 +49,8 @@
     --bg: var(--ink-950); --bg-alt: #10163a; --surface: #141b40; --text: var(--cream-200); --text-2: var(--mist-300); --line: rgba(255, 255, 255, .12);
     --glass: rgba(11, 16, 38, .78); --shadow: 0 18px 50px rgba(0, 0, 0, .4); --shadow-hover: 0 24px 60px rgba(0, 0, 0, .5); --spot: rgba(226, 178, 92, .08);
     --shadow-sm: 0 6px 18px rgba(0, 0, 0, .35); --bar-shadow: 0 10px 30px rgba(0, 0, 0, .35);
+    --control-border: var(--mist-500); --control-hover-border: var(--mist-200);
+    --control-placeholder: var(--text-2); --success-text: var(--success); --danger-text: var(--danger-soft);
     --gold: var(--gold-500); --gold-2: var(--gold-400); --gold-text: var(--gold-400); --av-skin: #c08d68; --av-shade: #9b6a4a; color-scheme: dark;
   }
 }
@@ -54,5 +58,7 @@
   --bg: var(--ink-950); --bg-alt: #10163a; --surface: #141b40; --text: var(--cream-200); --text-2: var(--mist-300); --line: rgba(255, 255, 255, .12);
   --glass: rgba(11, 16, 38, .78); --shadow: 0 18px 50px rgba(0, 0, 0, .4); --shadow-hover: 0 24px 60px rgba(0, 0, 0, .5); --spot: rgba(226, 178, 92, .08);
   --shadow-sm: 0 6px 18px rgba(0, 0, 0, .35); --bar-shadow: 0 10px 30px rgba(0, 0, 0, .35);
+  --control-border: var(--mist-500); --control-hover-border: var(--mist-200);
+  --control-placeholder: var(--text-2); --success-text: var(--success); --danger-text: var(--danger-soft);
   --gold: var(--gold-500); --gold-2: var(--gold-400); --gold-text: var(--gold-400); --av-skin: #c08d68; --av-shade: #9b6a4a; color-scheme: dark;
 }

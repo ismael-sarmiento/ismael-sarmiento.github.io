@@ -64,7 +64,7 @@ h2 { font-size: clamp(28px, 4vw, 42px); margin-bottom: 16px; }
 /* glass bar, a soft shadow once the page scrolls and a thin reading-progress line */
 .topbar { position: sticky; top: 0; z-index: 20; background: var(--glass); border-bottom: 1px solid var(--line);
   backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); transition: box-shadow .3s ease; }
-.topbar.scrolled { box-shadow: var(--bar-shadow); }
+.topbar.scrolled { background: var(--surface); box-shadow: var(--bar-shadow); }
 .read-progress { position: absolute; left: 0; right: 0; bottom: -1px; height: 2px; transform: scaleX(0); transform-origin: 0 50%;
   background: linear-gradient(90deg, var(--gold), var(--gold-2)); pointer-events: none; }
 .topbar-row { display: flex; align-items: center; gap: 18px; min-height: 68px; }

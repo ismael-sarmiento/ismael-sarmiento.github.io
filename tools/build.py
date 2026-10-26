@@ -18,7 +18,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 VERSION = sys.argv[1] if len(sys.argv) > 1 else '20261014a'
 SITE = 'https://ismael-sarmiento.github.io'
-TODAY = '2026-10-20'
+TODAY = '2026-10-26'
 CF_TOKEN = '1af8978bb58b4f6cb3771790a71c784c'  # Cloudflare Web Analytics
 EMAIL = 'ismaelantonio.professional@gmail.com'
 LINKEDIN = 'https://www.linkedin.com/in/ismael-sarmiento/'
@@ -83,6 +83,7 @@ TEXT['privacy.4.title'] = ('Caducidad y copias', 'Expiry and copies')
 TEXT['privacy.4.body'] = ('Los registros caducados dejan de estar disponibles en el panel y una limpieza diaria elimina las filas. Las copias de recuperación de Cloudflare pueden conservarlas durante una ventana adicional (7 días en Free o 30 en Paid). Los correos de solicitudes e informes, logs de proveedores y métricas agregadas tienen un ciclo separado; los plazos del panel no los borran automáticamente. Los metadatos de informes se conservan 30 días y las huellas de enlaces de acceso hasta su caducidad. No se vende esta información.', 'Expired records become unavailable in the panel and daily cleanup removes the rows. Cloudflare recovery copies may retain them for an additional window (7 days on Free or 30 on Paid). Request emails, reports, provider logs and aggregate metrics have a separate lifecycle; panel retention does not automatically delete them. Report metadata is kept for 30 days and login-link fingerprints until expiry. This information is not sold.')
 TEXT['privacy.5.title'] = ('Tus derechos y más información', 'Your rights and more information')
 TEXT['privacy.5.body'] = ('Puedes solicitar acceso, rectificación, supresión, limitación, oposición y portabilidad cuando corresponda, y retirar tu consentimiento, escribiendo al correo anterior. Si consideras que tus derechos no se atienden, puedes acudir a la <a href="https://www.aepd.es/">AEPD</a>. Consulta también <a href="https://www.cloudflare.com/privacypolicy/">Cloudflare</a>, <a href="https://www.cloudflare.com/turnstile-privacy-policy/">Turnstile</a>, <a href="https://resend.com/legal/privacy-policy">Resend</a> y <a href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement">GitHub</a>.', 'You can request access, correction, deletion, restriction, objection and portability where applicable, and withdraw consent, by emailing the address above. If you believe your rights have not been respected, you may contact the <a href="https://www.aepd.es/">AEPD</a>. See also <a href="https://www.cloudflare.com/privacypolicy/">Cloudflare</a>, <a href="https://www.cloudflare.com/turnstile-privacy-policy/">Turnstile</a>, <a href="https://resend.com/legal/privacy-policy">Resend</a> and <a href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement">GitHub</a>.')
+TEXT['photo.linkedin'] = ('Ver el perfil de Ismael Sarmiento en LinkedIn (se abre en una pestaña nueva)', 'View Ismael Sarmiento’s LinkedIn profile (opens in a new tab)')
 ES = {k: v[0] for k, v in TEXT.items()}
 EN = {k: v[1] for k, v in TEXT.items()}
 # each door carries the mark of its site: the «Is» of the signature, IsAcademy's logo and Kimera Tools' «K_»
@@ -391,7 +392,7 @@ def home():
           {T('about.1', 'p', 'about reveal')}
           {T('about.2', 'p', 'about reveal', rich=True)}
         </div>
-        <span class="portrait hero-photo reveal"><img src="/assets/brand/ismael.jpg" width="264" height="264" alt="Ismael Sarmiento" fetchpriority="high"></span>
+        <a class="portrait hero-photo reveal" href="{LINKEDIN}" target="_blank" rel="noopener noreferrer" {A('aria-label', 'photo.linkedin')}><img src="/assets/brand/ismael.jpg" width="264" height="264" alt="Ismael Sarmiento" fetchpriority="high"></a>
       </div>
     </section>
 

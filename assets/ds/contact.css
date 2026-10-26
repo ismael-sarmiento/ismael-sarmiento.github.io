@@ -1,50 +1,50 @@
-/* Ismael Sarmiento design system — the contact piece shared by CV Online and IsAcademy: an always-dark card with the
+/* Ismael Sarmiento design system — the contact piece shared by CV Online and IsAcademy: a theme-aware card with the
    form (validation and delivery: /assets/ds/contact.js) and a row of direct ways in (WhatsApp, email, LinkedIn) drawn
    from the icon sprite /assets/ds/icons.svg. Each site writes its own fields; the look and the behaviour are one. */
-.contact-card { position: relative; text-align: center; border-radius: var(--radius-lg); padding: 64px 32px; color: var(--cream-200);
-  background: radial-gradient(120% 120% at 50% 0%, var(--ink-600) 0%, var(--ink-700) 50%, var(--ink-850) 100%); box-shadow: 0 30px 80px rgba(20, 24, 60, .3); }
-.contact-card .eyebrow { color: var(--gold-400); }
-.contact-card .lead { color: var(--mist-200); max-width: 52ch; margin: 0 auto 22px; }
-.contact-card .muted { color: var(--mist-300); }
-.contact-card .btn { color: var(--cream-200); border-color: rgba(255, 255, 255, .25); }
+.contact-card { position: relative; text-align: center; border-radius: var(--radius-lg); padding: 64px 32px; color: var(--text);
+  background: var(--surface); border: 1px solid var(--line); box-shadow: var(--shadow); }
+.contact-card .eyebrow { color: var(--gold-text); }
+.contact-card .lead { color: var(--text-2); max-width: 52ch; margin: 0 auto 22px; }
+.contact-card .muted { color: var(--text-2); }
+.contact-card .btn { color: var(--text); border-color: var(--control-border); }
 .contact-card .btn-primary { color: var(--on-gold); border-color: var(--gold); }
-.contact-card a:not(.btn) { color: var(--gold-400); }
-.contact-card :focus-visible { outline-color: var(--gold-400); }
+.contact-card a:not(.btn) { color: var(--gold-text); }
+.contact-card :focus-visible { outline-color: var(--gold-text); }
 .lead-form { text-align: left; max-width: 640px; margin: 8px auto 0; display: grid; gap: 14px; }
-.lead-form label { display: grid; gap: 6px; font-size: 14px; color: var(--mist-100); font-weight: 500; }
+.lead-form label { display: grid; gap: 6px; font-size: 14px; color: var(--text); font-weight: 500; }
 .lead-form input, .lead-form select, .lead-form textarea { font: inherit; font-size: 15px; font-weight: 400; padding: 12px 14px; border-radius: var(--radius-sm);
-  border: 1px solid rgba(255, 255, 255, .22); background: rgba(11, 16, 38, .55); color: var(--cream-200); width: 100%;
+  border: 1px solid var(--control-border); background: var(--bg); color: var(--text); width: 100%;
   transition: border-color .2s ease, box-shadow .2s ease, background .2s ease; }
-.lead-form input:hover, .lead-form select:hover, .lead-form textarea:hover { border-color: rgba(255, 255, 255, .38); }
-.lead-form input:focus-visible, .lead-form select:focus-visible, .lead-form textarea:focus-visible { outline: none; border-color: var(--gold-400); box-shadow: 0 0 0 4px var(--gold-glow); background: rgba(11, 16, 38, .7); }
+.lead-form input:hover, .lead-form select:hover, .lead-form textarea:hover { border-color: var(--control-hover-border); }
+.lead-form input:focus-visible, .lead-form select:focus-visible, .lead-form textarea:focus-visible { outline: none; border-color: var(--gold-text); box-shadow: 0 0 0 4px var(--gold-glow); background: var(--bg); }
 .lead-form textarea { resize: vertical; min-height: 110px; }
-.lead-form select option { color: var(--ink-700); background: #fff; }
-.lead-form ::placeholder { color: var(--mist-500); }
-.lead-form [aria-invalid="true"] { border-color: var(--danger-border); }
+.lead-form select option { color: var(--text); background: var(--surface); }
+.lead-form ::placeholder { color: var(--control-placeholder); }
+.lead-form [aria-invalid="true"] { border-color: var(--danger-text); }
 .f-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-.lead-form .check { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-start; font-weight: 400; color: var(--mist-200); }
+.lead-form .check { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-start; font-weight: 400; color: var(--text-2); }
 .lead-form .check span { flex: 1; }
-.lead-form .check input { width: 18px; height: 18px; margin-top: 2px; flex: none; accent-color: var(--gold-400); box-shadow: none; }
+.lead-form .check input { width: 18px; height: 18px; margin-top: 2px; flex: none; accent-color: var(--gold); box-shadow: none; }
 .lead-form .check .f-error { flex-basis: 100%; }
-.f-error { color: var(--danger-soft); font-size: 13px; font-weight: 400; }
-.lead-form .req { color: var(--gold-400); }
-.lead-form .privacy { font-size: 12.5px; line-height: 1.5; margin: 0; color: var(--mist-350); }
+.f-error { color: var(--danger-text); font-size: 13px; font-weight: 400; }
+.lead-form .req { color: var(--gold-text); }
+.lead-form .privacy { font-size: 12.5px; line-height: 1.5; margin: 0; color: var(--text-2); }
 .lead-form .btn-primary { justify-self: start; }
 .f-status { margin: 0; font-size: 15px; }
 .f-status:empty { display: none; }
-.f-status.ok { color: var(--success); }
-.f-status.err { color: var(--danger-soft); }
+.f-status.ok { color: var(--success-text); }
+.f-status.err { color: var(--danger-text); }
 .hp { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
 .f-turnstile { position: absolute; }   /* the invisible Turnstile check (contact.js): out of the form's grid */
 
 
 /* the direct ways in, under the form: one row of icon buttons */
 .contact-ways { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 10px 12px; max-width: 640px;
-  margin: 24px auto 0; padding-top: 20px; border-top: 1px solid rgba(255, 255, 255, .14); }
-.contact-ways p { flex-basis: 100%; margin: 0 0 4px; color: var(--mist-200); font-size: 15px; }
+  margin: 24px auto 0; padding-top: 20px; border-top: 1px solid var(--line); }
+.contact-ways p { flex-basis: 100%; margin: 0 0 4px; color: var(--text-2); font-size: 15px; }
 .contact-ways .btn { gap: 10px; }
-.contact-ways .btn svg { width: 18px; height: 18px; flex: none; color: var(--gold-400); }
-.contact-ways .btn:hover svg { color: var(--gold-300); }
+.contact-ways .btn svg { width: 18px; height: 18px; flex: none; color: var(--gold-text); }
+.contact-ways .btn:hover svg { color: var(--gold-text); }
 
 @media (max-width: 640px) {
   .contact-card { padding: 44px 20px; }
