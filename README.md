@@ -29,13 +29,13 @@ por todas sus webs.
 | `signature.js` | La firma: «Is» manuscrita esbozada y el resto del nombre decodificado al estilo IA |
 | `intro.js`, `intro.css` | La intro común (Inicio y CV Online): firma, papel, eslogan y botones; al entrar, la «Is» vuela al sello dejando tinta dorada y el nombre se deshace en píxeles. La misma escala que el logo de IsAcademy |
 | `fx.js` | Efectos de partículas (tinta, píxeles, destellos) compartidos con IsAcademy |
-| `contact.css`, `contact.js` | La pieza de contacto de CV Online e IsAcademy: tarjeta oscura con formulario (validación, antibots y envío protegido por Cloudflare Turnstile a través del Worker `isa-forms`, que lo entrega con Resend; código en `tools/cloudflare/isa-forms.js`) y botones de WhatsApp, correo y LinkedIn |
+| `contact.css`, `contact.js` | La pieza de contacto de CV Online e IsAcademy: tarjeta adaptada al tema claro u oscuro con formulario (validación, antibots y envío protegido por Cloudflare Turnstile a través del Worker `isa-forms`, que lo entrega con Resend; código en `tools/cloudflare/isa-forms.js`) y botones de WhatsApp, correo y LinkedIn |
 | `icons.svg` | Iconos comunes (WhatsApp, correo, LinkedIn, teléfono) como sprite: `<use href="/assets/ds/icons.svg#i-whatsapp"/>` |
 | `favicon.js` | El icono de la pestaña sigue el tema de la página en las tres webs (iconos en `assets/brand/favicon-{light,dark}`, generados con `tools/icons.py`). La imagen para compartir, los avatares «Is» y el banner de LinkedIn salen de `tools/social.py` |
 | `avatar.js`, `assistant.js`, `assistant.css` | Alan, el asistente local compartido (cada web le da su propio contenido) |
 | `circuit.css` | Las líneas de circuito de la marca (las mismas de la intro de IsAcademy) en las intros y cabeceras de Inicio y CV Online |
 | `portrait.css` | La foto redonda común (Inicio, IsAcademy): aro dorado que se dibuja al aparecer y brillo al pasar el ratón |
-| `views.js` | Una visita anónima por página para el mapa de ciudades de IsPanel (sin cookies ni IP; respeta Do Not Track y GPC) |
+| `views.js` | Una señal por carga de página para IsPanel, sin cookies ni identificadores persistentes; respeta Do Not Track y GPC. El Worker puede conservar la IP y el contexto de conexión disponible durante 30 días, según el [aviso de privacidad](https://ismael-sarmiento.github.io/privacy/) |
 | `fonts/` | Space Grotesk y Allura, servidas desde el propio dominio |
 
 Las tres webs viven en el mismo dominio, así que cargan estos ficheros con rutas absolutas (`/assets/ds/…`).
@@ -66,10 +66,7 @@ Para probar el universo completo, sirve una carpeta con este repositorio en la r
 
 ## IsPanel (panel privado)
 
-`tools/cloudflare/isa-panel.js` es IsPanel, el panel privado del universo en un Worker de Cloudflare: visitas por web,
-día, país y ciudad aproximada (mapa interactivo), origen, página y dispositivo (Cloudflare Web Analytics, sin cookies),
-lo más destacado del periodo, resultado de los formularios (Workers Analytics Engine) y seguridad (últimos accesos, bloqueos, rastreos). Se entra con un enlace de un
-solo uso que llega al correo del propietario. La cabecera del fichero explica variables, secretos y despliegue.
+`tools/cloudflare/isa-panel.js` implementa el panel privado del universo: métricas agregadas de Cloudflare Web Analytics y Analytics Engine, registros de visitas detalladas con ubicación de red aproximada (30 días), bandeja de contactos y seguimiento (90 días), y resumen semanal/manual al correo del propietario. Cada fuente indica su cobertura; una ubicación no identifica a una persona. El único administrador accede con un enlace de un uso a su correo; la autorización usa el estado D1 de la migración 0004. Los Workers se publican por separado de GitHub Pages. Contratos, variables, despliegue y límites: [ISPANEL.md](tools/cloudflare/ISPANEL.md).
 
 ## Despliegue
 

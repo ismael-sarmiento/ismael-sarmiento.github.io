@@ -1,6 +1,41 @@
 # IsPanel v2.2 — contratos y operación
 
-**Estado documental al 26/10/2026 — D20 aprobado:**
+## Publicación 20261026a · comprobaciones del 26–27/10/2026 · D23
+
+Los tres repositorios públicos y ambos Workers están publicados. La migración aditiva `0004_panel_auth.sql` está aplicada en la base existente. La revisión online está en curso; las comprobaciones pendientes de este apartado no se consideran superadas.
+
+| Componente | Referencia publicada y comprobada |
+| --- | --- |
+| Inicio y sistema compartido | `507df9c9bea9eed6be4553a2fe2825ad5bc2d983` · [Pages correcto](https://github.com/ismael-sarmiento/ismael-sarmiento.github.io/actions/runs/40394065933) |
+| CV Online | `85de41261b627f1150f6eeb089376d4d33c2af65` · [Pages correcto](https://github.com/ismael-sarmiento/cv/actions/runs/40395419904) |
+| IsAcademy | `d6e85ed5fa2196a219737a247622b55fe743af29` · [Pages correcto](https://github.com/ismael-sarmiento/isacademy/actions/runs/40398098223) |
+| isa-forms | `c9123bc1` · activo el 27/10 · fuente SHA-256 `6ec1c35674c03948388d5ecab6ed56c66747081a6a296021087d7bcb20615eae` |
+| isa-panel | `83e7aba5` · activo el 27/10 · fuente SHA-256 `2e3ad9506967afe0a5f3336eb34d523f281f53a24c1578352342e96910e08b29` |
+
+Las fuentes completas preparadas en los editores de Workers se leyeron y cotejaron byte a byte antes de desplegar. Se conservaron copias del código anterior. La publicación de GitHub se hizo desde copias limpias en los Codespaces existentes; sus carpetas y preparativos anteriores se preservaron. No se crearon máquinas ni se ampliaron permisos.
+
+### Configuración y acceso
+
+- `CONTACTS_DB` sigue conectado a `isa-panel-private` en ambos Workers. El panel conserva `PANEL_KV`; formularios conserva `FORM_EVENTS` y `SITE_VIEWS`. Los flags de contactos/tráfico, y el de informes del panel, siguen activos. Destinatario cotejado con el propio ya configurado. No se revelaron ni cambiaron secretos, destinatario, flags, bindings o cron; fecha de compatibilidad `2026-10-18`.
+- Base con jurisdicción UE y Time Travel de siete días confirmados. `0004` añadió únicamente `panel_auth_state`; esquema y fila técnica acreditan id=1, época de longitud 32 y espera válida. No se seleccionó la época ni se exportaron fichas, IP o la base. No hubo purga o restauración.
+- Antes de la nueva entrada, el perfil con sesión anterior redirigió al acceso. El propietario completó el nuevo enlace de un uso tras autorizar Turnstile en ese momento. Sin sesión, `/api/data`, `/api/contacts` y `/api/traffic/events` devolvieron `401` con `no-store`. No se ejecutó el cierre global de sesiones reales.
+- En `isa-forms`, un GET inválido devuelve `405` y un POST sin origen autorizado devuelve `403`, sin crear contactos. CORS mantiene el origen público autorizado y `no-store` en la respuesta comprobada.
+
+### Pruebas reales y revisión online
+
+- Un envío de prueba del CV y otro de Academia, con nombres sintéticos y el correo propio, confirmaron recepción en la web, ficha privada guardada y aceptación de Resend. El propietario confirmó las dos notificaciones recibidas a las **07:20 del 27/10, hora de Canarias**. No hubo reintentos automáticos ni respuestas o llamadas a terceros. Las fichas se conservan según los 90 días aprobados; no se borraron después de probar.
+- Las fichas de prueba muestran origen, idioma, mensaje, campos opcionales facilitados y fechas con GMT. La acción de respuesta abre `mailto`; llamar permanece oculto al no haberse facilitado teléfono. Se comprobó la fecha de salida de la bandeja, **25/01/2027**. No se abrió el detalle de red. El recorrido con número de teléfono no se ejercitó en producción.
+- Se solicitó **un informe manual**: aceptación de Resend a las **07:14 del 27/10** y recepción confirmada por el propietario. Su vista HTML privada se revisó: sin scripts ni imágenes remotas de seguimiento y con enlaces a las secciones privadas. Aceptación y recepción son evidencias distintas; otros envíos no heredan esta confirmación.
+- El estado del panel muestra además un informe aceptado por Resend el **lunes 26/10 a las 09:00 GMT+0**. No se ha confirmado su recepción en el buzón ni se ha inspeccionado el evento cron que lo originó; no se usa como prueba completa de ejecución semanal. El listado de Cloudflare conserva las ejecuciones de lunes 08/09 UTC y la diaria 02:15 UTC. La purga física sigue sin observarse.
+- Las ocho descargas PDF online coinciden por SHA-256 con las variantes revisadas: cuatro CV de cuatro páginas y cuatro folletos de dos páginas. Academia entra y desplaza por rueda; Python ejecuta el ejemplo, detiene un bucle y vuelve a ejecutarlo tras reiniciar el Worker. El editor se dejó en el ejemplo seguro.
+- IsPanel carga Resumen, Contactos, Tráfico y Sistema; las fuentes consultadas aparecen actualizadas. El mapa tiene 241 trazados sin coordenadas inválidas en el atributo SVG y conserva el encuadre al cambiar de fuente. Se inspeccionó la representación de EE. UU. El tema claro se aplica también a la entrada. No se exportaron registros con IP.
+- **QA todavía pendiente:** completar la matriz móvil online y el resto de comprobaciones responsive. Se revisaron 12 combinaciones de escritorio (tres webs × ES/EN × claro/oscuro) a 1920 × 873 CSS, sin desbordamiento horizontal. Los casos del CV abren un único resultado y los formularios vacíos en español enfocan el primer campo inválido. La herramienta de viewport no cambió las dimensiones reales de Chrome; esas capturas no se acreditan como móviles. Se registró una cancelación de ViewTransition en Academia sin fallo visual observado; su origen no está aislado. La revisión local D22 y sus 178 contratos no sustituyen estas comprobaciones online pendientes.
+
+Este registro acredita únicamente las acciones descritas. Las secciones siguientes conservan el estado histórico D20/20 de octubre y los contratos del código; sus frases de publicación futura se refieren a ese momento anterior.
+
+---
+
+**Estado documental histórico al 26/10/2026 — D20 aprobado (superado por D23):**
 
 - **Última publicación acreditada: 20/10/2026, versión estática `20261020a`.** El registro maestro contiene su cierre posterior al estado intermedio conservado abajo.
 - **Código local posterior:** D01–D19 aprobados y comprobados en local; incluye acceso D1 de D17, cierre de D18 y formularios de D19. Estos cambios y la migración `0004` no se han publicado ni aplicado remotamente durante esta revisión. La aceptación visual global y la preparación de la siguiente publicación siguen pendientes.
