@@ -4,7 +4,7 @@
   index.html             the page, in Spanish with data-i18n keys (English is /?lang=en, no /en/ folder)
   i18n/es.json, en.json  { "key": "text" } dictionaries for the shared i18n module (/assets/ds/i18n.js)
   404.html · redirects of the old CV addresses (/index_en.html, /articles/…) to CV Online in /cv/
-  robots.txt · sitemap.xml (index of the portada, /cv/ and /isacademy/ sitemaps) · sitemap-portada.xml
+  robots.txt · sitemap.xml (index of the portada, /cv/, /isacademy/ and /isgame/ sitemaps) · sitemap-portada.xml
 
     python3 tools/build.py 20261014a      # the argument is the asset version (cache busting)
 """
@@ -18,7 +18,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 VERSION = sys.argv[1] if len(sys.argv) > 1 else '20261014a'
 SITE = 'https://ismael-sarmiento.github.io'
-TODAY = '2026-10-26'
+TODAY = '2026-11-05'
 CF_TOKEN = '1af8978bb58b4f6cb3771790a71c784c'  # Cloudflare Web Analytics
 EMAIL = 'ismaelantonio.professional@gmail.com'
 LINKEDIN = 'https://www.linkedin.com/in/ismael-sarmiento/'
@@ -57,9 +57,13 @@ TEXT = {
                     'My online academy for programming, data and AI, with tailored lessons for all ages.'),
     'door.1.cta': ('Conocer IsAcademy', 'Discover IsAcademy'),
     'door.1.href': ('/isacademy/', '/isacademy/?lang=en'),
-    'door.2.text': ('Mi código abierto: kimera-python, utilidades de Python para ETL, SQLAlchemy y AWS S3 (2020–\u20602022).',
-                    'My open source: kimera-python, Python utilities for ETL, SQLAlchemy and AWS S3 (2020–\u20602022).'),
-    'door.2.cta': ('Ver en GitHub', 'View on GitHub'),
+    'door.2.text': ('El juego de mundo abierto de IsAcademy: recorre Neo Academia y aprende datos e IA jugando, en el navegador.',
+                    "IsAcademy's open-world game: explore Neo Academia and learn data and AI by playing, in your browser."),
+    'door.2.cta': ('Jugar a IsGame', 'Play IsGame'),
+    'door.2.href': ('/isgame/', '/isgame/?lang=en'),
+    'door.3.text': ('Mi código abierto: kimera-\u2060python, utilidades de Python para ETL, SQLAlchemy y AWS S3 (2020–\u20602022).',
+                    'My open source: kimera-\u2060python, Python utilities for ETL, SQLAlchemy and AWS S3 (2020–\u20602022).'),
+    'door.3.cta': ('Ver en GitHub', 'View on GitHub'),
     'contact': ('Contacto', 'Contact'),
     'mail': ('Correo', 'Email'),
     'privacy.label': ('Privacidad', 'Privacy'),
@@ -70,13 +74,15 @@ TEXT = {
     'waHref': ('https://wa.me/34613371874?text=Hola%20Ismael%2C%20he%20visto%20tu%20web%20y%20me%20gustar%C3%ADa%20hablar%20contigo.', 'https://wa.me/34613371874?text=Hi%20Ismael%2C%20I%20saw%20your%20website%20and%20would%20like%20to%20talk%20with%20you.'),
 }
 TEXT['privacy.title'] = ('Privacidad y datos', 'Privacy and data')
-TEXT['privacy.date'] = ('Actualizado: 20 de octubre de 2026', 'Updated: 20 October 2026')
+TEXT['privacy.date'] = ('Actualizado: 5 de noviembre de 2026', 'Updated: 5 November 2026')
 TEXT['privacy.0.title'] = ('Responsable y contacto', 'Controller and contact')
-TEXT['privacy.0.body'] = ('Ismael Sarmiento es responsable de estas webs (Inicio, CV Online e IsAcademy) y de IsPanel, su panel privado. Para consultas y derechos: <a href="mailto:ismaelantonio.professional@gmail.com">ismaelantonio.professional@gmail.com</a>.', 'Ismael Sarmiento is the controller for these websites (Home, CV Online and IsAcademy) and IsPanel, his private dashboard. For questions and rights: <a href="mailto:ismaelantonio.professional@gmail.com">ismaelantonio.professional@gmail.com</a>.')
+TEXT['privacy.0.body'] = ('Ismael Sarmiento es responsable de estas webs (Inicio, CV Online, IsAcademy e IsGame) y de IsPanel, su panel privado. Para consultas y derechos: <a href="mailto:ismaelantonio.professional@gmail.com">ismaelantonio.professional@gmail.com</a>.', 'Ismael Sarmiento is the controller for these websites (Home, CV Online, IsAcademy and IsGame) and IsPanel, his private dashboard. For questions and rights: <a href="mailto:ismaelantonio.professional@gmail.com">ismaelantonio.professional@gmail.com</a>.')
 TEXT['privacy.1.title'] = ('Solicitudes de contacto · 90 días', 'Contact requests · 90 days')
 TEXT['privacy.1.body'] = ('Al enviar un formulario se tratan los datos facilitados (nombre, email, mensaje y, cuando los aportes, teléfono, empresa, interés y nivel), web e idioma de origen. Se guardan en una bandeja privada durante 90 días para responder y hacer seguimiento, junto con la IP y el contexto de conexión que Cloudflare facilite. La casilla del formulario recoge tu aceptación; no se usa para suscribirte a publicidad. Puedes retirar tu consentimiento y solicitar la supresión por correo.', 'Submitting a form processes the details you provide (name, email, message and, if supplied, phone, company, interest and level), source website and language. They are kept in a private inbox for 90 days to reply and follow up, with the IP address and available Cloudflare connection context. The form checkbox records your agreement; it does not subscribe you to advertising. You may withdraw consent and request deletion by email.')
 TEXT['privacy.2.title'] = ('Visitas detalladas · 30 días', 'Detailed visits · 30 days')
 TEXT['privacy.2.body'] = ('Una señal por carga de página permite revisar uso y funcionamiento: ruta sin parámetros, dominio de procedencia e idioma. Cloudflare puede aportar IP, país, región, ciudad, ubicación aproximada, zona horaria, operador/ASN, centro de datos, protocolo, TLS y tiempos de conexión; se derivan familias de navegador, sistema y dispositivo. Solo se conserva lo disponible y validado, durante 30 días. La ubicación no verifica una identidad o domicilio. No se guardan cookies de seguimiento, identificadores persistentes ni el User-Agent completo. Se respetan Do Not Track y Global Privacy Control para esta señal. Puedes activar esas preferencias o solicitar oposición/supresión por correo.', 'One signal per page load helps review usage and operation: path without query parameters, referring domain and language. Cloudflare may supply IP address, country, region, city, approximate location, time zone, network/ASN, data centre, protocol, TLS and connection timing; browser, operating system and device families are derived. Only available, validated fields are retained, for 30 days. Location does not verify identity or a home address. No tracking cookies, persistent identifiers or full User-Agent are stored. This signal respects Do Not Track and Global Privacy Control. You can enable those preferences or request objection/deletion by email.')
+TEXT['privacy.6.title'] = ('IsGame · solo en tu navegador', 'IsGame · only in your browser')
+TEXT['privacy.6.body'] = ('IsGame guarda tu progreso y tus ajustes solo en tu navegador (almacenamiento local); no los envía a ningún servidor ni usa analítica. Puedes borrarlos desde el propio juego (Pausa › Partida › Borrar progreso) o limpiando los datos del sitio en tu navegador.', 'IsGame keeps your progress and settings only in your browser (local storage); it does not send them to any server or use analytics. You can delete them in the game itself (Pause › Game › Reset progress) or by clearing the site data in your browser.')
 TEXT['privacy.3.title'] = ('Proveedores y acceso privado', 'Providers and private access')
 TEXT['privacy.3.body'] = ('GitHub Pages sirve las webs. Cloudflare proporciona protección Turnstile, Workers, métricas agregadas Web Analytics/Analytics Engine y almacenamiento D1/KV; la base privada D1 se configura con jurisdicción UE. Resend procesa las notificaciones y los informes enviados al propietario; Gmail recibe su correo. Estos proveedores tratan los datos necesarios según sus propias condiciones, con posible tratamiento internacional. El panel requiere un enlace de un uso (15 minutos); la cookie de sesión privada dura hasta 30 días. Los informes resumen actividad; no incluyen IP, mensajes ni fichas completas.', 'GitHub Pages serves the websites. Cloudflare provides Turnstile protection, Workers, aggregate Web Analytics/Analytics Engine metrics and D1/KV storage; the private D1 database is configured with EU jurisdiction. Resend processes notifications and reports sent to the owner; Gmail receives his email. These providers process necessary data under their own terms, with possible international processing. The panel requires a single-use link (15 minutes); its private session cookie lasts up to 30 days. Reports summarise activity without IP addresses, messages or full contact records.')
 TEXT['privacy.4.title'] = ('Caducidad y copias', 'Expiry and copies')
@@ -86,9 +92,10 @@ TEXT['privacy.5.body'] = ('Puedes solicitar acceso, rectificación, supresión, 
 TEXT['photo.linkedin'] = ('Ver el perfil de Ismael Sarmiento en LinkedIn (se abre en una pestaña nueva)', 'View Ismael Sarmiento’s LinkedIn profile (opens in a new tab)')
 ES = {k: v[0] for k, v in TEXT.items()}
 EN = {k: v[1] for k, v in TEXT.items()}
-# each door carries the mark of its site: the «Is» of the signature, IsAcademy's logo and Kimera Tools' «K_»
+# each door carries the mark of its site: the «Is» of the signature, the IsAcademy and IsGame logos and Kimera Tools' «K_»
 DOORS = [('CV Online', 'door.0.href', None, '<span class="door-mark mark-is" aria-hidden="true">Is</span>'),
          ('IsAcademy', 'door.1.href', None, '<span class="door-mark mark-isa" aria-hidden="true"><b>Is</b>Academy</span>'),
+         ('IsGame', 'door.2.href', None, '<span class="door-mark mark-isa" aria-hidden="true"><b>Is</b>Game</span>'),
          ('Kimera Tools', None, 'https://github.com/kimera-tools', '<span class="door-mark mark-k" aria-hidden="true">K<i>_</i></span>')]
 
 # Alan on Inicio: the same assistant as CV Online and IsAcademy (/assets/ds/assistant.js), fed with the public story of
@@ -329,6 +336,7 @@ def footer():
       <nav class="footer-links" {A('aria-label', 'contact')}>
         <a {A('href', 'door.0.href')}>CV Online</a>
         <a {A('href', 'door.1.href')}>IsAcademy</a>
+        <a {A('href', 'door.2.href')}>IsGame</a>
         <a {A('href', 'waHref')} rel="noopener">WhatsApp</a>
         <a href="mailto:{EMAIL}">{T('mail')}</a>
         <a href="{LINKEDIN}" rel="noopener me">LinkedIn</a>
@@ -416,7 +424,7 @@ def privacy():
     css = '.privacy-page main{max-width:900px;padding-block:7rem 3rem;line-height:1.75}.privacy-page section{margin-block:1rem;padding:clamp(1rem,4vw,2rem)}.privacy-page section h2{font-size:clamp(1.2rem,3vw,1.5rem);line-height:1.3}.privacy-page section p{margin-bottom:0}'
     extra = '<link rel="canonical" href="https://ismael-sarmiento.github.io/privacy/"><style>' + css + '</style>'
     page_head = head('Privacidad · Ismael Sarmiento', 'Datos, conservación, proveedores y derechos de las webs de Ismael Sarmiento.', extra).replace("style-src 'self'", f"style-src 'self' 'sha256-{sha(css)}'")
-    sections = ''.join(f'<section class="card card--static">{T(f"privacy.{i}.title", "h2")}{T(f"privacy.{i}.body", "p", rich=True)}</section>' for i in range(6))
+    sections = ''.join(f'<section class="card card--static">{T(f"privacy.{i}.title", "h2")}{T(f"privacy.{i}.body", "p", rich=True)}</section>' for i in (0, 1, 2, 6, 3, 4, 5))   # 6 = IsGame, after the visits it does not send
     return f'''<!doctype html>
 <html lang="es">
 {page_head}
@@ -489,6 +497,7 @@ if __name__ == '__main__':
   <sitemap><loc>{SITE}/sitemap-portada.xml</loc><lastmod>{TODAY}</lastmod></sitemap>
   <sitemap><loc>{SITE}/cv/sitemap.xml</loc><lastmod>{TODAY}</lastmod></sitemap>
   <sitemap><loc>{SITE}/isacademy/sitemap.xml</loc></sitemap>
+  <sitemap><loc>{SITE}/isgame/sitemap.xml</loc></sitemap>
 </sitemapindex>
 ''')
     write('sitemap-portada.xml', f'''<?xml version="1.0" encoding="UTF-8"?>

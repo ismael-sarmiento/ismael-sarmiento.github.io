@@ -5,7 +5,7 @@
   ok('intro closed (open the page with #main or press «Conocerme» first)', document.getElementById('intro').hidden);
   const ids = [...document.querySelectorAll('[id]')].map(e => e.id); ok('ids unique', new Set(ids).size === ids.length);
   ok('single h1 with the name for screen readers', document.querySelectorAll('h1').length === 1 && document.querySelector('h1').textContent.includes('Ismael Sarmiento'));
-  ok('three doors', document.querySelectorAll('.door').length === 3);
+  ok('four doors (CV Online, IsAcademy, IsGame, Kimera Tools)', [...document.querySelectorAll('.door h3')].map(h => h.textContent).join() === 'CV Online,IsAcademy,IsGame,Kimera Tools');
   const before = document.documentElement.dataset.theme; document.querySelector('.topbar [data-action=theme]').click(); await sleep(50);
   ok('theme toggles and is remembered', before !== document.documentElement.dataset.theme && localStorage.getItem('isa-theme') === document.documentElement.dataset.theme);
   document.querySelector('.topbar [data-action=theme]').click();
