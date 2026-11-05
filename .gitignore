@@ -2,3 +2,7 @@
 
 # Private working notes: never published
 .private/
+
+# Local design-tool state (never published)
+.claude/
+.impeccable/
