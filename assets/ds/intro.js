@@ -35,6 +35,8 @@ const takeHandoff = () => {
 const leaveHandoff = () => { try { sessionStorage.setItem(HANDOFF, String(Date.now())); } catch { /* storage unavailable */ } };
 
 export function initIntro({ i18n, steps = null, stepMs = 1600 } = {}) {
+  const startup = globalThis.isaStartup;
+  if (startup?.isFailed()) return null;
   const intro = document.getElementById('intro');
   const handoff = takeHandoff();
   document.documentElement.classList.remove('sig-handoff');
@@ -196,7 +198,10 @@ export function initIntro({ i18n, steps = null, stepMs = 1600 } = {}) {
     if (skip) skip.hidden = true;
   };
   // the end state, whatever happened before: page visible, hero risen, intro gone, focus on the page title
+  let detachFailure = () => {};
   const settle = () => {
+    done = true; closing = true;
+    detachFailure();
     stopMilestoneFrames();
     document.body.classList.remove('intro-open', 'entering');
     intro.hidden = true;
@@ -257,7 +262,7 @@ export function initIntro({ i18n, steps = null, stepMs = 1600 } = {}) {
       flight = settled(anim);
       let frame = 0;
       (function trail() {
-        if (anim.playState === 'finished') return;
+        if (intro.hidden || anim.playState === 'finished' || anim.playState === 'idle') return;
         if (frame++ % 3 === 0) {
           const g = flyer.querySelector('.is-fill').getBoundingClientRect();
           if (g.width > 20) ink(g.right - g.width * .25, g.top + g.height * .55, 1, 1);
@@ -272,7 +277,7 @@ export function initIntro({ i18n, steps = null, stepMs = 1600 } = {}) {
     const t0 = performance.now();
     (function dissolve(now) {
       const p = (now - t0) / 620;
-      if (p > 1) return;
+      if (intro.hidden || p > 1) return;
       if (p > .1) pixels(wr.left + wr.width * Math.random(), wr.top + wr.height * (.3 + Math.random() * .5), wr.height * .3, Math.random() < .5 ? -1 : 1, 3);
       requestAnimationFrame(dissolve);
     })(t0);
@@ -294,24 +299,28 @@ export function initIntro({ i18n, steps = null, stepMs = 1600 } = {}) {
     brandIn?.cancel();   // …then the seal's own fade lets go: it never blinks off for a frame
   };
 
+  detachFailure = startup?.onFailure(settle) || (() => {});
   document.body.classList.add('intro-open');
   // the focus rests on the intro itself: no button looks pressed before the visitor touches anything
   intro.tabIndex = -1;
   isolateDialog(intro);
   const rest = () => { if (!closing && !intro.hidden) intro.focus({ preventScroll: true }); };
   rest();   // from the first frame: Escape jumps to the end, Tab reaches «Saltar intro»
-  enter?.addEventListener('click', close);
+  // Legacy CV pages can still use this shared intro during a staged release.
+  const recover = () => startup ? startup.fail() : settle();
+  const safeClose = () => { void close().catch(recover); };
+  enter?.addEventListener('click', safeClose);
   intro.addEventListener('click', e => {
     const a = e.target.closest('a[href]');
     if (a && a.origin === location.origin && !a.hasAttribute('download') && intro.classList.contains('after')) leaveHandoff();
   });
   skip?.addEventListener('click', () => { finish(); enter?.focus(); });
   intro.addEventListener('keydown', e => {
-    if (e.key === 'Escape') { if (done) close(); else { finish(); enter?.focus(); } }
-    if (e.key === 'Enter' && e.target === intro && intro.classList.contains('ready')) close();
+    if (e.key === 'Escape') { if (done) safeClose(); else { finish(); enter?.focus(); } }
+    if (e.key === 'Enter' && e.target === intro && intro.classList.contains('ready')) safeClose();
   });
 
-  if (reducedMotion()) { finish(); rest(); return { close }; }
+  if (reducedMotion()) { finish(); rest(); return { close: safeClose }; }
   (async () => {
     // drawn on every visit, as IsAcademy's logo; only a visitor who has just seen it written in the intro of another
     // site (Inicio → CV Online) finds it complete, carried over by the page transition
@@ -329,6 +338,6 @@ export function initIntro({ i18n, steps = null, stepMs = 1600 } = {}) {
     for (let i = 0; i < list().length && !done; i++) { showMilestone(i); await sleep(stepMs); }
     if (!done) { done = true; stopMilestoneFrames(); complete(); if (skip) skip.hidden = true; }
     if (!closing && !intro.hidden && !intro.contains(document.activeElement)) rest();
-  })();
-  return { close };
+  })().catch(recover);
+  return { close: safeClose };
 }

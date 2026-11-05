@@ -192,10 +192,11 @@ ALAN = {
 
 # before the first paint: .js, the stored theme, .i18n-wait while a stored English choice loads (no Spanish flash) and
 # .sig-handoff when the visitor arrives from another intro with the signature already written (intro.js)
-BOOT = ("var d=document.documentElement;d.classList.add('js');try{var t=localStorage.getItem('isa-theme');"
+BOOT = ("var d=document.documentElement;try{var t=localStorage.getItem('isa-theme');"
         "if(t==='light'||t==='dark')d.dataset.theme=t;var q=new URLSearchParams(location.search).get('lang');"
         "if(q==='en'||(q!=='es'&&localStorage.getItem('isa-lang')==='en'))d.classList.add('i18n-wait');"
         "var h=+sessionStorage.getItem('sig-handoff');if(h&&Date.now()-h<4000)d.classList.add('sig-handoff')}catch(e){}")
+BOOT += '\n' + (ROOT / 'assets/ds/startup.js').read_text()
 MODULES = ['/assets/ds/ds.js', '/assets/ds/frame-guard.js', '/assets/ds/views.js', '/assets/ds/favicon.js', '/assets/ds/i18n.js', '/assets/ds/signature.js', '/assets/ds/fx.js', '/assets/ds/intro.js',
            '/assets/ds/avatar.js', '/assets/ds/assistant.js', '/assets/hub.js']
 IMPORT_MAP = json.dumps({'imports': {m: f'{m}?v={VERSION}' for m in MODULES}}, separators=(',', ':'))
@@ -268,13 +269,14 @@ def head(title, description, extra=''):
   <link rel="preload" href="/assets/ds/fonts/space-grotesk-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="/assets/ds/tokens.css?v={VERSION}">
   <link rel="stylesheet" href="/assets/ds/base.css?v={VERSION}">
+  <link rel="stylesheet" href="/assets/ds/startup.css?v={VERSION}">
   <link rel="stylesheet" href="/assets/ds/intro.css?v={VERSION}">
   <link rel="stylesheet" href="/assets/ds/assistant.css?v={VERSION}">
   <link rel="stylesheet" href="/assets/ds/portrait.css?v={VERSION}">
   <link rel="stylesheet" href="/assets/ds/circuit.css?v={VERSION}">
   <link rel="stylesheet" href="/assets/hub.css?v={VERSION}">
   <script type="importmap">{IMPORT_MAP}</script>
-  <script type="module" src="/assets/hub.js?v={VERSION}"></script>
+  <script type="module" data-startup-entry src="/assets/hub.js?v={VERSION}"></script>
 </head>'''
 
 

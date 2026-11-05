@@ -111,8 +111,9 @@ h2 { font-size: clamp(28px, 4vw, 42px); margin-bottom: 16px; }
 
 /* ===================== 5. Motion and responsive ===================== */
 /* reveal on scroll: a short rise with a natural ease, staggered by --d */
-.reveal { opacity: 0; transform: translateY(12px); transition: opacity .6s var(--ease-out) var(--d, 0s), transform .6s var(--ease-out) var(--d, 0s); }
-.reveal.in { opacity: 1; transform: none; }
+.reveal { opacity: 1; transform: none; transition: opacity .6s var(--ease-out) var(--d, 0s), transform .6s var(--ease-out) var(--d, 0s); }
+.js .reveal { opacity: 0; transform: translateY(12px); }
+.js .reveal.in { opacity: 1; transform: none; }
 /* siblings inside .stagger rise one after another (cards of a grid, lines of a hero) */
 .stagger > .reveal:nth-child(2) { --d: calc(var(--stagger) * 1); }
 .stagger > .reveal:nth-child(3) { --d: calc(var(--stagger) * 2); }
@@ -147,5 +148,5 @@ details[open]::details-content { block-size: auto; }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
-  .reveal { opacity: 1; transform: none; }
+  .js .reveal { opacity: 1; transform: none; }
 }
