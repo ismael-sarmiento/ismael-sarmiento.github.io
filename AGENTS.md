@@ -25,3 +25,6 @@ protocols apply (Plan al Milímetro before each task, close-out recap after).
 - Every text exists in Spanish and English; Spanish is the default.
 - Current position of the owner: Head of Data Management at Savana; founder of IsAcademy.
 - Publishing from this machine is done through the GitHub web interface (the IT hook blocks pushes to GitHub).
+- Domain `isuniverse.dev` (DNS, email routing, GitHub Pages custom domain, Turnstile hostnames, Worker origins): read
+  and follow the local runbook `../docs/dominio/DOMINIO-ISUNIVERSE.md` before any change. It lives outside this
+  public repository on purpose.
