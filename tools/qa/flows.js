@@ -16,7 +16,7 @@
   const input = p.querySelector('.as-form input'), form = p.querySelector('.as-form');
   const ask = async q => { input.value = q; form.requestSubmit(); await sleep(2600); return [...p.querySelectorAll('.msg-bot')].pop(); };
   for (const [q, expected] of [['¿Qué es IsAcademy?', 'IsAcademy es la academia'], ['¿Qué hace en Savana?', 'En Savana pasó'],
-    ['¿Qué es Kimera Tools?', 'Kimera Tools es su código abierto'], ['¿Cómo puedo contactar con él?', 'Por correo'], ['xyzzy', 'No tengo una respuesta']]) {
+    ['¿Qué es Kimera Tools?', 'Kimera Tools es su código abierto'], ['¿Qué es IsGame?', 'IsGame es el juego'], ['¿Cómo puedo contactar con él?', 'Por correo'], ['xyzzy', 'No tengo una respuesta']]) {
     ok(`Alan answers «${q}»`, (await ask(q)).innerText.includes(expected));
   }
   ok('the CV answer offers the CV and the PDF', [...(await ask('¿Dónde veo su CV?')).querySelectorAll('[data-as-href]')].map(b => b.dataset.asHref).join(' ') === '/cv/ /cv/ismael-sarmiento-cv.pdf');
