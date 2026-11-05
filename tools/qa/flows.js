@@ -28,6 +28,8 @@
   ok('external links rel=noopener', [...document.querySelectorAll('a[href^="http"]')].every(a => /noopener/.test(a.rel)));
   ok('bar controls share one height', new Set([...document.querySelectorAll('.tools > .btn')].filter(b => b.offsetParent).map(b => Math.round(b.getBoundingClientRect().height))).size === 1);
   ok('no horizontal overflow', document.documentElement.scrollWidth <= innerWidth);
+  ok('footer: sites → contact → Privacidad → Volver arriba', [...document.querySelectorAll('.footer-links a, .footer-top')]
+    .map(a => a.textContent.trim()).join('|') === 'CV Online|IsAcademy|IsGame|WhatsApp|Correo|LinkedIn|GitHub|Privacidad|Volver arriba');
   console.log(R.join('\n'));
   return R.filter(r => r.startsWith('FAIL')).length ? 'FAILURES' : 'ALL PASS';
 })();

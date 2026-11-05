@@ -68,6 +68,7 @@ TEXT = {
     'mail': ('Correo', 'Email'),
     'privacy.label': ('Privacidad', 'Privacy'),
     'privacy.href': ('/privacy/', '/privacy/?lang=en'),
+    'top': ('Volver arriba', 'Back to top'),
     'nf.title': ('Esta página no existe', 'This page does not exist'),
     'nf.lead': ('Puede que el enlace esté mal escrito o que la página se haya movido.', 'The link may be mistyped or the page may have moved.'),
     'nf.home': ('Ir al inicio', 'Go to home'),
@@ -340,7 +341,7 @@ def footer():
     return f'''<footer class="footer">
     <div class="container footer-row">
       <span>© <span data-year>2026</span> Ismael Sarmiento</span>
-      <!-- the footer of every site of the universe: the other sites, then the ways to reach Ismael (CV, IsAcademy) -->
+      <!-- the footer of every site of the universe: the other sites, the ways to reach Ismael, Privacy, back to top (CV, IsAcademy) -->
       <nav class="footer-links" {A('aria-label', 'contact')}>
         <a {A('href', 'door.0.href')}>CV Online</a>
         <a {A('href', 'door.1.href')}>IsAcademy</a>
@@ -351,6 +352,7 @@ def footer():
         <a href="{GITHUB}" rel="noopener me">GitHub</a>
         <a {A('href', 'privacy.href')}>{T('privacy.label')}</a>
       </nav>
+      <a class="footer-top" href="#top">{T('top')}</a>
     </div>
   </footer>
   <!-- Cloudflare Web Analytics --><script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{{"token": "{CF_TOKEN}"}}'></script><!-- End Cloudflare Web Analytics -->'''
