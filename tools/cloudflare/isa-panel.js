@@ -1,4 +1,6 @@
-// isa-panel · IsPanel, the Cloudflare Worker with the private panel of Ismael Sarmiento's sites (Inicio, CV Online, IsAcademy; IsGame only as a link: it sends no analytics).
+// isa-panel · IsPanel, the Cloudflare Worker with the private panel of Ismael Sarmiento's sites on isuniverse.dev (Inicio, IsProfile, IsAcademy;
+// IsGame only as a link: it sends no analytics). Since the move (F5) every site is counted under its new path and its old
+// one (/profile/ and /cv/, /academy/ and /isacademy/), so the history stays in one place; the site keys stay 'cv' and 'isacademy'.
 // One page, only for him, in the look of the sites (it loads the shared design system /assets/ds/ of the portada):
 // visits by site, day, country (interactive world map), source, page and device (Cloudflare Web Analytics through the
 // GraphQL API, no cookies on the sites), the outcome of the contact forms (written by isa-forms to Workers Analytics
@@ -15,7 +17,7 @@
 //   https://isa-panel.ismaelantonio-professional.workers.dev
 // Settings → Variables and Secrets:
 //   ACCOUNT_ID        text    Cloudflare account id
-//   SITE_TAG          text    Web Analytics site tag of ismael-sarmiento.github.io
+//   SITE_TAG          text    Web Analytics site tag (one site; its hostname moved to isuniverse.dev, same tag)
 //   PANEL_EMAIL       text    the only inbox that receives access links (Resend's free sender only delivers there)
 //   CF_API_TOKEN      secret  API token «isa-panel» with Account Analytics: Read only
 //   RESEND_API_KEY    secret  Resend API key «isa-panel» (sending access only)
@@ -25,11 +27,11 @@
 // (the Cache API does nothing on workers.dev).
 // CONTACTS_DB (D1): authorization epoch/cooldown, private contacts, traffic and one-use link fingerprints.
 // Authorization state and private records are never copied to KV or browser storage.
-const SITE = 'https://ismael-sarmiento.github.io';
+const SITE = 'https://isuniverse.dev';
 const SITE_KEY = '0x4AAAAAAFZ7JbJ5yVIvt3uH';
 const COOKIE = '__Host-isa_panel';
 const SESSION_MS = 30 * 86400000, LINK_MS = 15 * 60000, CACHE_S = 120, MAX_DAYS = 180;
-const SITES = { all: ['Todas las webs', ''], inicio: ['Inicio', `${SITE}/`], cv: ['CV Online', `${SITE}/cv/`], isacademy: ['IsAcademy', `${SITE}/isacademy/`] };
+const SITES = { all: ['Todas las webs', ''], inicio: ['Inicio', `${SITE}/`], cv: ['IsProfile', `${SITE}/profile/`], isacademy: ['IsAcademy', `${SITE}/academy/`] };
 // Natural Earth 1:50m, served from the owner's assets; see assets/maps/LICENSE.txt.
 const MAP_URL = `${SITE}/assets/maps/countries-50m.json`;
 const MAP_SRI = 'sha384-Aw4s9pX1PTPntIYkZ/qV9IYiF5Gv8eTl6Dd/TT56zfO1Wwd+owFwYUuuXNUMrWkc';
@@ -135,8 +137,9 @@ const redirect = (to, extra = {}) => new Response(null, { status: 303, headers: 
 // filters are written into the query from controlled values only (dates, the site tag, a fixed list of sites)
 const lit = v => Array.isArray(v) ? `[${v.map(lit).join(', ')}]`
   : v && typeof v === 'object' ? `{${Object.entries(v).map(([k, x]) => `${k}: ${lit(x)}`).join(', ')}}` : JSON.stringify(v);
-const pathFilter = site => site === 'cv' ? { requestPath_like: '/cv/%' } : site === 'isacademy' ? { requestPath_like: '/isacademy/%' }
-  : site === 'inicio' ? { AND: [{ requestPath_notlike: '/cv/%' }, { requestPath_notlike: '/isacademy/%' }, { requestPath_notlike: '/isgame/%' }] } : {};
+const SITE_PATHS = { cv: ['/profile/%', '/cv/%'], isacademy: ['/academy/%', '/isacademy/%'], game: ['/game/%', '/isgame/%'] };
+const pathFilter = site => SITE_PATHS[site] && site !== 'game' ? { OR: SITE_PATHS[site].map(requestPath_like => ({ requestPath_like })) }
+  : site === 'inicio' ? { AND: Object.values(SITE_PATHS).flat().map(requestPath_notlike => ({ requestPath_notlike })) } : {};
 const day = d => d.toISOString().slice(0, 10);
 
 // Ask the last week separately from older dates. Cloudflare may sample adaptively even in recent periods;
@@ -610,7 +613,7 @@ export function renderPanelReport(d, panelURL=PANEL_URL) {
   const link=(hash,label)=>`<p style="margin:16px 0 0"><a href="${esc(base+'/#'+hash)}" style="color:#e5b45e;font:600 14px Arial,sans-serif;text-decoration:underline">${esc(label)} →</a></p>`;
   const rows=list=>`<table role="presentation" width="100%" cellspacing="0" cellpadding="0">${list.map(([label,value])=>`<tr><td style="padding:9px 8px 9px 0;border-bottom:1px solid #343b58;font:14px Arial,sans-serif;color:#f6f1e7;overflow-wrap:anywhere">${esc(label)}</td><td align="right" style="padding:9px 0;border-bottom:1px solid #343b58;font:600 15px Arial,sans-serif;color:#e5b45e">${esc(f(value))}</td></tr>`).join('')}</table>`;
   const available=a.sourceHealth?.visits?.status!=='error',stale=a.sourceHealth?.visits?.status==='stale';
-  section('Tu universo, de un vistazo',p('Últimos 7 días · Inicio, CV Online e IsAcademy (IsGame no se mide). Periodo independiente de los filtros abiertos en el panel.')+p(`${date(d.period.since)} — ${date(d.period.until)} · Canarias`),`${date(d.period.since)} — ${date(d.period.until)} (Canarias)`);
+  section('Tu universo, de un vistazo',p('Últimos 7 días · Inicio, IsProfile e IsAcademy (IsGame no se mide). Periodo independiente de los filtros abiertos en el panel.')+p(`${date(d.period.since)} — ${date(d.period.until)} · Canarias`),`${date(d.period.since)} — ${date(d.period.until)} (Canarias)`);
   section('Tráfico de las tres webs',rows([['Visitas estimadas',available?a.total.visits:null],['Páginas vistas estimadas',available?a.total.views:null],...Object.entries(SITES).filter(([k])=>k!=='all').map(([key,[label]])=>[label,available?a.sites[key]?.visits:null])])+p(`Web Analytics: ${a.range.since} — ${a.range.until} (fechas UTC). Son recuentos agregados independientes de las señales privadas.${stale?' La fuente no responde: estas cifras son anteriores, con su fecha de consulta.':''}`)+link('traffic','Consultar tráfico y fechas de las fuentes'),`Visitas estimadas: ${f(available?a.total.visits:null)}; páginas vistas: ${f(available?a.total.views:null)}\n${Object.entries(SITES).filter(([k])=>k!=='all').map(([k,[label]])=>`${label}: ${f(available?a.sites[k]?.visits:null)}`).join('\n')}`);
   if(cs.status==='ok'){
     const n=cs.recent,active=cs.active,pending=active.new+active.following;
@@ -772,7 +775,7 @@ const loginPage = message => html(nonce => page(nonce, 'IsPanel · acceso', {
 .logo{display:flex;align-items:baseline;justify-content:center;font-size:40px;font-weight:600;letter-spacing:-.02em;color:var(--text);margin:0 0 12px}.logo .brand-is{font-size:66px;clip-path:inset(0 100% 0 0);animation:ink 1s .1s cubic-bezier(.6,0,.2,1) forwards}
 .login p{color:var(--text-2);margin:0 0 22px}#status{min-height:24px;margin:18px 0 0;font-size:14px}#status.ok{color:var(--ok)}#status.bad{color:var(--bad)}#ts{position:absolute}.foot{margin-top:22px;font-size:12px;color:var(--text-2)}@media(prefers-reduced-motion:reduce){.logo .brand-is{clip-path:none}}`,
   html: `<main>${PANEL_CIRCUIT}<div class="card login"><h1 class="logo"><span class="brand-is">Is</span>Panel</h1><p class="eyebrow">Tu universo en datos</p>
-<p>Contactos, actividad y seguimiento de Inicio, CV Online e IsAcademy. Te envío un enlace de acceso a tu correo.</p>
+<p>Contactos, actividad y seguimiento de Inicio, IsProfile e IsAcademy. Te envío un enlace de acceso a tu correo.</p>
 <button class="btn btn-primary btn-lg btn-arrow" id="send" type="button">Envíame el enlace</button><div id="ts"></div><p id="status" role="status" aria-live="polite" class="${message ? 'bad' : ''}">${esc(message || '')}</p>
 <p class="foot">Privado · enlace de un solo uso · protegido con Cloudflare Turnstile</p></div></main>`,
 }, `(${loginClient})(${JSON.stringify(SITE_KEY)})`));
@@ -817,7 +820,7 @@ function panelClient(SITES, MAP_URL, MAP_SRI, ISO, SIGNATURE_URL, decodeWorldCou
     if (/t\.co$|twitter|x\.com/.test(h)) return 'X (Twitter)'; if (/facebook|fb\./.test(h)) return 'Facebook';
     return h;
   };
-  const KNOWN = { '/': 'Inicio', '/cv/': 'CV Online', '/isacademy/': 'IsAcademy', '/index_en.html': 'Inicio (enlace antiguo en inglés)' };
+  const KNOWN = { '/': 'Inicio', '/profile/': 'IsProfile', '/academy/': 'IsAcademy', '/game/': 'IsGame', '/cv/': 'IsProfile (dirección antigua)', '/isacademy/': 'IsAcademy (dirección antigua)', '/index_en.html': 'Inicio (enlace antiguo en inglés)' };
   const probe = p => !(p in KNOWN) && (/no-existe/.test(p) || /\.(php|env|asp|aspx|jsp|cgi|ini|git|bak|sql)(\/|$)|wp-|admin|login|xmlrpc/i.test(p));
   const pageName = p => KNOWN[p] || (probe(p) ? `${p} (no existe)` : p);
   const device = d => ({ desktop: 'Escritorio', mobile: 'Móvil', tablet: 'Tableta' })[String(d).toLowerCase()] || d || 'Otro';
@@ -1096,7 +1099,7 @@ ${labels.map(({ d, i }) => `<text x="${x(i)}" y="${H - 8}" class="ax" text-ancho
     const by = (s, o) => rows.filter(r => r.site === s && r.outcome === o).reduce((a, r) => a + r.n, 0);
     const used = Object.keys(OUT).filter(o => total(o));
     if (!rows.length) return `<p class="empty">${f.note && f.note !== 'empty' ? 'No se han podido leer los formularios ahora mismo.' : 'Aún no hay envíos en este periodo (se cuentan desde el 18 de octubre de 2026).'}</p>`;
-    return `<table><thead><tr><th>Resultado</th><th>Inicio</th><th>CV Online</th><th>IsAcademy</th><th>Total</th></tr></thead><tbody>${used.map(o =>
+    return `<table><thead><tr><th>Resultado</th><th>Inicio</th><th>IsProfile</th><th>IsAcademy</th><th>Total</th></tr></thead><tbody>${used.map(o =>
       `<tr><td><span class="dot ${OUT[o][1]}"></span>${OUT[o][0]}</td><td>${fmt(by('inicio', o))}</td><td>${fmt(by('cv', o))}</td><td>${fmt(by('isacademy', o))}</td><td><b>${fmt(total(o))}</b></td></tr>`).join('')}</tbody></table>`;
   };
   let closingSessions = false, sessionCloseNote = '';
@@ -1385,7 +1388,7 @@ ${labels.map(({ d, i }) => `<text x="${x(i)}" y="${H - 8}" class="ax" text-ancho
     $('[data-action="custom"]').setAttribute('aria-pressed', String(!preset));
     $('[data-action="custom"]').textContent = preset ? 'Personalizado' : `${days} días`;
     const s = SITES[site];
-    $('#site-btn .sb-name').textContent = s[0]; $('#site-btn .sb-url').textContent = s[1] ? s[1].replace(/^https:\/\//, '') : 'Inicio, CV Online e IsAcademy';
+    $('#site-btn .sb-name').textContent = s[0]; $('#site-btn .sb-url').textContent = s[1] ? s[1].replace(/^https:\/\//, '') : 'Inicio, IsProfile e IsAcademy';
     $$('.site-opt button[data-site]').forEach(b => b.setAttribute('aria-checked', String(b.dataset.site === site)));
   };
   let loadSeq = 0, loadController = null;
@@ -1647,11 +1650,11 @@ body.enter main .card{animation:up .7s calc(var(--i, 0) * 60ms) cubic-bezier(.2,
 <header class="topbar"><div class="container topbar-row"><a class="brand" href="/" aria-label="IsPanel"><span class="brand-is">Is</span><span class="brand-name">Panel</span></a><span class="tag">Tu espacio privado</span><span class="sp"></span>
 <div class="tools"><button class="btn btn-sm" type="button" data-action="refresh" title="Actualizar métricas y solicitudes">${ICON_REFRESH}<span class="btn-text">Actualizar</span></button>
 <button class="btn btn-sm btn-icon theme-btn" type="button" data-action="theme" aria-label="Cambiar modo claro / oscuro">${ICON_MOON}${ICON_SUN}</button><a class="btn btn-sm" href="/logout">Salir</a></div></div></header>
-<main class="container" id="workspace"><div class="workspace-heading"><div><p class="eyebrow">Inicio · CV Online · IsAcademy · IsGame</p><h1 id="workspace-title">Tu universo, de un vistazo.</h1><p id="workspace-description">Lo que necesita tu atención y cómo evolucionan tus webs.</p></div><span class="private-label"><span aria-hidden="true">◈</span> Solo para ti</span></div>
+<main class="container" id="workspace"><div class="workspace-heading"><div><p class="eyebrow">Inicio · IsProfile · IsAcademy · IsGame</p><h1 id="workspace-title">Tu universo, de un vistazo.</h1><p id="workspace-description">Lo que necesita tu atención y cómo evolucionan tus webs.</p></div><span class="private-label"><span aria-hidden="true">◈</span> Solo para ti</span></div>
 <nav class="workspace-tabs" role="tablist" aria-label="Secciones de IsPanel">${[['overview','Resumen','◈'],['contacts','Contactos','✉'],['traffic','Tráfico','◎'],['system','Sistema','⌘']].map(([key,label,icon],i)=>`<button type="button" role="tab" id="tab-${key}" data-view="${key}" aria-controls="view-${key}" aria-selected="${i===0}" tabindex="${i===0?'0':'-1'}"><span class="tab-icon" aria-hidden="true">${icon}</span>${label}${key==='contacts'?'<span id="inbox-badge" class="inbox-badge"></span>':''}</button>`).join('')}</nav>
 <div class="controls"><div class="periods" role="group" aria-label="Periodo"><button class="btn btn-sm" type="button" data-days="7">7 días</button><button class="btn btn-sm" type="button" data-days="30">30 días</button><button class="btn btn-sm" type="button" data-days="90">90 días</button><button class="btn btn-sm" type="button" data-action="custom">Personalizado</button></div>
 <div class="site-pick"><button class="btn" id="site-btn" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="site-menu"><span class="sb"><span class="sb-name">Todas las webs</span><span class="sb-url"></span></span></button>
-<div id="site-menu" role="menu" hidden>${Object.entries(SITES).map(([k,[name,href]])=>`<div class="site-opt"><button type="button" role="menuitemradio" aria-checked="false" data-site="${k}"><b>${name}</b><small>${href?href.replace(/^https:\/\//,''):'Inicio, CV Online e IsAcademy juntas'}</small><span data-n="${k}"></span></button>${href?`<a href="${href}" target="_blank" rel="noopener" aria-label="Abrir ${name} en una pestaña nueva">${ICON_LINK}</a>`:'<span></span>'}</div>`).join('')}</div></div></div>
+<div id="site-menu" role="menu" hidden>${Object.entries(SITES).map(([k,[name,href]])=>`<div class="site-opt"><button type="button" role="menuitemradio" aria-checked="false" data-site="${k}"><b>${name}</b><small>${href?href.replace(/^https:\/\//,''):'Inicio, IsProfile e IsAcademy juntas'}</small><span data-n="${k}"></span></button>${href?`<a href="${href}" target="_blank" rel="noopener" aria-label="Abrir ${name} en una pestaña nueva">${ICON_LINK}</a>`:'<span></span>'}</div>`).join('')}</div></div></div>
 <form id="custom" hidden><label for="custom-n">Ver los últimos</label><input id="custom-n" type="number" min="1" max="180" step="1" value="14" inputmode="numeric"><select id="custom-u" aria-label="Unidad"><option value="1">días</option><option value="7">semanas</option><option value="30">meses</option></select><button class="btn btn-sm btn-primary" type="submit">Aplicar</button><p id="custom-msg" role="alert"></p></form>
 <div class="data-meta"><p id="range">Cargando…</p><p id="fresh" aria-live="polite"></p></div><div id="source-health" class="source-health" aria-label="Estado de las fuentes"></div><p id="error" role="status" hidden></p>
 <div data-panel-view="overview" id="view-overview" role="tabpanel" aria-labelledby="tab-overview">
@@ -1675,10 +1678,10 @@ body.enter main .card{animation:up .7s calc(var(--i, 0) * 60ms) cubic-bezier(.2,
 <div class="grid2"><section class="card"><h2>Principales redes y operadores</h2><p class="hint">Las diez primeras organizaciones por registros recibidos.</p><div id="traffic-networks"><p class="empty">Pendiente de consulta.</p></div></section><section class="card"><h2>Protocolos de conexión</h2><p class="hint">Protocolo que Cloudflare observó en las señales recibidas.</p><div id="traffic-protocols"><p class="empty">Pendiente de consulta.</p></div></section></div>
 <p id="approx" class="note">Histórico de Web Analytics · Cloudflare puede estimar estos recuentos. Su medida de visitas y vistas es independiente del registro recibido.</p>
 <section class="card"><h2>Visitas por día</h2><p class="hint">Usa el puntero o las flechas del teclado sobre la gráfica para consultar cada día.</p><div id="chart"></div><div class="legend"><span><i></i>Visitas</span><span><i class="v2"></i>Páginas vistas</span></div></section>
-<div class="grid2"><section class="card" data-sites-only><h2>Por web</h2><p class="hint">Reparto de las visitas entre Inicio, CV Online e IsAcademy. IsGame no se mide: promete no usar analítica.</p><div id="sites"></div></section><section class="card"><h2>Dispositivo</h2><p class="hint">Ordenador, móvil o tableta.</p><div id="devices"></div></section><section class="card"><h2>De dónde vienen</h2><p class="hint">Origen declarado por el navegador. Algunos enlaces pueden aparecer como acceso directo.</p><div id="sources"></div></section><section class="card"><h2>Páginas más vistas</h2><p class="hint">Las rutas a revisar también pueden proceder de pruebas propias; no demuestran un ataque.</p><div id="pages"></div></section><section class="card"><h2>Navegador</h2><p class="hint">Familias de navegadores, agrupadas.</p><div id="browsers"></div></section><section class="card"><h2>Sistema operativo</h2><p class="hint">Distribución agregada de sistemas.</p><div id="systems"></div></section></div></div>
+<div class="grid2"><section class="card" data-sites-only><h2>Por web</h2><p class="hint">Reparto de las visitas entre Inicio, IsProfile e IsAcademy. IsGame no se mide: promete no usar analítica.</p><div id="sites"></div></section><section class="card"><h2>Dispositivo</h2><p class="hint">Ordenador, móvil o tableta.</p><div id="devices"></div></section><section class="card"><h2>De dónde vienen</h2><p class="hint">Origen declarado por el navegador. Algunos enlaces pueden aparecer como acceso directo.</p><div id="sources"></div></section><section class="card"><h2>Páginas más vistas</h2><p class="hint">Las rutas a revisar también pueden proceder de pruebas propias; no demuestran un ataque.</p><div id="pages"></div></section><section class="card"><h2>Navegador</h2><p class="hint">Familias de navegadores, agrupadas.</p><div id="browsers"></div></section><section class="card"><h2>Sistema operativo</h2><p class="hint">Distribución agregada de sistemas.</p><div id="systems"></div></section></div></div>
 <div data-panel-view="system" id="view-system" role="tabpanel" aria-labelledby="tab-system" hidden>
 <section class="card"><h2>Formularios</h2><p class="hint">Resultados de las peticiones. Aceptar un correo no acredita entrega ni lectura.</p><div class="table-wrap" id="forms"></div></section><section class="card"><h2>Acceso y actividad</h2><p class="hint">Tus accesos a IsPanel y peticiones que necesitan contexto.</p><div id="security"></div></section>
-<section class="card" id="quick"><h2>Accesos rápidos</h2><p class="hint">Tus webs y los servicios que las mueven.</p><div class="links"><a class="btn btn-sm btn-arrow" href="${SITE}/" target="_blank" rel="noopener">Inicio</a><a class="btn btn-sm btn-arrow" href="${SITE}/cv/" target="_blank" rel="noopener">CV Online</a><a class="btn btn-sm btn-arrow" href="${SITE}/isacademy/" target="_blank" rel="noopener">IsAcademy</a><a class="btn btn-sm btn-arrow" href="${SITE}/isgame/" target="_blank" rel="noopener">IsGame</a><a class="btn btn-sm btn-arrow" href="https://dash.cloudflare.com/" target="_blank" rel="noopener">Cloudflare</a><a class="btn btn-sm btn-arrow" href="https://resend.com/emails" target="_blank" rel="noopener">Resend</a><a class="btn btn-sm btn-arrow" href="https://github.com/ismael-sarmiento" target="_blank" rel="noopener">GitHub</a></div><p class="note">El registro detallado y las fichas de contacto se consultan únicamente en esta sesión privada.</p></section></div>
+<section class="card" id="quick"><h2>Accesos rápidos</h2><p class="hint">Tus webs y los servicios que las mueven.</p><div class="links"><a class="btn btn-sm btn-arrow" href="${SITE}/" target="_blank" rel="noopener">Inicio</a><a class="btn btn-sm btn-arrow" href="${SITE}/profile/" target="_blank" rel="noopener">IsProfile</a><a class="btn btn-sm btn-arrow" href="${SITE}/academy/" target="_blank" rel="noopener">IsAcademy</a><a class="btn btn-sm btn-arrow" href="${SITE}/game/" target="_blank" rel="noopener">IsGame</a><a class="btn btn-sm btn-arrow" href="https://dash.cloudflare.com/" target="_blank" rel="noopener">Cloudflare</a><a class="btn btn-sm btn-arrow" href="https://resend.com/emails" target="_blank" rel="noopener">Resend</a><a class="btn btn-sm btn-arrow" href="https://github.com/ismael-sarmiento" target="_blank" rel="noopener">GitHub</a></div><p class="note">El registro detallado y las fichas de contacto se consultan únicamente en esta sesión privada.</p></section></div>
 <p class="foot">IsPanel · un espacio privado para cuidar tu universo · actualización cada 5 minutos mientras está abierto · fechas en hora de Canarias con su desfase GMT</p></main>
 <dialog id="contact-detail" aria-labelledby="detail-title"><div class="detail-top"><span class="eyebrow">Solicitud de contacto</span><button class="btn btn-sm btn-icon" type="button" data-action="close-detail" aria-label="Cerrar solicitud">×</button></div><h2 id="detail-title">Solicitud</h2><p id="detail-meta" class="note"></p><div id="detail-body" hidden><div class="detail-actions"><a class="btn btn-primary btn-arrow" id="detail-email" href="mailto:">Responder por correo</a><a class="btn" id="detail-phone" href="tel:" hidden>Llamar</a></div><div class="detail-toolbar"><label for="detail-state">Seguimiento</label><select id="detail-state"><option value="new">Nuevo</option><option value="following">En seguimiento</option><option value="resolved">Resuelto</option><option value="archived">Archivado</option></select><span id="detail-notification" class="retention-label"></span></div><h3 class="sub">Datos de la solicitud</h3><dl id="detail-fields"></dl><h3 class="sub">Mensaje</h3><p id="detail-message"></p><details class="network-disclosure"><summary>Datos de conexión disponibles</summary><dl id="detail-network" class="network-fields"></dl><p class="note">Ubicación aproximada facilitada por la red. El operador corresponde al ASN de la conexión.</p></details><p class="note">Responder o llamar abre tu aplicación. Actualiza el seguimiento cuando lo hayas atendido.</p><p class="note" id="detail-context"></p><p class="note" id="detail-expiry"></p></div><p id="detail-feedback" role="status"></p></dialog>
 <dialog id="traffic-detail" aria-labelledby="event-title"><div class="detail-top"><span class="eyebrow">Registro de actividad</span><button class="btn btn-sm btn-icon" type="button" data-action="close-event" aria-label="Cerrar registro">×</button></div><h2 id="event-title">Registro</h2><p class="note" id="event-meta"></p><div id="event-content" hidden><dl id="event-fields" class="network-fields"></dl><p class="note">Datos observados en una señal recibida por el Worker. Ubicación de red aproximada.</p></div><p id="event-feedback" role="status"></p></dialog>`,

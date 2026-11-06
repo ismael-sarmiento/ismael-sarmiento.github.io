@@ -14,7 +14,7 @@ import { createPreview } from './preview.mjs';
 const loopbackFetch = globalThis.fetch;
 
 const DAY = 86400000;
-const ORIGIN = 'https://ismael-sarmiento.github.io';
+const ORIGIN = 'https://isuniverse.dev', OLD_ORIGIN = 'https://ismael-sarmiento.github.io';   // both open during the move (F5)
 const PANEL = 'https://ispanel.example';
 const FORMS = 'https://isa-forms.example';
 const SECRET = 'local-qa-signing-key-not-a-production-secret';
@@ -215,7 +215,7 @@ function env(db, extra = {}) {
   const events = [], views = [];
   return {
     CONTACTS_ENABLED: 'true', TRAFFIC_ENABLED: 'true', CONTACTS_DB: db, PANEL_KV: new MemoryKV(), PANEL_SECRET: SECRET, PANEL_EMAIL: 'owner@example.test',
-    ALLOWED_ORIGIN: ORIGIN, ALLOWED_HOSTS: 'ismael-sarmiento.github.io', FORM_TO: 'owner@example.test',
+    ALLOWED_ORIGIN: `${ORIGIN},${OLD_ORIGIN}`, ALLOWED_HOSTS: 'isuniverse.dev,ismael-sarmiento.github.io', FORM_TO: 'owner@example.test',
     TURNSTILE_SECRET: 'mock-turnstile', RESEND_API_KEY: 'mock-resend', ACCOUNT_ID: 'mock-account',
     CF_API_TOKEN: 'mock-analytics', SITE_TAG: 'mock-site',
     FORM_EVENTS: { writeDataPoint: point => events.push(point) },
@@ -227,7 +227,7 @@ function submission(overrides = {}) {
   return {
     Nombre: 'Persona de prueba', Email: 'persona@example.test', Empresa: 'Empresa de prueba',
     'Teléfono': '+34 600 123 456', Mensaje: 'Quiero hablar sobre una plataforma de datos.',
-    _replyto: 'persona@example.test', _subject: 'Contacto desde CV Online', _page: `${ORIGIN}/cv/`,
+    _replyto: 'persona@example.test', _subject: 'Contacto desde IsProfile', _page: `${ORIGIN}/profile/`,
     Idioma: 'Español', _honey: '', 'cf-turnstile-response': 'qa-turnstile-token', ...overrides,
   };
 }
@@ -288,7 +288,7 @@ function network(t, options = {}) {
     const url = String(input instanceof Request ? input.url : input);
     calls.push({ url, ...init });
     if (url === 'https://challenges.cloudflare.com/turnstile/v0/siteverify') {
-      return responseJSON(options.turnstile || { success: true, hostname: 'ismael-sarmiento.github.io' });
+      return responseJSON(options.turnstile || { success: true, hostname: 'isuniverse.dev' });
     }
     if (url === 'https://api.resend.com/emails') {
       if (options.mailThrows) throw new Error('simulated transport failure');
@@ -1177,14 +1177,14 @@ test('access: wrong origin, failed challenge, malformed input and missing recipi
 const viewsSource = (await readFile(new URL('../../../assets/ds/views.js', import.meta.url), 'utf8')).replace('export function countView', 'function countView');
 function clientSignals(options = {}) {
   const signals = [], navigator = { language: 'es-ES', sendBeacon: (url, payload) => signals.push({ url, payload: JSON.parse(payload) }), ...options.navigator };
-  const context = { URL, navigator, location: { hostname: 'ismael-sarmiento.github.io', pathname: '/cv/', ...options.location },
+  const context = { URL, navigator, location: { hostname: 'isuniverse.dev', pathname: '/profile/', ...options.location },
     document: { referrer: 'https://example.test/private/path?q=secret#fragment', ...options.document } };
   for (const key of ['localStorage', 'sessionStorage']) Object.defineProperty(context, key, { get() { throw new Error('Client telemetry must not need storage'); } });
   runInNewContext(viewsSource + '\ncountView();countView();', context); return signals;
 }
 test('shared views: a single signal contains only path, referring origin and language', () => {
   const signals = clientSignals(); assert.equal(signals.length, 1);
-  assert.deepEqual(signals[0].payload, { p: '/cv/', r: 'https://example.test', l: 'es-ES' });
+  assert.deepEqual(signals[0].payload, { p: '/profile/', r: 'https://example.test', l: 'es-ES' });
   assert.match(signals[0].url, /^https:\/\/isa-forms\..*\/hit$/);
   assert.ok(!JSON.stringify(signals).includes('secret')); assert.ok(!JSON.stringify(signals).includes('/private/'));
 });
@@ -1468,7 +1468,7 @@ for (const active of [false,true]) {
       let emails=0,bodyRead=false;
       t.mock.method(AbortSignal,'timeout',ms=>{deadlines.push(ms);return ms===10_000?controller.signal:new AbortController().signal;});
       t.mock.method(globalThis,'fetch',async (url,init)=>{
-        if(String(url).includes('/siteverify')) return responseJSON({success:true,hostname:'ismael-sarmiento.github.io'});
+        if(String(url).includes('/siteverify')) return responseJSON({success:true,hostname:'isuniverse.dev'});
         assert.equal(String(url),'https://api.resend.com/emails'); emails++; assert.equal(init.signal,controller.signal);
         const stalled=()=>new Promise((_resolve,reject)=>{
           init.signal.addEventListener('abort',()=>reject(init.signal.reason),{once:true});
@@ -1510,4 +1510,35 @@ test('D19 report: historical incidents and uncertain legacy mail have cautious l
   const result=renderPanelReport(d);
   for(const label of ['Incidencia de correo (flujo anterior)','Correo sin confirmar (flujo anterior)']){
     assert.ok(result.html.includes(label));assert.ok(result.text.includes(label));}
+});
+
+// ---------- the move to isuniverse.dev (F5): one history for new and old addresses ----------
+test('forms: new and old addresses of IsProfile and IsAcademy keep one site key', async t => {
+  const db = database(t), e = env(db); network(t);
+  const cases = [[ORIGIN, '/profile/', 'cv'], [OLD_ORIGIN, '/cv/', 'cv'], [ORIGIN, '/academy/', 'isacademy'], [OLD_ORIGIN, '/isacademy/', 'isacademy']];
+  for (const [origin, path, site] of cases) {
+    const extra = site === 'isacademy' ? { 'Interés': 'Aula abierta (gratuita)', 'Edad o nivel': 'Adulto' } : {};
+    const result = await formsWorker.fetch(formRequest(submission({ _page: `${origin}${path}`, Nombre: `Persona ${path}`, ...extra }), { origin }), e);
+    assert.equal(result.status, 200, `${origin}${path} accepted`);
+    const row = db.rows().find(r => r.name === `Persona ${path}`);
+    assert.equal(row.site, site); assert.equal(row.page, `${origin}${path}`);
+  }
+});
+
+test('forms: a foreign origin or page is still refused after the move', async t => {
+  const db = database(t), e = env(db); network(t);
+  assert.equal((await formsWorker.fetch(formRequest(submission(), { origin: 'https://other.example' }), e)).status, 403);
+  assert.equal((await formsWorker.fetch(formRequest(submission({ _page: 'https://other.example/profile/' })), e)).status, 400);
+  assert.equal(db.rows().length, 0);
+});
+
+test('traffic capture: new and old paths count for the same site', async t => {
+  const db = database(t), e = env(db); network(t);
+  for (const p of ['/profile/', '/cv/', '/academy/', '/isacademy/', '/']) await formsWorker.fetch(hitRequest({ p, r: '', l: 'es-ES' }), e);
+  const sites = Object.fromEntries(trafficRows(db).map(row => [row.page, row.site]));
+  assert.deepEqual(sites, { '/profile/': 'cv', '/cv/': 'cv', '/academy/': 'isacademy', '/isacademy/': 'isacademy', '/': 'inicio' });
+});
+
+test('shared views: never counted under /game/ or /isgame/, nor on the old hostname', () => {
+  for (const location of [{ pathname: '/game/' }, { pathname: '/isgame/' }, { hostname: 'ismael-sarmiento.github.io' }]) assert.equal(clientSignals({ location }).length, 0);
 });

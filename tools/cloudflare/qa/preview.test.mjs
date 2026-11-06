@@ -8,7 +8,7 @@ test('public preview routes the universe without exposing panel endpoints or pri
   const preview = createPreview({ port: 0, publicOnly: true });
   const origin = await preview.start();
   try {
-    for (const [path, text] of [['/', 'Ismael'], ['/cv/', 'Arquitectura y liderazgo técnico'], ['/isacademy/', 'IsAcademy'], ['/privacy/', 'Privacidad']]) {
+    for (const [path, text] of [['/', 'Ismael'], ['/profile/', 'Arquitectura y liderazgo técnico'], ['/academy/', 'IsAcademy'], ['/privacy/', 'Privacidad']]) {
       await t.test(path, async () => {
         const response = await localFetch(origin + path);
         assert.equal(response.status, 200);
@@ -23,12 +23,12 @@ test('public preview routes the universe without exposing panel endpoints or pri
       assert.equal(await response.text(), '');
     });
     await t.test('private files and panel APIs stay unavailable', async () => {
-      for (const path of ['/api/contacts', '/api/traffic', '/login', '/cv/.private/PROJECT_CONTEXT.md', '/isacademy/AGENTS.md', '/assets/%2e%2e%2ftools/build.py']) {
+      for (const path of ['/api/contacts', '/api/traffic', '/login', '/profile/.private/PROJECT_CONTEXT.md', '/academy/AGENTS.md', '/assets/%2e%2e%2ftools/build.py']) {
         assert.equal((await localFetch(origin + path)).status, 404, path);
       }
     });
     await t.test('public POST cannot send or store anything', async () => {
-      for (const path of ['/', '/cv/', '/api/reports/send', '/__preview/forms']) {
+      for (const path of ['/', '/profile/', '/api/reports/send', '/__preview/forms']) {
         assert.equal((await localFetch(origin + path, { method: 'POST', body: '{}' })).status, 405, path);
       }
     });

@@ -11,12 +11,14 @@ import panelWorker from '../isa-panel.js';
 import formsWorker from '../isa-forms.js';
 
 const DAY = 86400000;
-const SITE = 'https://ismael-sarmiento.github.io';
+const SITE = 'https://isuniverse.dev';
 const SECRET = 'local-preview-signing-key-never-use-in-production';
 const SCENARIOS = ['normal', 'intro', 'many', 'empty', 'partial', 'error', 'slow', 'disabled', 'mail-failed', 'mail-unknown', 'logout-failed', 'logout-unknown'];
 const LABELS = { normal: 'Con datos', intro: 'Repetir presentación', many: '1500 señales', empty: 'Sin datos', partial: 'Datos parciales', error: 'Fuentes caídas', slow: 'Respuesta lenta', disabled: 'Captura desactivada', 'mail-failed':'Correo rechazado', 'mail-unknown':'Correo sin confirmar', 'logout-failed':'Cierre rechazado', 'logout-unknown':'Cierre sin confirmar' };
 const ASSETS = resolve(fileURLToPath(new URL('../../../assets/', import.meta.url)));
-const PUBLIC_ROOTS = { inicio: resolve(ASSETS, '..'), cv: resolve(ASSETS, '../../cv'), isacademy: resolve(ASSETS, '../../isacademy') };
+const PUBLIC_ROOTS = { inicio: resolve(ASSETS, '..'), profile: resolve(ASSETS, '../../profile'), academy: resolve(ASSETS, '../../academy') };
+// the panel keeps its site keys (cv, isacademy); the sites live under their new paths since the move (F5)
+const PATH_OF = { cv: 'profile', isacademy: 'academy' };
 const schema = (await Promise.all(['0001_contacts.sql', '0002_panel_activity.sql', '0003_panel_reports.sql', '0004_panel_auth.sql'].map(name => readFile(new URL(`../migrations/${name}`, import.meta.url), 'utf8')))).join('\n');
 const json = (body, status = 200) => new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' } });
 const esc = value => String(value).replace(/[&<>"']/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[character]);
@@ -150,7 +152,7 @@ function seedTraffic(db, scene, now) {
       verifiedBot: index % 5 === 0 ? true : index % 5 === 1 ? undefined : false,
       rayId: `${index.toString(16).padStart(16, '0')}-${place[6]}` } : { country: place[0], browser: 'Other' };
     insert.run(`demo-traffic-${String(index + 1).padStart(4, '0')}`, created, created + 30 * DAY, site,
-      site === 'inicio' ? '/' : `/${site}/`, ['', 'linkedin.com', 'github.com', 'www.google.com'][index % 4], JSON.stringify(context));
+      site === 'inicio' ? '/' : `/${PATH_OF[site]}/`, ['', 'linkedin.com', 'github.com', 'www.google.com'][index % 4], JSON.stringify(context));
   }
 }
 
@@ -183,7 +185,7 @@ function graphFixture(query, scene) {
     if (scene === 'empty') { account[alias] = []; continue; }
     const from = filter.match(/date_geq:\s*"(\d{4}-\d{2}-\d{2})"/)?.[1];
     const until = filter.match(/date_leq:\s*"(\d{4}-\d{2}-\d{2})"/)?.[1];
-    const site = filter.includes('requestPath_like: "/cv/%"') ? 'cv' : filter.includes('requestPath_like: "/isacademy/%"') ? 'isacademy'
+    const site = filter.includes('requestPath_like: "/profile/%"') ? 'cv' : filter.includes('requestPath_like: "/academy/%"') ? 'isacademy'
       : filter.includes('requestPath_notlike:') ? 'inicio' : 'all';
     const records = fixtureDays(from, until, site), visits = records.reduce((sum, record) => sum + record.visits, 0), views = records.reduce((sum, record) => sum + record.views, 0);
     if (!dimension) account[alias] = [groupRow(visits, views)];
@@ -192,7 +194,7 @@ function graphFixture(query, scene) {
       const dimensions = {
         countryName: [['ES', 'MX', 'CO', 'US', 'DE', 'PT'], [59, 11, 10, 8, 7, 5]],
         refererHost: [['', 'www.linkedin.com', 'github.com', 'www.google.com'], [37, 31, 20, 12]],
-        requestPath: [site === 'all' ? ['/', '/cv/', '/isacademy/'] : [site === 'inicio' ? '/' : `/${site}/`], site === 'all' ? [35, 40, 25] : [1]],
+        requestPath: [site === 'all' ? ['/', '/profile/', '/academy/'] : [site === 'inicio' ? '/' : `/${PATH_OF[site]}/`], site === 'all' ? [35, 40, 25] : [1]],
         deviceType: [['desktop', 'mobile', 'tablet'], [57, 39, 4]],
         userAgentBrowser: [['Chrome', 'Safari', 'Firefox', 'Edge'], [49, 26, 16, 9]],
         userAgentOS: [['Windows', 'macOS', 'Android', 'iOS', 'Linux'], [32, 29, 20, 15, 4]],
@@ -265,12 +267,12 @@ function previewHTML(body, scene) {
 // Only known public paths are exposed; production mail endpoints are blocked by the preview-only CSP.
 async function publicSiteFile(url, { home = false } = {}) {
   const alias = url.pathname.match(/^\/__sites\/(inicio|cv|isacademy)\/?$/);
-  const natural = url.pathname.match(/^\/(cv|isacademy)(\/.*)?$/);
+  const natural = url.pathname.match(/^\/(profile|academy)(\/.*)?$/);
   const rootPage = ({ '/': home ? 'index.html' : null, '/index.html': 'index.html', '/404.html': '404.html',
     '/privacy/': 'privacy/index.html', '/privacy/index.html': 'privacy/index.html',
     '/articles/': 'articles/index.html', '/articles/index.html': 'articles/index.html', '/index_en.html': 'index_en.html' })[url.pathname];
   if (!alias && !natural && !rootPage && !/^\/(?:data|i18n)\//.test(url.pathname)) return null;
-  const site = alias?.[1] || natural?.[1] || 'inicio', root = PUBLIC_ROOTS[site];
+  const site = PATH_OF[alias?.[1]] || alias?.[1] || natural?.[1] || 'inicio', root = PUBLIC_ROOTS[site];
   let relative = alias ? 'index.html' : natural ? (natural[2] || '/').slice(1) || 'index.html' : rootPage || url.pathname.slice(1);
   if (relative.endsWith('/')) relative += 'index.html';
   if (!/^(?:index(?:_en)?\.html|404\.html|privacy\/index\.html|en\/index\.html|(?:assets|css|js|i18n|data|articles)\/[^\\]*|[a-zA-Z0-9-]+\.pdf)$/.test(relative)
@@ -316,7 +318,7 @@ export function createPreview({ port = 8788, host = '127.0.0.1', publicOnly = fa
       PANEL_KV: new MemoryKV(), PANEL_SECRET: SECRET, PANEL_EMAIL: 'owner.demo@example.com', FORM_TO: 'owner.demo@example.com',
       ACCOUNT_ID: 'local-preview-account', SITE_TAG: 'local-preview-site', CF_API_TOKEN: 'local-preview-only',
       TURNSTILE_SECRET: 'local-preview-only', RESEND_API_KEY: 'local-preview-only',
-      ALLOWED_ORIGIN: SITE, ALLOWED_HOSTS: 'ismael-sarmiento.github.io',
+      ALLOWED_ORIGIN: `${SITE},https://ismael-sarmiento.github.io`, ALLOWED_HOSTS: 'isuniverse.dev,ismael-sarmiento.github.io',
       FORM_EVENTS: { writeDataPoint: point => events.push(point) }, SITE_VIEWS: { writeDataPoint: point => views.push(point) } };
     currentEnv.PANEL_KV.put('access-log', JSON.stringify([{ t: Date.now() - 90 * 60000, kind: 'access', where: 'Ubicación de demostración', browser: 'Chrome · macOS' }]));
   };
@@ -333,7 +335,7 @@ export function createPreview({ port = 8788, host = '127.0.0.1', publicOnly = fa
       await context.delay;
     }
     if (url === 'https://challenges.cloudflare.com/turnstile/v0/siteverify') {
-      const hostname = context.path === '/login' ? context.hostname : 'ismael-sarmiento.github.io';
+      const hostname = context.path === '/login' ? context.hostname : 'isuniverse.dev';
       return json({ success: true, hostname });
     }
     if (url === 'https://api.resend.com/emails') {
@@ -359,7 +361,7 @@ export function createPreview({ port = 8788, host = '127.0.0.1', publicOnly = fa
         reset(name); outgoing.writeHead(303, { Location: '/', 'Cache-Control': 'no-store' }); outgoing.end(); return;
       }
       const siteAlias = url.pathname.match(/^\/__sites\/(cv|isacademy)\/?$/);
-      if (siteAlias) { outgoing.writeHead(303, { Location: '/' + siteAlias[1] + '/' + url.search, 'Cache-Control': 'no-store' }); outgoing.end(); return; }
+      if (siteAlias) { outgoing.writeHead(303, { Location: '/' + PATH_OF[siteAlias[1]] + '/' + url.search, 'Cache-Control': 'no-store' }); outgoing.end(); return; }
       let publicFile = await publicSiteFile(url, { home: publicOnly });
       if (publicOnly && !publicFile && !url.pathname.startsWith('/assets/')) {
         const missing = await publicSiteFile(new URL('/404.html', base));

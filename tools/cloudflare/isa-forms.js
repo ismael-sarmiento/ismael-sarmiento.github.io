@@ -1,4 +1,6 @@
-// isa-forms · Cloudflare Worker that receives the contact forms of ismael-sarmiento.github.io (CV Online, IsAcademy).
+// isa-forms · Cloudflare Worker that receives the contact forms of isuniverse.dev (IsProfile, IsAcademy). Since the move
+// (F5) it also accepts the old origin https://ismael-sarmiento.github.io and the old paths /cv/ and /isacademy/, for at
+// least 90 days; the private site keys stay 'cv' and 'isacademy' (contacts and analytics keep one history).
 // It checks the visitor with Cloudflare Turnstile and sends the message to Ismael's inbox with Resend, so no form
 // talks to a mail service directly and bots without a valid Turnstile token are turned away.
 // (FormSubmit was the first choice, but it rejects requests from Cloudflare's servers with «Rate limit exceeded».)
@@ -8,8 +10,8 @@
 // Settings → Variables and Secrets:
 //   FORM_TO           text    inbox the messages go to (the Resend account's own address: the free sender only
 //                             delivers there)
-//   ALLOWED_ORIGIN    text    comma-separated origins allowed to post (https://ismael-sarmiento.github.io)
-//   ALLOWED_HOSTS     text    comma-separated hostnames Turnstile may report (ismael-sarmiento.github.io)
+//   ALLOWED_ORIGIN    text    comma-separated origins allowed to post (https://isuniverse.dev,https://ismael-sarmiento.github.io)
+//   ALLOWED_HOSTS     text    comma-separated hostnames Turnstile may report (isuniverse.dev,ismael-sarmiento.github.io)
 //   TURNSTILE_SECRET  secret  secret key of the Turnstile widget «Universo Ismael - formularios»
 //   RESEND_API_KEY    secret  Resend API key «isa-forms» (sending access only)
 // Bindings: FORM_EVENTS (Workers Analytics Engine, dataset isa_forms_events): one anonymous event per request with
@@ -44,7 +46,10 @@ const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;'
 
 // ---------- the email Ismael receives: the look of the sites (ink, gold, cream), built for mail clients ----------
 // (tables and inline styles only: Gmail and Outlook drop <style> sheets and most modern CSS)
-const SITE = 'https://ismael-sarmiento.github.io';
+const SITE = 'https://isuniverse.dev';
+// pages may still post from the old origin during the move (the variables above decide which origins are open)
+const ORIGINS = [SITE, 'https://ismael-sarmiento.github.io'];
+const IS_ACADEMY = /\/(?:is)?academy\//, IS_PROFILE = /\/(?:profile|cv)\//;
 const FONT = "'Space Grotesk',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif";
 const C = { ink: '#1c2547', ink2: '#2e3c74', ink3: '#121833', gold: '#c8953f', gold2: '#e2b25c', goldDark: '#7a5212',
   onGold: '#1c1407', cream: '#fbf7ef', cream2: '#f4ecdd', line: '#e6dcc8', text: '#3a4170', soft: '#6d7499', light: '#f6f1e7' };
@@ -53,10 +58,10 @@ const SPECIAL = new Set(['Resumen', 'Nombre', 'Mensaje']);
 // the code itself stays ASCII (non-ASCII literals as \u escapes): pasting it into the dashboard editor must not mangle them
 const PHONE = 'Tel\u00e9fono', EMPTY = '\u2014';
 
-const sourceOf = page => page.includes('/isacademy/')
-  ? { name: 'IsAcademy', kind: 'Nueva solicitud', logo: `${SITE}/isacademy/assets/brand/apple-touch-icon.png`, url: `${SITE}/isacademy/` }
-  : page.includes('/cv/')
-    ? { name: 'CV Online', kind: 'Nuevo contacto', logo: `${SITE}/assets/brand/apple-touch-icon.png`, url: `${SITE}/cv/` }
+const sourceOf = page => IS_ACADEMY.test(page)
+  ? { name: 'IsAcademy', kind: 'Nueva solicitud', logo: `${SITE}/academy/assets/brand/apple-touch-icon.png`, url: `${SITE}/academy/` }
+  : IS_PROFILE.test(page)
+    ? { name: 'IsProfile \u00b7 CV Online', kind: 'Nuevo contacto', logo: `${SITE}/assets/brand/apple-touch-icon.png`, url: `${SITE}/profile/` }
     : { name: 'Ismael Sarmiento', kind: 'Nuevo mensaje', logo: `${SITE}/assets/brand/apple-touch-icon.png`, url: `${SITE}/` };
 
 // a Spanish number without prefix gets +34; anything shorter than 9 digits is not a phone
@@ -124,8 +129,8 @@ function renderEmail(data, { subject, replyTo, page }) {
 </table>
 <p style="margin:18px 0 0;font-family:${FONT};font-size:12px;color:${C.soft}">
   <a href="${SITE}/" style="color:${C.soft};text-decoration:none">Inicio</a> &nbsp;&middot;&nbsp;
-  <a href="${SITE}/cv/" style="color:${C.soft};text-decoration:none">CV Online</a> &nbsp;&middot;&nbsp;
-  <a href="${SITE}/isacademy/" style="color:${C.soft};text-decoration:none">IsAcademy</a></p>
+  <a href="${SITE}/profile/" style="color:${C.soft};text-decoration:none">IsProfile</a> &nbsp;&middot;&nbsp;
+  <a href="${SITE}/academy/" style="color:${C.soft};text-decoration:none">IsAcademy</a></p>
 </td></tr></table></body></html>`;
 
   const text = [
@@ -140,21 +145,21 @@ function renderEmail(data, { subject, replyTo, page }) {
 }
 
 // one anonymous data point per request: [site, outcome] (sent, turnstile, honeypot, origin, invalid, mail_error)
-const siteOf = page => /\/isacademy\//.test(page || '') ? 'isacademy' : /\/cv\//.test(page || '') ? 'cv' : page ? 'inicio' : 'unknown';
+const siteOf = page => IS_ACADEMY.test(page || '') ? 'isacademy' : IS_PROFILE.test(page || '') ? 'cv' : page ? 'inicio' : 'unknown';
 const track = (env, page, outcome) => { try { env.FORM_EVENTS?.writeDataPoint({ blobs: [siteOf(page), outcome], doubles: [1], indexes: [outcome] }); } catch { /* never block a message */ } };
 
 // ---------- private inbox (opt-in; anonymous analytics above never receive any of these fields) ----------
-const FORM_PATHS = new Set(['/', '/en/', '/cv/', '/cv/en/', '/isacademy/', '/isacademy/en/']);
+const FORM_PATHS = new Set(['/', '/en/', '/profile/', '/profile/en/', '/academy/', '/academy/en/', '/cv/', '/cv/en/', '/isacademy/', '/isacademy/en/']);
 class SubmissionError extends Error {
   constructor() { super('fields'); this.name = 'SubmissionError'; }
 }
 
-// _page is supplied by the visitor: parse the URL and allow only known sites, without query/hash data.
+// _page is supplied by the visitor: parse the URL and allow only known sites and origins, without query/hash data.
 function submissionPage(value, origin = SITE) {
   try {
     const url = new URL(typeof value === 'string' && value ? value : `${origin}/`);
-    return url.origin === SITE && !url.username && !url.password && FORM_PATHS.has(url.pathname)
-      ? `${SITE}${url.pathname}` : '';
+    return ORIGINS.includes(url.origin) && !url.username && !url.password && FORM_PATHS.has(url.pathname)
+      ? `${url.origin}${url.pathname}` : '';
   } catch { return ''; }
 }
 
@@ -380,7 +385,7 @@ async function countView(request, env, allowed, cors, ctx) {
   const path = trafficPage(parsed.data.p);
   if (!path || parsed.data.r != null && typeof parsed.data.r !== 'string'
     || parsed.data.l != null && typeof parsed.data.l !== 'string') return done;
-  const site = /^\/isacademy(?:\/|$)/.test(path) ? 'isacademy' : /^\/cv(?:\/|$)/.test(path) ? 'cv' : 'inicio';
+  const site = /^\/(?:is)?academy(?:\/|$)/.test(path) ? 'isacademy' : /^\/(?:profile|cv)(?:\/|$)/.test(path) ? 'cv' : 'inicio';
   const context = approximateContext(request, parsed.data.l);
   const referrer = trafficReferrer(parsed.data.r);
   const record = async () => {
