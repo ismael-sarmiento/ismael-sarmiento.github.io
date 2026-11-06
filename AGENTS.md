@@ -6,11 +6,13 @@ Global roots (L0):
 - Claude Code: `~/.claude/CLAUDE.md`
 - Codex: `~/.codex/AGENTS.md`
 
-Sibling sites on the same origin: CV Online (`cv`, served at `/cv/`) and IsAcademy (`isacademy`, served at `/isacademy/`).
+Sibling sites on the same origin (`https://isuniverse.dev`): IsProfile · CV Online (`profile`, served at `/profile/`),
+IsAcademy (`academy`, `/academy/`) and IsGame (`game`, `/game/`). The old repositories `cv`, `isacademy` and `isgame` only
+redirect their old addresses (posters and QR codes point there): never delete them or their redirect pages.
 
 ## Purpose
 
-Entry point for agents working on the portada (`https://ismael-sarmiento.github.io/`) and on the shared design system
+Entry point for agents working on the portada (`https://isuniverse.dev/`, repository `ismael-sarmiento.github.io`) and on the shared design system
 (`assets/ds/`) used by every site of Ismael Sarmiento. Personal project; only the global L0
 protocols apply (Plan al Milímetro before each task, close-out recap after).
 
@@ -18,7 +20,7 @@ protocols apply (Plan al Milímetro before each task, close-out recap after).
 
 - Static site for GitHub Pages; the only build step is `tools/build.py <version>`. Never edit generated files by hand
   (`index.html`, `en/index.html`, `404.html`, redirects, `robots.txt`, sitemaps).
-- `assets/ds/` is shared: a change there affects the portada, CV Online and IsAcademy. Check the three sites (light and dark,
+- `assets/ds/` is shared: a change there affects the portada, IsProfile and IsAcademy. Check the three sites (light and dark,
   360 px to desktop) and publish this repository first.
 - Colours only through `tokens.css`; IsAcademy loads it too and adds only its own console and opening colours.
 - The theme key `isa-theme` is shared by every site on the origin; keep it.

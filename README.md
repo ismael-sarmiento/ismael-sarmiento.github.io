@@ -2,20 +2,23 @@
 
 > *Home page of Ismael Sarmiento and the shared design system of his sites. Spanish and English.*
 
-Portada de **Ismael Sarmiento**, Head of Data Management en Savana y fundador de IsAcademy: quién es y tres puertas,
-**CV Online**, **IsAcademy** y **Kimera Tools**. Este repositorio es además el dueño del **sistema de diseño compartido**
+Portada de **Ismael Sarmiento**, Head of Data Management en Savana y fundador de IsAcademy: quién es y cuatro puertas,
+**IsProfile · CV Online**, **IsAcademy**, **IsGame** y **Kimera Tools**. Este repositorio es además el dueño del **sistema de diseño compartido**
 por todas sus webs.
 
-- **Web:** https://ismael-sarmiento.github.io/ (español) · [versión en inglés](https://ismael-sarmiento.github.io/?lang=en)
-- **Hosting:** GitHub Pages (sitio de usuario: publica la raíz del dominio).
+- **Web:** https://isuniverse.dev/ (español) · [versión en inglés](https://isuniverse.dev/?lang=en)
+- **Hosting:** GitHub Pages (sitio de usuario con el dominio `isuniverse.dev`: publica la raíz del dominio). Las direcciones
+  antiguas `ismael-sarmiento.github.io/…` redirigen al dominio.
 
 ## El universo de webs
 
 | Dirección | Repositorio | Qué es |
 |---|---|---|
 | `/` (inglés: `?lang=en`) | `ismael-sarmiento.github.io` (este) | Portada y sistema de diseño compartido |
-| `/cv/` (inglés: `?lang=en`) | [`cv`](https://github.com/ismael-sarmiento/cv) | CV Online |
-| `/isacademy/` | [`isacademy`](https://github.com/ismael-sarmiento/isacademy) | IsAcademy, academia online |
+| `/profile/` (inglés: `?lang=en`) | [`profile`](https://github.com/ismael-sarmiento/profile) | IsProfile · CV Online |
+| `/academy/` | [`academy`](https://github.com/ismael-sarmiento/academy) | IsAcademy, academia online |
+| `/game/` | [`game`](https://github.com/ismael-sarmiento/game) | IsGame, el juego de IsAcademy |
+| `/cv/`, `/isacademy/`, `/isgame/` | [`cv`](https://github.com/ismael-sarmiento/cv), [`isacademy`](https://github.com/ismael-sarmiento/isacademy), [`isgame`](https://github.com/ismael-sarmiento/isgame) | Direcciones antiguas: solo redirigen a las nuevas (carteles y QR). **No se borran.** |
 | github.com/kimera-tools | [Kimera Tools](https://github.com/kimera-tools) | Código abierto |
 
 ## Sistema de diseño compartido (`assets/ds/`)
@@ -46,8 +49,8 @@ Un cambio de marca se hace aquí una sola vez.
 ```
 index.html, i18n/           Portada en español con claves de traducción y sus diccionarios (generados)
 404.html                    Página no encontrada (generada)
-index_en.html, articles/    Redirecciones de las direcciones antiguas del CV a /cv/ (generadas)
-robots.txt, sitemap*.xml    Buscadores: índice de sitemaps de la portada, /cv/ e /isacademy/ (generados)
+index_en.html, articles/    Redirecciones de las direcciones antiguas del CV a /profile/ (generadas)
+robots.txt, sitemap*.xml    Buscadores: índice de sitemaps de la portada, /profile/, /academy/ y /game/ (generados)
 assets/ds/                  Sistema de diseño compartido
 assets/hub.css, hub.js      Estilo y comportamiento de la portada
 assets/brand/               Favicons, foto, og.png (imagen al compartir)
