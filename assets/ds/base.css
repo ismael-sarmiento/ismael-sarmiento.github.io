@@ -1,6 +1,6 @@
 /* Ismael Sarmiento design system — base and shared components (needs tokens.css first).
    1. Base   2. Buttons, cards, chips   3. Top bar and brand   4. Sections and footer   5. Motion and responsive
-   Same behaviour as IsAcademy (/isacademy/css/main.css § 2–3 and the top bar of § 5). */
+   Same behaviour as IsAcademy (/academy/css/main.css § 2–3 and the top bar of § 5). */
 
 /* ===================== 1. Base ===================== */
 * { box-sizing: border-box; }

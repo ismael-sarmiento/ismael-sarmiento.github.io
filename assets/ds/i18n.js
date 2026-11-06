@@ -2,7 +2,7 @@
 // included), English with ?lang=en or the visitor's own choice, one page per site and no /en/ folders.
 // The page is written in Spanish with data-i18n keys; the dictionaries are { "key": "text" } (flat) or nested objects.
 //
-//   const i18n = createI18n({ base: 'https://ismael-sarmiento.github.io/cv/', dict: code => `/cv/i18n/${code}.json?v=…` });
+//   const i18n = createI18n({ base: 'https://isuniverse.dev/profile/', dict: code => `/profile/i18n/${code}.json?v=…` });
 //   await i18n.start();      // applies ?lang / the stored choice; [data-action="lang"] buttons switch and remember it
 import { rememberReadingPosition } from './ds.js';
 const SUPPORTED = ['es', 'en'];

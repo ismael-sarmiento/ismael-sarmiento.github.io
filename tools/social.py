@@ -44,7 +44,7 @@ PAGES = {
 <div style="position:relative;display:flex;align-items:baseline"><span class="is" style="font-size:170px;line-height:1">Is</span><span style="font-size:96px;font-weight:500;letter-spacing:-1.5px;margin-left:6px">mael Sarmiento</span></div>
 <p style="position:relative;font-size:34px;font-weight:500;color:#e7e9f5;margin-top:22px">Datos · IA · Educación · Fundador de IsAcademy</p>
 <div style="width:64px;height:3px;background:{GOLD_DARK};margin:30px 0 26px"></div>
-<p style="position:relative;font-size:26px;color:{MIST}">CV Online &nbsp;·&nbsp; IsAcademy &nbsp;·&nbsp; Kimera Tools</p></body>'''),
+<p style="position:relative;font-size:26px;color:{MIST}">isuniverse.dev &nbsp;·&nbsp; IsProfile &nbsp;·&nbsp; IsAcademy &nbsp;·&nbsp; IsGame</p></body>'''),
     'social/avatar-dark.png': (1024, 1024, f'{BASE}<body style="background:{NIGHT};display:grid;place-items:center"><div style="width:94%">{mono(GOLD_DARK)}</div></body>'),
     'social/avatar-light.png': (1024, 1024, f'{BASE}<body style="background:{CREAM};display:grid;place-items:center"><div style="width:94%">{mono(GOLD_LIGHT)}</div></body>'),
     'social/linkedin-banner.png': (1584, 396, f'''{BASE}<body class="night" style="position:relative;display:flex;align-items:center;justify-content:flex-end;padding:0 96px 0 520px">
@@ -53,11 +53,13 @@ PAGES = {
 <div><p style="font-size:44px;font-weight:500;letter-spacing:-.5px">Ismael Sarmiento</p>
 <div style="width:56px;height:3px;background:{GOLD_DARK};margin:16px 0 18px"></div>
 <p style="font-size:24px;line-height:1.45;color:#e7e9f5;max-width:760px">{SLOGAN}</p>
-<p style="font-size:19px;color:{MIST};margin-top:16px;letter-spacing:.3px">ismael-sarmiento.github.io &nbsp;·&nbsp; CV Online &nbsp;·&nbsp; IsAcademy</p></div></div></body>'''),
+<p style="font-size:19px;color:{MIST};margin-top:16px;letter-spacing:.3px">isuniverse.dev &nbsp;·&nbsp; IsProfile &nbsp;·&nbsp; IsAcademy &nbsp;·&nbsp; IsGame</p></div></div></body>'''),
 }
 
 if __name__ == '__main__':
-    for name, (w, h, html) in PAGES.items():
+    import sys
+    wanted = sys.argv[1:] or list(PAGES)   # e.g. python3 tools/social.py og.png
+    for name, (w, h, html) in ((n, PAGES[n]) for n in wanted):
         out = BRAND / name
         out.parent.mkdir(parents=True, exist_ok=True)
         with tempfile.NamedTemporaryFile('w', suffix='.html', delete=False) as tmp:

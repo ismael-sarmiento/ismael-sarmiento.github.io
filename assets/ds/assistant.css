@@ -1,4 +1,4 @@
-/* Alan, the assistant shared by every site of Ismael Sarmiento (same look as IsAcademy /isacademy/css/main.css § 7).
+/* Alan, the assistant shared by every site of Ismael Sarmiento (same look as IsAcademy /academy/css/main.css § 7).
    Floating pill with the avatar, a chat panel with typing dots, suggestion chips and action buttons. */
 .as-avatar { display: inline-block; flex: none; }
 .as-avatar svg { width: 100%; height: 100%; display: block; }

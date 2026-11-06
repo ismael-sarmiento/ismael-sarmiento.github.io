@@ -5,7 +5,7 @@ import { createI18n } from '/assets/ds/i18n.js';
 import { initIntro } from '/assets/ds/intro.js';
 
 const VERSION = new URL(import.meta.url).searchParams.get('v') || 'dev';
-const i18n = createI18n({ base: 'https://ismael-sarmiento.github.io/', dict: code => `/i18n/${code}.json?v=${VERSION}` });
+const i18n = createI18n({ base: 'https://isuniverse.dev/', dict: code => `/i18n/${code}.json?v=${VERSION}` });
 
 // Alan speaks the language of the page; his buttons take the visitor to the CV, IsAcademy, GitHub or the mail
 async function initAlan() {

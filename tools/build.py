@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""Builds the portada of ismael-sarmiento.github.io, the same way IsAcademy and CV Online work:
+"""Builds the portada of isuniverse.dev (repository ismael-sarmiento.github.io), the same way IsAcademy and IsProfile work:
 
   index.html             the page, in Spanish with data-i18n keys (English is /?lang=en, no /en/ folder)
   i18n/es.json, en.json  { "key": "text" } dictionaries for the shared i18n module (/assets/ds/i18n.js)
-  404.html · redirects of the old CV addresses (/index_en.html, /articles/…) to CV Online in /cv/
-  robots.txt · sitemap.xml (index of the portada, /cv/, /isacademy/ and /isgame/ sitemaps) · sitemap-portada.xml
+  404.html · redirects of the old CV addresses (/index_en.html, /articles/…) to IsProfile in /profile/
+  robots.txt · sitemap.xml (index of the portada, /profile/, /academy/ and /game/ sitemaps) · sitemap-portada.xml
 
     python3 tools/build.py 20261014a      # the argument is the asset version (cache busting)
 """
@@ -17,7 +17,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 VERSION = sys.argv[1] if len(sys.argv) > 1 else '20261014a'
-SITE = 'https://ismael-sarmiento.github.io'
+SITE = 'https://isuniverse.dev'
 TODAY = '2026-11-05'
 CF_TOKEN = '1af8978bb58b4f6cb3771790a71c784c'  # Cloudflare Web Analytics
 EMAIL = 'ismaelantonio.professional@gmail.com'
@@ -28,8 +28,8 @@ e = lambda s: html.escape(str(s), quote=True)
 # every text of the portada; the keys are the data-i18n keys of the page
 TEXT = {
     'meta.title': ('Ismael Sarmiento · Datos, IA y educación', 'Ismael Sarmiento · Data, AI and education'),
-    'meta.description': ('Ismael Sarmiento diseña y construye plataformas de datos e IA gobernadas y confiables, y fundó IsAcademy para enseñar a pensar con datos e IA. CV Online, academia y código abierto.',
-                         'Ismael Sarmiento designs and builds governed, reliable data and AI platforms, and founded IsAcademy to teach people to think with data and AI. CV Online, academy and open source.'),
+    'meta.description': ('Ismael Sarmiento diseña y construye plataformas de datos e IA gobernadas y confiables, y fundó IsAcademy para enseñar a pensar con datos e IA. IsProfile · CV Online, academia y código abierto.',
+                         'Ismael Sarmiento designs and builds governed, reliable data and AI platforms, and founded IsAcademy to teach people to think with data and AI. IsProfile · CV Online, academy and open source.'),
     'skip': ('Ir al contenido', 'Skip to content'),
     'langLabel': ('Cambiar a inglés', 'Switch to Spanish'),
     'langShort': ('EN', 'ES'),
@@ -43,24 +43,24 @@ TEXT = {
                 'For almost a decade I have been building data platforms: first in banking (BBVA Next Technologies, Santander Global Tech), then at StratioBD and today at Savana, where I lead Data Management in digital health.'),
     'about.1': ('Me obsesiona que el dato sea algo en lo que se pueda confiar: gobernado, interoperable (HL7 FHIR, OMOP CDM) y con una calidad que se mide (UNE 0081). Tengo la certificación CDMP de DAMA International.',
                 'I am obsessed with data people can trust: governed, interoperable (HL7 FHIR, OMOP CDM) and with measurable quality (UNE 0081). I hold the CDMP certification from DAMA International.'),
-    'about.2': ('Y como aprender sigue siendo algo humano, fundé <a href="/isacademy/">IsAcademy</a> para enseñar a pensar con datos e IA.',
-                'And because learning is still human, I founded <a href="/isacademy/?lang=en">IsAcademy</a> to teach people to think with data and AI.'),
+    'about.2': ('Y como aprender sigue siendo algo humano, fundé <a href="/academy/">IsAcademy</a> para enseñar a pensar con datos e IA.',
+                'And because learning is still human, I founded <a href="/academy/?lang=en">IsAcademy</a> to teach people to think with data and AI.'),
     'intro.title': ('Ismael Sarmiento · Inicio', 'Ismael Sarmiento · Home'),
     'intro.skip': ('Saltar intro', 'Skip intro'),
     'intro.enter': ('Conocerme', 'Get to know me'),
     'projects': ('Proyectos', 'Projects'),
     'door.0.text': ('Mi trayectoria en Savana, StratioBD, Santander Global Tech y BBVA Next Technologies: gobierno, interoperabilidad y calidad del dato.',
                     'My career at Savana, StratioBD, Santander Global Tech and BBVA Next Technologies: data governance, interoperability and quality.'),
-    'door.0.cta': ('Ver CV Online', 'View CV Online'),
-    'door.0.href': ('/cv/', '/cv/?lang=en'),
+    'door.0.cta': ('Ver IsProfile · CV Online', 'View IsProfile · CV Online'),
+    'door.0.href': ('/profile/', '/profile/?lang=en'),
     'door.1.text': ('Mi academia online de programación, datos e IA, con clases personalizadas para todas las edades.',
                     'My online academy for programming, data and AI, with tailored lessons for all ages.'),
     'door.1.cta': ('Conocer IsAcademy', 'Discover IsAcademy'),
-    'door.1.href': ('/isacademy/', '/isacademy/?lang=en'),
+    'door.1.href': ('/academy/', '/academy/?lang=en'),
     'door.2.text': ('El juego de mundo abierto de IsAcademy: recorre Neo Academia y aprende datos e IA jugando, en el navegador.',
                     "IsAcademy's open-world game: explore Neo Academia and learn data and AI by playing, in your browser."),
     'door.2.cta': ('Jugar a IsGame', 'Play IsGame'),
-    'door.2.href': ('/isgame/', '/isgame/?lang=en'),
+    'door.2.href': ('/game/', '/game/?lang=en'),
     'door.3.text': ('Mi código abierto: kimera-\u2060python, utilidades de Python para ETL, SQLAlchemy y AWS S3 (2020–\u20602022).',
                     'My open source: kimera-\u2060python, Python utilities for ETL, SQLAlchemy and AWS S3 (2020–\u20602022).'),
     'door.3.cta': ('Ver en GitHub', 'View on GitHub'),
@@ -77,7 +77,7 @@ TEXT = {
 TEXT['privacy.title'] = ('Privacidad y datos', 'Privacy and data')
 TEXT['privacy.date'] = ('Actualizado: 5 de noviembre de 2026', 'Updated: 5 November 2026')
 TEXT['privacy.0.title'] = ('Responsable y contacto', 'Controller and contact')
-TEXT['privacy.0.body'] = ('Ismael Sarmiento es responsable de estas webs (Inicio, CV Online, IsAcademy e IsGame) y de IsPanel, su panel privado. Para consultas y derechos: <a href="mailto:ismaelantonio.professional@gmail.com">ismaelantonio.professional@gmail.com</a>.', 'Ismael Sarmiento is the controller for these websites (Home, CV Online, IsAcademy and IsGame) and IsPanel, his private dashboard. For questions and rights: <a href="mailto:ismaelantonio.professional@gmail.com">ismaelantonio.professional@gmail.com</a>.')
+TEXT['privacy.0.body'] = ('Ismael Sarmiento es responsable de estas webs (Inicio, IsProfile · CV Online, IsAcademy e IsGame) y de IsPanel, su panel privado. Para consultas y derechos: <a href="mailto:ismaelantonio.professional@gmail.com">ismaelantonio.professional@gmail.com</a>.', 'Ismael Sarmiento is the controller for these websites (Home, CV Online, IsAcademy and IsGame) and IsPanel, his private dashboard. For questions and rights: <a href="mailto:ismaelantonio.professional@gmail.com">ismaelantonio.professional@gmail.com</a>.')
 TEXT['privacy.1.title'] = ('Solicitudes de contacto · 90 días', 'Contact requests · 90 days')
 TEXT['privacy.1.body'] = ('Al enviar un formulario se tratan los datos facilitados (nombre, email, mensaje y, cuando los aportes, teléfono, empresa, interés y nivel), web e idioma de origen. Se guardan en una bandeja privada durante 90 días para responder y hacer seguimiento, junto con la IP y el contexto de conexión que Cloudflare facilite. La casilla del formulario recoge tu aceptación; no se usa para suscribirte a publicidad. Puedes retirar tu consentimiento y solicitar la supresión por correo.', 'Submitting a form processes the details you provide (name, email, message and, if supplied, phone, company, interest and level), source website and language. They are kept in a private inbox for 90 days to reply and follow up, with the IP address and available Cloudflare connection context. The form checkbox records your agreement; it does not subscribe you to advertising. You may withdraw consent and request deletion by email.')
 TEXT['privacy.2.title'] = ('Visitas detalladas · 30 días', 'Detailed visits · 30 days')
@@ -93,15 +93,15 @@ TEXT['privacy.5.body'] = ('Puedes solicitar acceso, rectificación, supresión, 
 TEXT['photo.linkedin'] = ('Ver el perfil de Ismael Sarmiento en LinkedIn (se abre en una pestaña nueva)', 'View Ismael Sarmiento’s LinkedIn profile (opens in a new tab)')
 ES = {k: v[0] for k, v in TEXT.items()}
 EN = {k: v[1] for k, v in TEXT.items()}
-# each door carries the mark of its site: the «Is» of the signature, the IsAcademy and IsGame logos and Kimera Tools' «K_»
-DOORS = [('CV Online', 'door.0.href', None, '<span class="door-mark mark-is" aria-hidden="true">Is</span>'),
+# each door carries the mark of its site: the IsProfile, IsAcademy and IsGame logos and Kimera Tools' «K_»
+DOORS = [('IsProfile · CV Online', 'door.0.href', None, '<span class="door-mark mark-isa" aria-hidden="true"><b>Is</b>Profile</span>'),
          ('IsAcademy', 'door.1.href', None, '<span class="door-mark mark-isa" aria-hidden="true"><b>Is</b>Academy</span>'),
          ('IsGame', 'door.2.href', None, '<span class="door-mark mark-isa" aria-hidden="true"><b>Is</b>Game</span>'),
          ('Kimera Tools', None, 'https://github.com/kimera-tools', '<span class="door-mark mark-k" aria-hidden="true">K<i>_</i></span>')]
 
-# Alan on Inicio: the same assistant as CV Online and IsAcademy (/assets/ds/assistant.js), fed with the public story of
+# Alan on Inicio: the same assistant as IsProfile and IsAcademy (/assets/ds/assistant.js), fed with the public story of
 # this page. Answers shared with the CV FAQ keep its wording (cv/data/content.json); nothing here is new information.
-MAIL, CV_PDF = f'mailto:{EMAIL}', {'es': '/cv/ismael-sarmiento-cv.pdf', 'en': '/cv/ismael-sarmiento-cv-en.pdf'}
+MAIL, CV_PDF = f'mailto:{EMAIL}', {'es': '/profile/ismael-sarmiento-cv.pdf', 'en': '/profile/ismael-sarmiento-cv-en.pdf'}
 ALAN = {
     'es': {
         'assistant': {
@@ -111,40 +111,40 @@ ALAN = {
             'greeting': '¡Hola! Soy Alan, el asistente local de la web de Ismael (versión beta). Respondo solo con el contenido público de esta web: no uso datos privados ni modelos externos.',
             'suggestions': ['¿Quién es Ismael?', '¿Qué es IsAcademy?', '¿Qué es Kimera Tools?', '¿Cómo contacto con él?'],
             'fallback': {'answer': 'No tengo una respuesta exacta para eso en esta versión beta. Puedo contarte quién es Ismael, su trayectoria, IsAcademy, IsGame, Kimera Tools, su CV o cómo contactar con él.',
-                         'actions': [{'label': 'Ver CV Online', 'href': '/cv/'}]},
+                         'actions': [{'label': 'Ver IsProfile · CV Online', 'href': '/profile/'}]},
         },
         'faq': [
             {'q': '¿Quién es Ismael?', 'keywords': ['quien', 'ismael', 'sarmiento', 'presentacion', 'sobre'],
              'a': 'Ismael Sarmiento diseña y construye plataformas de datos e IA, y es el fundador de IsAcademy. Lleva casi una década construyendo plataformas de datos: primero en banca (BBVA Next Technologies, Santander Global Tech), después en StratioBD y hoy en Savana, donde lidera Data Management en salud digital. Tiene la certificación CDMP de DAMA International.',
-             'actions': [{'label': 'Ver CV Online', 'href': '/cv/'}]},
+             'actions': [{'label': 'Ver IsProfile · CV Online', 'href': '/profile/'}]},
             {'q': '¿Cuál es su foco principal?', 'keywords': ['foco', 'principal', 'perfil', 'especializacion'],
              'a': 'Su foco es diseñar y construir plataformas de datos e IA gobernadas y confiables que ayudan a las organizaciones a decidir mejor y a crecer con impacto real, combinando ejecución técnica, criterio arquitectónico y liderazgo de equipos.'},
             {'q': '¿Qué hace en Savana?', 'keywords': ['savana', 'head', 'lead', 'data management'],
              'a': 'En Savana pasó de Senior Data Engineer a Lead Data Engineer y después a Head of Data Management, impulsando interoperabilidad clínica con FHIR y OMOP, plataformas de calidad del dato, catálogo y metadatos con herramientas open source de gobierno del dato, y control del ciclo de vida del dato.'},
             {'q': '¿Cuál es su trayectoria?', 'keywords': ['autana', 'bbva', 'career', 'companies', 'empresas', 'experience', 'experiencia', 'santander', 'stratio', 'stratiobd', 'trayectoria'],
              'a': 'Su trayectoria pasa por Autana Consultores de Tecnología, BBVA Next Technologies, Santander Global Tech, StratioBD y Savana: una evolución desde el desarrollo de software y las plataformas de datos hasta liderar Data Management, con foco en gobierno, interoperabilidad y calidad del dato.',
-             'actions': [{'label': 'Ver CV Online', 'href': '/cv/'}]},
+             'actions': [{'label': 'Ver IsProfile · CV Online', 'href': '/profile/'}]},
             {'q': '¿Qué certificaciones tiene?', 'keywords': ['certificacion', 'certificaciones', 'cdmp', 'dama', 'fhir', 'snomed', 'mondragon', 'titulo'],
              'a': 'Tiene la certificación CDMP (Associate) de DAMA International (2026) y es miembro activo de DAMA Spain. También es FHIR Foundational Implementer (2025), Experto en Gobierno y Gestión Estratégica de Datos por Mondragon Unibertsitatea (2024) y tiene los fundamentos de terminología SNOMED CT (2026).'},
             {'q': '¿Lidera equipos?', 'keywords': ['lidera', 'liderazgo', 'lider', 'equipo', 'equipos', 'head', 'manager', 'gestion', 'responsable'],
              'a': 'Sí. Como Head of Data Management en Savana lidera el área de Data Management y equipos de datos de alto rendimiento, sin perder cercanía con la arquitectura, la construcción de soluciones y el diseño de producto.'},
             {'q': '¿Qué es IsAcademy?', 'keywords': ['isacademy', 'academia', 'alumnos', 'cursos', 'fundador', 'clases'],
              'a': 'IsAcademy es la academia online de programación, datos e IA que Ismael fundó en 2023: clases personalizadas de Python, SQL, Big Data, Data Engineering e IA para todas las edades. Su lema: la IA te da respuestas; aquí te enseñamos a pensar.',
-             'actions': [{'label': 'Conocer IsAcademy', 'href': '/isacademy/'}]},
+             'actions': [{'label': 'Conocer IsAcademy', 'href': '/academy/'}]},
             {'q': '¿Qué es IsGame?', 'keywords': ['isgame', 'juego', 'jugar', 'neo academia', 'mundo abierto', 'game'],
              'a': 'IsGame es el juego de mundo abierto de IsAcademy: recorres Neo Academia, una ciudad de datos e IA, hablas con seis mentores y aprendes jugando, directamente en el navegador. Tu progreso se guarda solo en tu navegador.',
-             'actions': [{'label': 'Jugar a IsGame', 'href': '/isgame/'}, {'label': 'Conocer IsAcademy', 'href': '/isacademy/'}]},
+             'actions': [{'label': 'Jugar a IsGame', 'href': '/game/'}, {'label': 'Conocer IsAcademy', 'href': '/academy/'}]},
             {'q': '¿Qué es Kimera Tools?', 'keywords': ['kimera', 'tools', 'codigo', 'abierto', 'github', 'python', 'open source'],
              'a': 'Kimera Tools es su código abierto: kimera-python, utilidades de Python para ETL, SQLAlchemy y AWS S3 (2020–\u20602022).',
              'actions': [{'label': 'Ver en GitHub', 'href': 'https://github.com/kimera-tools'}]},
             {'q': '¿Dónde veo su CV?', 'keywords': ['cv', 'curriculum', 'pdf', 'descargar', 'resume'],
-             'a': 'Su CV Online cuenta su trayectoria en Savana, StratioBD, Santander Global Tech y BBVA Next Technologies, en español e inglés, y también se descarga en PDF.',
-             'actions': [{'label': 'Ver CV Online', 'href': '/cv/'}, {'label': 'Descargar PDF', 'href': CV_PDF['es']}]},
+             'a': 'IsProfile, su CV Online, cuenta su trayectoria en Savana, StratioBD, Santander Global Tech y BBVA Next Technologies, en español e inglés, y también se descarga en PDF.',
+             'actions': [{'label': 'Ver IsProfile · CV Online', 'href': '/profile/'}, {'label': 'Descargar PDF', 'href': CV_PDF['es']}]},
             {'q': '¿Cómo contacto con él?', 'keywords': ['contacto', 'contactar', 'correo', 'email', 'escribir', 'linkedin', 'hablar', 'whatsapp', 'telefono', 'llamar', 'movil'],
              'a': f'Por correo ({EMAIL}), por WhatsApp o teléfono (+34 613 371 874) o por LinkedIn. Todo está al pie de esta página.',
              'actions': [{'label': 'WhatsApp', 'href': 'https://wa.me/34613371874?text=Hola%20Ismael%2C%20he%20visto%20tu%20web%20y%20me%20gustar%C3%ADa%20hablar%20contigo.'}, {'label': 'Escribir un correo', 'href': MAIL}, {'label': 'LinkedIn', 'href': LINKEDIN}]},
             {'q': '¿Qué puedes hacer?', 'keywords': ['puedes hacer', 'capacidades', 'asistente', 'ayuda'],
-             'a': 'Puedo contarte quién es Ismael, resumir su trayectoria, explicarte IsAcademy, IsGame y Kimera Tools, y llevarte a su CV Online o a su contacto.'},
+             'a': 'Puedo contarte quién es Ismael, resumir su trayectoria, explicarte IsAcademy, IsGame y Kimera Tools, y llevarte a IsProfile (su CV Online) o a su contacto.'},
             {'q': '¿Puedes dar datos privados?', 'keywords': ['privados', 'confidencial', 'datos', 'secretos', 'privacidad'],
              'a': 'No. Este asistente está limitado al contenido público de esta web y no tiene acceso a datos privados, credenciales, métricas sensibles ni información confidencial de Ismael o de las empresas en las que ha trabajado.'},
         ],
@@ -157,40 +157,40 @@ ALAN = {
             'greeting': "Hi! I'm Alan, the local assistant of Ismael's site (beta). I only answer from the public content of this site: no private data and no external models.",
             'suggestions': ['Who is Ismael?', 'What is IsAcademy?', 'What is Kimera Tools?', 'How can I contact him?'],
             'fallback': {'answer': 'I do not have an exact answer for that in this beta version. I can tell you who Ismael is, his career, IsAcademy, IsGame, Kimera Tools, his CV or how to contact him.',
-                         'actions': [{'label': 'View CV Online', 'href': '/cv/?lang=en'}]},
+                         'actions': [{'label': 'View IsProfile · CV Online', 'href': '/profile/?lang=en'}]},
         },
         'faq': [
             {'q': 'Who is Ismael?', 'keywords': ['who', 'ismael', 'sarmiento', 'introduction', 'about'],
              'a': 'Ismael Sarmiento designs and builds data and AI platforms, and is the founder of IsAcademy. For almost a decade he has been building data platforms: first in banking (BBVA Next Technologies, Santander Global Tech), then at StratioBD and today at Savana, where he leads Data Management in digital health. He holds the CDMP certification from DAMA International.',
-             'actions': [{'label': 'View CV Online', 'href': '/cv/?lang=en'}]},
+             'actions': [{'label': 'View IsProfile · CV Online', 'href': '/profile/?lang=en'}]},
             {'q': 'What is his main focus?', 'keywords': ['focus', 'main', 'specialization', 'profile'],
              'a': 'His focus is designing and building governed, reliable data and AI platforms that help organisations make better decisions and grow with real impact, combining technical execution, architectural judgment and team leadership.'},
             {'q': 'What does he do at Savana?', 'keywords': ['savana', 'head', 'lead', 'data management'],
              'a': 'At Savana, he progressed from Senior Data Engineer to Lead Data Engineer and then to Head of Data Management, driving clinical interoperability with FHIR and OMOP, data quality platforms, metadata and cataloguing with open-source data governance tools, and lifecycle control.'},
             {'q': 'What is his career path?', 'keywords': ['autana', 'bbva', 'career', 'companies', 'empresas', 'experience', 'experiencia', 'path', 'santander', 'stratio', 'stratiobd'],
              'a': 'His path goes through Autana Consultores de Tecnología, BBVA Next Technologies, Santander Global Tech, StratioBD and Savana: an evolution from software development and data platforms to leading Data Management, focused on data governance, interoperability and quality.',
-             'actions': [{'label': 'View CV Online', 'href': '/cv/?lang=en'}]},
+             'actions': [{'label': 'View IsProfile · CV Online', 'href': '/profile/?lang=en'}]},
             {'q': 'What certifications does he hold?', 'keywords': ['certification', 'certifications', 'cdmp', 'dama', 'fhir', 'snomed', 'mondragon', 'degree'],
              'a': 'He holds the CDMP (Associate) certification from DAMA International (2026) and is an active member of DAMA Spain. He is also a FHIR Foundational Implementer (2025), an Expert in Data Governance and Strategic Data Management from Mondragon Unibertsitatea (2024) and holds SNOMED CT terminology fundamentals (2026).'},
             {'q': 'Does he lead teams?', 'keywords': ['lead', 'leads', 'leadership', 'leader', 'team', 'teams', 'head', 'manager', 'management'],
              'a': 'Yes. As Head of Data Management at Savana he leads the Data Management area and high-performing data teams, while staying close to architecture, solution building and product design.'},
             {'q': 'What is IsAcademy?', 'keywords': ['isacademy', 'academy', 'students', 'courses', 'founder', 'lessons'],
              'a': 'IsAcademy is the online academy for programming, data and AI that Ismael founded in 2023: tailored lessons in Python, SQL, Big Data, Data Engineering and AI for all ages. Its motto: AI gives you answers; here we teach you how to think.',
-             'actions': [{'label': 'Discover IsAcademy', 'href': '/isacademy/?lang=en'}]},
+             'actions': [{'label': 'Discover IsAcademy', 'href': '/academy/?lang=en'}]},
             {'q': 'What is IsGame?', 'keywords': ['isgame', 'game', 'play', 'neo academia', 'open world', 'open-world'],
              'a': "IsGame is IsAcademy's open-world game: you explore Neo Academia, a city of data and AI, talk to six mentors and learn by playing, right in your browser. Your progress stays in your browser.",
-             'actions': [{'label': 'Play IsGame', 'href': '/isgame/?lang=en'}, {'label': 'Discover IsAcademy', 'href': '/isacademy/?lang=en'}]},
+             'actions': [{'label': 'Play IsGame', 'href': '/game/?lang=en'}, {'label': 'Discover IsAcademy', 'href': '/academy/?lang=en'}]},
             {'q': 'What is Kimera Tools?', 'keywords': ['kimera', 'tools', 'code', 'open source', 'github', 'python'],
              'a': 'Kimera Tools is his open source: kimera-python, Python utilities for ETL, SQLAlchemy and AWS S3 (2020–\u20602022).',
              'actions': [{'label': 'View on GitHub', 'href': 'https://github.com/kimera-tools'}]},
             {'q': 'Where can I see his CV?', 'keywords': ['cv', 'resume', 'curriculum', 'pdf', 'download'],
-             'a': 'His CV Online tells his career at Savana, StratioBD, Santander Global Tech and BBVA Next Technologies, in Spanish and English, and it can also be downloaded as a PDF.',
-             'actions': [{'label': 'View CV Online', 'href': '/cv/?lang=en'}, {'label': 'Download PDF', 'href': CV_PDF['en']}]},
+             'a': 'IsProfile, his CV Online, tells his career at Savana, StratioBD, Santander Global Tech and BBVA Next Technologies, in Spanish and English, and it can also be downloaded as a PDF.',
+             'actions': [{'label': 'View IsProfile · CV Online', 'href': '/profile/?lang=en'}, {'label': 'Download PDF', 'href': CV_PDF['en']}]},
             {'q': 'How can I contact him?', 'keywords': ['contact', 'email', 'mail', 'write', 'linkedin', 'reach', 'talk', 'whatsapp', 'phone', 'call', 'mobile'],
              'a': f'By email ({EMAIL}), on WhatsApp or by phone (+34 613 371 874), or on LinkedIn. Everything is at the foot of this page.',
              'actions': [{'label': 'WhatsApp', 'href': 'https://wa.me/34613371874?text=Hi%20Ismael%2C%20I%20saw%20your%20website%20and%20would%20like%20to%20talk%20with%20you.'}, {'label': 'Send an email', 'href': MAIL}, {'label': 'LinkedIn', 'href': LINKEDIN}]},
             {'q': 'What can you do?', 'keywords': ['can you do', 'capabilities', 'assistant', 'help'],
-             'a': 'I can tell you who Ismael is, summarise his career, explain IsAcademy, IsGame and Kimera Tools, and take you to his CV Online or his contact details.'},
+             'a': 'I can tell you who Ismael is, summarise his career, explain IsAcademy, IsGame and Kimera Tools, and take you to IsProfile (his CV Online) or his contact details.'},
             {'q': 'Can you share private data?', 'keywords': ['private data', 'confidential', 'credentials', 'sensitive', 'privacy'],
              'a': 'No. This assistant is limited to the public content of this site and has no access to private data, credentials, sensitive metrics, or confidential information from Ismael or the companies he has worked with.'},
         ],
@@ -233,7 +233,7 @@ PERSON = {
         {'@type': 'Person', '@id': f'{SITE}/#person', 'name': 'Ismael Sarmiento', 'alternateName': 'Ismael A. Sarmiento', 'url': f'{SITE}/',
          'image': f'{SITE}/assets/brand/ismael.jpg', 'jobTitle': 'Head of Data Management',
          'worksFor': {'@type': 'Organization', 'name': 'Savana', 'url': 'https://savanamed.com/about-us/'},
-         'founder': {'@id': f'{SITE}/isacademy/#org'},
+         'founder': {'@id': f'{SITE}/academy/#org'},
          'memberOf': {'@type': 'Organization', 'name': 'DAMA Spain', 'url': 'https://www.damaspain.org/'},
          'hasCredential': {'@type': 'EducationalOccupationalCredential', 'name': 'CDMP Certification – Associate', 'credentialCategory': 'certification',
                            'recognizedBy': {'@type': 'Organization', 'name': 'DAMA International'}},
@@ -293,7 +293,7 @@ def toggles():
 
 
 # the circuit lines of the brand (/assets/ds/circuit.css): in the intro the same traces as IsAcademy's intro, in the hero a
-# column on the right; CV Online's tools/build.py carries the same two drawings
+# column on the right; IsProfile's tools/build.py carries the same two drawings
 CIRCUIT_INTRO = '''<svg class="ds-circuit ds-circuit--intro" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
       <path pathLength="1" d="M1600 150 H1380 L1340 190 H1180"/><circle cx="1180" cy="190" r="5"/>
       <path pathLength="1" d="M1600 210 H1440 L1400 250 H1290"/><circle cx="1290" cy="250" r="5"/>
@@ -309,7 +309,7 @@ CIRCUIT_HERO = '''<svg class="ds-circuit ds-circuit--hero" viewBox="0 0 600 600"
 
 
 def intro():
-    """The intro shared with CV Online (/assets/ds/intro.js): the signature, the role, the slogan and two ways in."""
+    """The intro shared with IsProfile and IsAcademy (/assets/ds/intro.js): the signature, the role, the slogan and two ways in."""
     return f'''<div id="intro" class="intro" role="dialog" aria-modal="true" aria-labelledby="intro-title">
     {CIRCUIT_INTRO}
     <div class="intro-top">{toggles()}<button class="btn" type="button" data-action="skip">{T('intro.skip')}</button></div>
@@ -343,7 +343,7 @@ def footer():
       <span>© <span data-year>2026</span> Ismael Sarmiento</span>
       <!-- the footer of every site of the universe: the other sites, the ways to reach Ismael, Privacy, back to top (CV, IsAcademy) -->
       <nav class="footer-links" {A('aria-label', 'contact')}>
-        <a {A('href', 'door.0.href')}>CV Online</a>
+        <a {A('href', 'door.0.href')}>IsProfile · CV Online</a>
         <a {A('href', 'door.1.href')}>IsAcademy</a>
         <a {A('href', 'door.2.href')}>IsGame</a>
         <a {A('href', 'waHref')} rel="noopener">WhatsApp</a>
@@ -432,7 +432,7 @@ def home():
 
 def privacy():
     css = '.privacy-page main{max-width:900px;padding-block:7rem 3rem;line-height:1.75}.privacy-page section{margin-block:1rem;padding:clamp(1rem,4vw,2rem)}.privacy-page section h2{font-size:clamp(1.2rem,3vw,1.5rem);line-height:1.3}.privacy-page section p{margin-bottom:0}'
-    extra = '<link rel="canonical" href="https://ismael-sarmiento.github.io/privacy/"><style>' + css + '</style>'
+    extra = f'<link rel="canonical" href="{SITE}/privacy/"><style>' + css + '</style>'
     page_head = head('Privacidad · Ismael Sarmiento', 'Datos, conservación, proveedores y derechos de las webs de Ismael Sarmiento.', extra).replace("style-src 'self'", f"style-src 'self' 'sha256-{sha(css)}'")
     sections = ''.join(f'<section class="card card--static">{T(f"privacy.{i}.title", "h2")}{T(f"privacy.{i}.body", "p", rich=True)}</section>' for i in (0, 1, 2, 6, 3, 4, 5))   # 6 = IsGame, after the visits it does not send
     return f'''<!doctype html>
@@ -478,7 +478,7 @@ def not_found():
     <p class="eyebrow">404</p>
     {T('nf.title', 'h1')}
     {T('nf.lead', 'p', 'lead')}
-    <p class="nf-actions"><a class="btn btn-primary btn-arrow" {A('href', 'homeHref')}>{T('nf.home')}</a><a class="btn" {A('href', 'door.0.href')}>CV Online</a><a class="btn" {A('href', 'door.1.href')}>IsAcademy</a></p>
+    <p class="nf-actions"><a class="btn btn-primary btn-arrow" {A('href', 'homeHref')}>{T('nf.home')}</a><a class="btn" {A('href', 'door.0.href')}>IsProfile · CV Online</a><a class="btn" {A('href', 'door.1.href')}>IsAcademy</a></p>
   </main>
   {footer()}
 </body>
@@ -498,16 +498,16 @@ if __name__ == '__main__':
     write('i18n/es.json', json.dumps(ES, ensure_ascii=False, indent=0))
     write('i18n/en.json', json.dumps(EN, ensure_ascii=False, indent=0))
     write('404.html', not_found())
-    write('index_en.html', redirect('/cv/?lang=en', 'CV Online (English)'))
-    write('articles/index.html', redirect('/cv/', 'CV Online'))
-    write('articles/index_en.html', redirect('/cv/?lang=en', 'CV Online (English)'))
+    write('index_en.html', redirect('/profile/?lang=en', 'IsProfile · CV Online (English)'))
+    write('articles/index.html', redirect('/profile/', 'IsProfile · CV Online'))
+    write('articles/index_en.html', redirect('/profile/?lang=en', 'IsProfile · CV Online (English)'))
     write('robots.txt', f'User-agent: *\nAllow: /\n\nSitemap: {SITE}/sitemap.xml\n')
     write('sitemap.xml', f'''<?xml version="1.0" encoding="UTF-8"?>
 <sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <sitemap><loc>{SITE}/sitemap-portada.xml</loc><lastmod>{TODAY}</lastmod></sitemap>
-  <sitemap><loc>{SITE}/cv/sitemap.xml</loc><lastmod>{TODAY}</lastmod></sitemap>
-  <sitemap><loc>{SITE}/isacademy/sitemap.xml</loc></sitemap>
-  <sitemap><loc>{SITE}/isgame/sitemap.xml</loc></sitemap>
+  <sitemap><loc>{SITE}/profile/sitemap.xml</loc><lastmod>{TODAY}</lastmod></sitemap>
+  <sitemap><loc>{SITE}/academy/sitemap.xml</loc></sitemap>
+  <sitemap><loc>{SITE}/game/sitemap.xml</loc></sitemap>
 </sitemapindex>
 ''')
     write('sitemap-portada.xml', f'''<?xml version="1.0" encoding="UTF-8"?>
