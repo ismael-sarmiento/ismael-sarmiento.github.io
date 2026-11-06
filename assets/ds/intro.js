@@ -1,11 +1,22 @@
-// The intro shared by every site of Ismael Sarmiento (Inicio, CV Online): the signature ("Is" sketched by hand, the
-// name decoded by an AI), a tag, the hook, optional milestones and the actions. The exit is the "human + artificial"
-// moment of the brand: the "Is" flies to the seal of the bar leaving gold ink while the name breaks into pixels and the
-// page appears underneath (the same family as IsAcademy's hands, with its effects from /assets/ds/fx.js).
-// Every visit, as IsAcademy: #top is the start of the page; deep links (#section) and the PDF build (?pdf) go straight
-// to the page; "Saltar intro" or Escape jump to the end. Styles: /assets/ds/intro.css.
+// The one intro of every site of Ismael Sarmiento (Inicio, CV Online, IsAcademy). This module owns what every intro
+// shares: its states (.after: the hook is shown; .ready: the actions are shown), the focus boundary, the keys (Escape
+// jumps to the end and then closes; Enter closes once ready), "Saltar intro", the safety net, reduced motion, the end
+// state and the start-up failure. Every visit: the home anchor (#top) is the start of the page; deep links (#section)
+// and the PDF build (?pdf) go straight to the page. Styles: /assets/ds/intro.css (IsAcademy: its own css/main.css).
+//
+// Each site brings only its scene: how its mark is drawn, completed at once and how it leaves. The default scene is
+// the signature ("Is" sketched by hand, the name decoded by an AI); its exit is the "human + artificial" moment of
+// the brand: the "Is" flies to the seal of the bar leaving gold ink while the name breaks into pixels and the page
+// appears underneath. IsAcademy's scene (its js/intro.js) is its logo, and its exit the two hands (js/opening.js).
 //
 //   initIntro({ i18n, steps: () => ['…', '…'], stepMs: 1600 })   // steps are optional (the CV milestones)
+//   initIntro({ scene, home: '#hero', onSettle })                 // IsAcademy
+//
+//   scene.play(intro, cancelled)   async entrance; checks cancelled() after every wait and stops when it is true
+//   scene.complete(intro)          the drawing finished at once (Saltar intro, Escape, reduced motion)
+//   scene.exit(intro, end)         async exit; calls end() at the moment the page is handed over
+//   scene.handoff                  true only for the signature: it accepts the hand-off between Inicio and CV Online
+//   onSettle()                     called once when the intro ends normally (never after a start-up failure)
 //
 // A milestone written as «2017 · Autana — Primeros pasos en datos y analítica» shows its year (counting up from the
 // previous one) and the place (decoded like the signature) above the sentence, which arrives word by word; several
@@ -34,19 +45,104 @@ const takeHandoff = () => {
 };
 const leaveHandoff = () => { try { sessionStorage.setItem(HANDOFF, String(Date.now())); } catch { /* storage unavailable */ } };
 
-export function initIntro({ i18n, steps = null, stepMs = 1600 } = {}) {
+// The default scene (Inicio, CV Online): the signature is written; on the way out the "Is" flies to the seal.
+const signatureScene = {
+  handoff: true,
+  async play(intro, cancelled) {
+    await sleep(200);
+    if (cancelled()) return;
+    await playSignature(intro.querySelector('.sig'));
+  },
+  complete: intro => skipSignature(intro.querySelector('.sig')),
+  async exit(intro, end) {
+    const svg = intro.querySelector('.sig');
+    const brand = document.querySelector('.topbar .brand');
+    const seal = brand?.querySelector('.brand-is');
+    const word = svg.querySelector('.word');
+
+    // 1) everything but the signature steps back
+    intro.querySelectorAll('.intro-top, .intro-after, .intro-actions')
+      .forEach(el => el.animate([{ opacity: 1 }, { opacity: 0, transform: 'translateY(6px)' }], { duration: 300, easing: EASE_OUT, fill: 'forwards' }));
+
+    // 2) the "Is" (human) leaves in a fixed copy (own ids, so its ink mask keeps working) and flies to the seal,
+    //    leaving a trail of gold ink
+    const from = svg.getBoundingClientRect();
+    const glyph = textBox(svg.querySelector('.is-fill'));
+    const flyer = document.createElement('div');
+    flyer.className = 'intro-flyer';
+    Object.assign(flyer.style, { left: `${from.left}px`, top: `${from.top}px`, width: `${from.width}px` });
+    // a real clone, not outerHTML: the strict CSP blocks the style attributes the drawing leaves on the svg
+    const copy = svg.cloneNode(true);
+    copy.querySelectorAll('[id]').forEach(el => { el.id = `fly-${el.id}`; });
+    copy.querySelectorAll('[fill^="url(#"], [mask^="url(#"]').forEach(el => ['fill', 'mask'].forEach(a => {
+      const v = el.getAttribute(a);
+      if (v?.startsWith('url(#')) el.setAttribute(a, v.replace('url(#', 'url(#fly-'));
+    }));
+    flyer.append(copy);
+    document.body.append(flyer);
+    svg.querySelectorAll('.is').forEach(t => { t.style.visibility = 'hidden'; });
+    document.body.classList.add('entering');
+    let flight = Promise.resolve();
+    const to = seal && textBox(seal);
+    if (to && to.height && glyph.height) {
+      const k = to.height / glyph.height;
+      const dx = to.left - (from.left + (glyph.left - from.left) * k);
+      const dy = to.top - (from.top + (glyph.top - from.top) * k);
+      const anim = flyer.animate([{ transform: 'none' }, { transform: `translate(${dx}px, ${dy}px) scale(${k})` }],
+        { duration: 1050, delay: 150, easing: EASE_IN_OUT, fill: 'forwards' });
+      flight = settled(anim);
+      let frame = 0;
+      (function trail() {
+        if (intro.hidden || anim.playState === 'finished' || anim.playState === 'idle') return;
+        if (frame++ % 3 === 0) {
+          const g = flyer.querySelector('.is-fill').getBoundingClientRect();
+          if (g.width > 20) ink(g.right - g.width * .25, g.top + g.height * .55, 1, 1);
+        }
+        requestAnimationFrame(trail);
+      })();
+    }
+
+    // 3) the name (artificial) breaks into pixels and is gone before the page appears (never on top of its title)
+    const wr = word.getBoundingClientRect();
+    word.animate([{ opacity: 1 }, { opacity: .55, offset: .45 }, { opacity: 0 }], { duration: 420, delay: 80, easing: EASE_OUT, fill: 'forwards' });
+    const t0 = performance.now();
+    (function dissolve(now) {
+      const p = (now - t0) / 620;
+      if (intro.hidden || p > 1) return;
+      if (p > .1) pixels(wr.left + wr.width * Math.random(), wr.top + wr.height * (.3 + Math.random() * .5), wr.height * .3, Math.random() < .5 ? -1 : 1, 3);
+      requestAnimationFrame(dissolve);
+    })(t0);
+
+    // 4) the page appears underneath: the intro background fades and the page settles into place;
+    //    the hero rises line by line (.stagger) once the intro stops holding it
+    const bg = getComputedStyle(intro).backgroundColor;
+    intro.animate([{ backgroundColor: bg }, { backgroundColor: 'transparent' }], { duration: 700, delay: 520, easing: EASE_IN_OUT, fill: 'forwards' });
+    document.querySelectorAll('.topbar, main').forEach(el =>
+      el.animate([{ opacity: 0, transform: 'scale(.985)' }, { opacity: 1, transform: 'none' }], { duration: 900, delay: 520, easing: EASE_OUT, fill: 'backwards' }));
+    setTimeout(() => document.body.classList.remove('intro-open'), 700);
+
+    // 5) the "Is" lands: the real seal takes over
+    await flight;
+    const brandIn = brand?.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 260, fill: 'forwards' });
+    await settled(flyer.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 260, fill: 'forwards' }));
+    end();               // first the page leaves the "entering" state (which hides the seal)…
+    brandIn?.cancel();   // …then the seal's own fade lets go: it never blinks off for a frame
+  },
+};
+
+export function initIntro({ i18n, steps = null, stepMs = 1600, scene = signatureScene, home = '#top', onSettle = null } = {}) {
   const startup = globalThis.isaStartup;
   if (startup?.isFailed()) return null;
   const intro = document.getElementById('intro');
   const handoff = takeHandoff();
   document.documentElement.classList.remove('sig-handoff');
   if (!intro) return null;
-  // #top is the start of the page, not a deep link: a refresh there plays the intro again (as #hero in IsAcademy)
-  if (location.hash === '#top') history.replaceState(history.state, '', location.pathname + location.search);
+  // the home anchor (#top; #hero in IsAcademy, whose #top is the bar) is the start of the page, not a deep link:
+  // a refresh there plays the intro again
+  if (location.hash === home) history.replaceState(history.state, '', location.pathname + location.search);
   const deepLink = location.hash && document.getElementById(location.hash.slice(1));
   if (deepLink || new URLSearchParams(location.search).has('pdf')) { intro.hidden = true; return null; }
 
-  const svg = intro.querySelector('.sig');
   const list = () => (steps ? steps() : []);
   const segs = [...intro.querySelectorAll('.intro-segs span')];
   const stepText = intro.querySelector('.intro-step');
@@ -192,14 +288,17 @@ export function initIntro({ i18n, steps = null, stepMs = 1600 } = {}) {
   const finish = () => {
     done = true;
     stopMilestoneFrames();
-    skipSignature(svg);
+    scene.complete(intro);
     if (list().length) { showMilestone(list().length - 1, true); complete(); }
     intro.classList.add('after', 'ready');
     if (skip) skip.hidden = true;
   };
   // the end state, whatever happened before: page visible, hero risen, intro gone, focus on the page title
   let detachFailure = () => {};
-  const settle = () => {
+  let settledOnce = false;
+  const settle = (normal = true) => {
+    if (settledOnce) return;
+    settledOnce = true;
     done = true; closing = true;
     detachFailure();
     stopMilestoneFrames();
@@ -210,6 +309,7 @@ export function initIntro({ i18n, steps = null, stepMs = 1600 } = {}) {
     const h1 = document.querySelector('main h1');
     h1?.setAttribute('tabindex', '-1');
     h1?.focus({ preventScroll: true });
+    if (normal) onSettle?.();   // the site's own end (IsAcademy: the page, Alan and the lessons)
   };
 
   const close = async () => {
@@ -218,88 +318,19 @@ export function initIntro({ i18n, steps = null, stepMs = 1600 } = {}) {
     intro.classList.add('leaving');
     done = true;
     stopMilestoneFrames();
-    skipSignature(svg);
+    scene.complete(intro);
     if (reducedMotion()) {
       await settled(intro.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 300, fill: 'forwards' }));
       settle();
       return;
     }
     const safety = setTimeout(settle, 4000);   // never leave the visitor stuck on the intro
-    const brand = document.querySelector('.topbar .brand');
-    const seal = brand?.querySelector('.brand-is');
-    const word = svg.querySelector('.word');
-
-    // 1) everything but the signature steps back
-    intro.querySelectorAll('.intro-top, .intro-after, .intro-actions')
-      .forEach(el => el.animate([{ opacity: 1 }, { opacity: 0, transform: 'translateY(6px)' }], { duration: 300, easing: EASE_OUT, fill: 'forwards' }));
-
-    // 2) the "Is" (human) leaves in a fixed copy (own ids, so its ink mask keeps working) and flies to the seal,
-    //    leaving a trail of gold ink
-    const from = svg.getBoundingClientRect();
-    const glyph = textBox(svg.querySelector('.is-fill'));
-    const flyer = document.createElement('div');
-    flyer.className = 'intro-flyer';
-    Object.assign(flyer.style, { left: `${from.left}px`, top: `${from.top}px`, width: `${from.width}px` });
-    // a real clone, not outerHTML: the strict CSP blocks the style attributes the drawing leaves on the svg
-    const copy = svg.cloneNode(true);
-    copy.querySelectorAll('[id]').forEach(el => { el.id = `fly-${el.id}`; });
-    copy.querySelectorAll('[fill^="url(#"], [mask^="url(#"]').forEach(el => ['fill', 'mask'].forEach(a => {
-      const v = el.getAttribute(a);
-      if (v?.startsWith('url(#')) el.setAttribute(a, v.replace('url(#', 'url(#fly-'));
-    }));
-    flyer.append(copy);
-    document.body.append(flyer);
-    svg.querySelectorAll('.is').forEach(t => { t.style.visibility = 'hidden'; });
-    document.body.classList.add('entering');
-    let flight = Promise.resolve();
-    const to = seal && textBox(seal);
-    if (to && to.height && glyph.height) {
-      const k = to.height / glyph.height;
-      const dx = to.left - (from.left + (glyph.left - from.left) * k);
-      const dy = to.top - (from.top + (glyph.top - from.top) * k);
-      const anim = flyer.animate([{ transform: 'none' }, { transform: `translate(${dx}px, ${dy}px) scale(${k})` }],
-        { duration: 1050, delay: 150, easing: EASE_IN_OUT, fill: 'forwards' });
-      flight = settled(anim);
-      let frame = 0;
-      (function trail() {
-        if (intro.hidden || anim.playState === 'finished' || anim.playState === 'idle') return;
-        if (frame++ % 3 === 0) {
-          const g = flyer.querySelector('.is-fill').getBoundingClientRect();
-          if (g.width > 20) ink(g.right - g.width * .25, g.top + g.height * .55, 1, 1);
-        }
-        requestAnimationFrame(trail);
-      })();
-    }
-
-    // 3) the name (artificial) breaks into pixels and is gone before the page appears (never on top of its title)
-    const wr = word.getBoundingClientRect();
-    word.animate([{ opacity: 1 }, { opacity: .55, offset: .45 }, { opacity: 0 }], { duration: 420, delay: 80, easing: EASE_OUT, fill: 'forwards' });
-    const t0 = performance.now();
-    (function dissolve(now) {
-      const p = (now - t0) / 620;
-      if (intro.hidden || p > 1) return;
-      if (p > .1) pixels(wr.left + wr.width * Math.random(), wr.top + wr.height * (.3 + Math.random() * .5), wr.height * .3, Math.random() < .5 ? -1 : 1, 3);
-      requestAnimationFrame(dissolve);
-    })(t0);
-
-    // 4) the page appears underneath, as in IsAcademy: the intro background fades and the page settles into place;
-    //    the hero rises line by line (.stagger) once the intro stops holding it
-    const bg = getComputedStyle(intro).backgroundColor;
-    intro.animate([{ backgroundColor: bg }, { backgroundColor: 'transparent' }], { duration: 700, delay: 520, easing: EASE_IN_OUT, fill: 'forwards' });
-    document.querySelectorAll('.topbar, main').forEach(el =>
-      el.animate([{ opacity: 0, transform: 'scale(.985)' }, { opacity: 1, transform: 'none' }], { duration: 900, delay: 520, easing: EASE_OUT, fill: 'backwards' }));
-    setTimeout(() => document.body.classList.remove('intro-open'), 700);
-
-    // 5) the "Is" lands: the real seal takes over
-    await flight;
-    const brandIn = brand?.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 260, fill: 'forwards' });
-    await settled(flyer.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 260, fill: 'forwards' }));
-    clearTimeout(safety);
-    settle();            // first the page leaves the "entering" state (which hides the seal)…
-    brandIn?.cancel();   // …then the seal's own fade lets go: it never blinks off for a frame
+    const end = () => { clearTimeout(safety); settle(); };
+    await scene.exit(intro, end);
+    end();   // a scene that did not hand the page over still ends here (settle runs once)
   };
 
-  detachFailure = startup?.onFailure(settle) || (() => {});
+  detachFailure = startup?.onFailure(() => settle(false)) || (() => {});
   document.body.classList.add('intro-open');
   // the focus rests on the intro itself: no button looks pressed before the visitor touches anything
   intro.tabIndex = -1;
@@ -322,14 +353,10 @@ export function initIntro({ i18n, steps = null, stepMs = 1600 } = {}) {
 
   if (reducedMotion()) { finish(); rest(); return { close: safeClose }; }
   (async () => {
-    // drawn on every visit, as IsAcademy's logo; only a visitor who has just seen it written in the intro of another
-    // site (Inicio → CV Online) finds it complete, carried over by the page transition
-    if (handoff) skipSignature(svg);
-    else {
-      await sleep(200);
-      if (done || closing || intro.hidden) return;
-      await playSignature(svg);
-    }
+    // drawn on every visit; only a visitor who has just seen the signature written in the intro of another site
+    // (Inicio → CV Online) finds it complete, carried over by the page transition
+    if (handoff && scene.handoff) scene.complete(intro);
+    else await scene.play(intro, () => done || closing || intro.hidden);
     if (done) return;
     intro.classList.add('after');
     await sleep(600);
