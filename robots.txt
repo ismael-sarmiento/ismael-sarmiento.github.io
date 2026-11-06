@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://ismael-sarmiento.github.io/sitemap.xml
+Sitemap: https://isuniverse.dev/sitemap.xml

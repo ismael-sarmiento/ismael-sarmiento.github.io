@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <sitemap><loc>https://ismael-sarmiento.github.io/sitemap-portada.xml</loc><lastmod>2026-11-05</lastmod></sitemap>
-  <sitemap><loc>https://ismael-sarmiento.github.io/cv/sitemap.xml</loc><lastmod>2026-11-05</lastmod></sitemap>
-  <sitemap><loc>https://ismael-sarmiento.github.io/isacademy/sitemap.xml</loc></sitemap>
-  <sitemap><loc>https://ismael-sarmiento.github.io/isgame/sitemap.xml</loc></sitemap>
+  <sitemap><loc>https://isuniverse.dev/sitemap-portada.xml</loc><lastmod>2026-11-05</lastmod></sitemap>
+  <sitemap><loc>https://isuniverse.dev/profile/sitemap.xml</loc><lastmod>2026-11-05</lastmod></sitemap>
+  <sitemap><loc>https://isuniverse.dev/academy/sitemap.xml</loc></sitemap>
+  <sitemap><loc>https://isuniverse.dev/game/sitemap.xml</loc></sitemap>
 </sitemapindex>
