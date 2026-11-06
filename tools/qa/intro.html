@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="robots" content="noindex">
+<title>Intro battery</title>
+<style>
+  body { margin: 16px; font: 14px/1.4 system-ui, sans-serif; background: #f4f4f4; color: #111; }
+  iframe { border: 1px solid #999; display: block; margin-top: 12px; background: #fff; }
+  .ok { color: #176b2c; } .ko { color: #b00020; font-weight: 600; }
+</style>
+<h1>Intro battery · Inicio, CV Online, IsAcademy</h1>
+<p>Test-only (the <code>tools</code> folder is never published). Open it on the local universe server
+  (<code>/tools/qa/intro.html</code>, same origin as the three sites) and wait: every site is loaded in the frame below,
+  scenario by scenario. <code>?only=academy</code> limits the sites; <code>?capture=name</code> also posts the result to
+  <code>/__capture/name</code> (local QA server). Open it with reduced motion
+  (<code>--force-prefers-reduced-motion</code>) to check that variant: the expectations adapt.</p>
+<p id="status">running…</p>
+<pre id="out"></pre>
+<iframe id="frame" width="1280" height="800"></iframe>
+<script type="module">
+// What every intro of the universe promises (/assets/ds/intro.js and its scenes): focus and isolation while it plays,
+// «Saltar intro», the keys, the home anchor and deep links, the hand-off of the signature, a start-up failure,
+// the end state and the time the exit takes (from the click to the intro gone).
+const q = new URLSearchParams(location.search);
+const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const SITES = {
+  inicio: { path: '/', home: '#top', deep: '#main', exit: [1400, 1600] },
+  cv: { path: '/cv/', home: '#top', deep: '#contact', exit: [1400, 1600] },
+  academy: { path: '/isacademy/', home: '#hero', deep: '#contacto', bar: '#top', exit: (q.get('academyExit') || '2000-2400').split('-').map(Number) },
+};
+const only = q.get('only')?.split(',');
+const frame = document.getElementById('frame');
+const results = [];
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const record = (site, scenario, check, ok, got = '') => results.push({ site, scenario, check, ok: !!ok, got: String(got) });
+
+async function load(url, { w = 1280, h = 800, theme = null, handoff = false } = {}) {
+  try {
+    localStorage.removeItem('isa-lang');
+    if (theme) localStorage.setItem('isa-theme', theme); else localStorage.removeItem('isa-theme');
+    sessionStorage.removeItem('sig-handoff');
+    if (handoff) sessionStorage.setItem('sig-handoff', String(Date.now()));
+  } catch { /* storage unavailable */ }
+  frame.width = w; frame.height = h;
+  const next = () => new Promise(r => frame.addEventListener('load', r, { once: true }));
+  let loaded = next();
+  frame.src = 'about:blank';   // a clean document between runs
+  await loaded;
+  loaded = next();
+  frame.src = url;
+  await loaded;
+  const win = frame.contentWindow, doc = frame.contentDocument;
+  return { win, doc, intro: doc.getElementById('intro'), t0: win.performance.now() };
+}
+async function until(test, timeout) {
+  const start = performance.now();
+  while (performance.now() - start < timeout) { if (test()) return performance.now() - start; await sleep(16); }
+  return null;
+}
+const shown = (doc, el) => !!el && !el.hidden && el.getClientRects().length > 0 && doc.defaultView.getComputedStyle(el).visibility !== 'hidden';
+const key = (el, k) => el.dispatchEvent(new KeyboardEvent('keydown', { key: k, bubbles: true, cancelable: true }));
+const endState = (site, scenario, { win, doc, intro }) => {
+  const main = doc.querySelector('main');
+  record(site, scenario, 'intro gone (hidden)', intro.hidden);
+  record(site, scenario, 'body without intro-open / entering', !doc.body.classList.contains('intro-open') && !doc.body.classList.contains('entering'), doc.body.className);
+  record(site, scenario, 'no flying copy left', !doc.querySelector('.intro-flyer'));
+  record(site, scenario, 'focus on the page title', doc.activeElement === doc.querySelector('main h1'), doc.activeElement?.tagName);
+  record(site, scenario, 'page usable (not inert)', !main.closest('[inert]'));
+  record(site, scenario, 'scroll at the top', win.scrollY === 0, win.scrollY);
+};
+
+async function normal(site, s, opts, label) {
+  const ctx = await load(s.path, opts);
+  const { doc, intro } = ctx;
+  const enter = intro.querySelector('[data-action="enter"]'), skip = intro.querySelector('[data-action="skip"]');
+  await sleep(60);
+  record(site, label, 'intro shown on arrival', shown(doc, intro));
+  record(site, label, 'focus on the intro', doc.activeElement === intro, doc.activeElement?.id || doc.activeElement?.tagName);
+  record(site, label, 'page under the intro is inert', !!doc.querySelector('main').closest('[inert]'));
+  record(site, label, '«Saltar intro» shown', reduced ? true : shown(doc, skip));
+  let afterAt = null;
+  const ready = await until(() => { if (afterAt === null && intro.classList.contains('after')) afterAt = 1; return intro.classList.contains('ready'); }, 10000);
+  record(site, label, '.after then .ready', ready !== null && afterAt === 1, ready === null ? 'timeout' : `${Math.round(ready)} ms`);
+  record(site, label, 'actions shown when ready', shown(doc, enter));
+  enter.click();
+  const exit = await until(() => intro.hidden, 6000);
+  const [lo, hi] = reduced ? [250, 700] : s.exit;
+  record(site, label, `exit ${lo}–${hi} ms`, exit !== null && exit >= lo && exit <= hi, exit === null ? 'timeout' : `${Math.round(exit)} ms`);
+  await sleep(150);
+  endState(site, label, ctx);
+  if (site === 'academy') {
+    record(site, label, 'page entered (IsAcademy)', doc.body.classList.contains('entered'));
+    await until(() => doc.getElementById('assistantFab'), 3000);
+    record(site, label, 'Alan button shown', doc.getElementById('assistantFab') && !doc.getElementById('assistantFab').hidden);
+  }
+  return exit;
+}
+
+async function skipAndEscape(site, s) {
+  const label = 'skip + Escape';
+  const ctx = await load(s.path);
+  const { doc, intro } = ctx;
+  await sleep(400);
+  const enter = intro.querySelector('[data-action="enter"]'), skip = intro.querySelector('[data-action="skip"]');
+  if (!reduced) skip.click();
+  await sleep(120);
+  record(site, label, 'drawing complete at once (.after .ready)', intro.classList.contains('after') && intro.classList.contains('ready'));
+  record(site, label, '«Saltar intro» hidden', skip.hidden);
+  record(site, label, 'focus on «Entrar»', reduced || doc.activeElement === enter, doc.activeElement?.textContent?.trim().slice(0, 20));
+  // the drawing's own (scripted) animations; the CSS fades of the hook and the actions into view are expected
+  const running = intro.getAnimations({ subtree: true }).filter(a => a.playState === 'running' && a.constructor.name === 'Animation' && a.effect?.getTiming().iterations !== Infinity);
+  record(site, label, 'no entrance animation left running', running.length === 0, running.length);
+  if (site === 'academy') {
+    const svg = intro.querySelector('svg.logo');
+    record(site, label, 'logo written (Academy + by)', svg.querySelector('.academy').textContent === 'Academy' && svg.querySelector('.by').style.opacity === '1');
+  }
+  enter.focus();
+  key(enter, 'Escape');
+  const exit = await until(() => intro.hidden, 6000);
+  record(site, label, 'Escape once complete closes', exit !== null, exit === null ? 'timeout' : `${Math.round(exit)} ms`);
+  await sleep(150);
+  endState(site, label, ctx);
+}
+
+async function keys(site, s) {
+  const label = 'keys';
+  const { doc, intro } = await load(s.path);
+  await sleep(400);
+  key(intro, 'Escape');
+  await sleep(80);
+  record(site, label, 'Escape while playing completes', intro.classList.contains('ready'));
+  // Tab never leaves the intro
+  const controls = [...intro.querySelectorAll('a[href], button')].filter(el => el.getClientRects().length && !el.hidden && doc.defaultView.getComputedStyle(el).visibility !== 'hidden');
+  controls.at(-1).focus();
+  key(controls.at(-1), 'Tab');
+  record(site, label, 'Tab from the last control stays inside', intro.contains(doc.activeElement), doc.activeElement?.tagName);
+  intro.focus();
+  key(intro, 'Enter');
+  const exit = await until(() => intro.hidden, 6000);
+  record(site, label, 'Enter on the ready intro closes', exit !== null, exit === null ? 'timeout' : `${Math.round(exit)} ms`);
+}
+
+async function links(site, s) {
+  let ctx = await load(s.path + s.home);
+  await sleep(100);
+  record(site, 'links', `${s.home} plays the intro`, shown(ctx.doc, ctx.intro));
+  record(site, 'links', `${s.home} removed from the address`, ctx.win.location.hash === '', ctx.win.location.hash);
+  ctx = await load(s.path + s.deep);
+  await sleep(100);
+  record(site, 'links', `${s.deep} goes straight to the page`, ctx.intro.hidden || !shown(ctx.doc, ctx.intro));
+  record(site, 'links', `${s.deep} page usable`, !ctx.doc.querySelector('main').closest('[inert]'));
+  ctx = await load(s.path + '?pdf');
+  await sleep(100);
+  record(site, 'links', '?pdf without intro', ctx.intro.hidden || !shown(ctx.doc, ctx.intro));
+  if (s.bar) {
+    ctx = await load(s.path + s.bar);
+    await sleep(100);
+    record(site, 'links', `${s.bar} is the bar (deep link, no intro)`, ctx.intro.hidden || !shown(ctx.doc, ctx.intro));
+  }
+}
+
+async function handoff(site, s) {
+  const { intro } = await load(s.path, { handoff: true });
+  const after = await until(() => intro.classList.contains('after'), 8000);
+  let marked = 'none';
+  try { marked = sessionStorage.getItem('sig-handoff') ?? 'none'; } catch { /* storage unavailable */ }
+  record(site, 'hand-off', 'mark consumed', marked === 'none', marked);
+  if (site === 'academy' || reduced) record(site, 'hand-off', 'logo still drawn (no hand-off for it)', reduced || after > 2000, `${Math.round(after)} ms`);
+  else record(site, 'hand-off', 'signature carried over complete', after !== null && after < 300, `${Math.round(after)} ms`);
+}
+
+async function failure(site, s) {
+  const { win, doc, intro } = await load(s.path);
+  await sleep(500);
+  win.isaStartup.fail();
+  await sleep(100);
+  record(site, 'start-up failure', 'intro gone', intro.hidden);
+  record(site, 'start-up failure', 'page usable (not inert)', !doc.querySelector('main').closest('[inert]'));
+  record(site, 'start-up failure', 'body without intro-open / entering', !doc.body.classList.contains('intro-open') && !doc.body.classList.contains('entering'));
+  if (site === 'academy') record(site, 'start-up failure', 'onSettle not run (no lessons, not entered)', !doc.body.classList.contains('entered'));
+}
+
+async function academyControls() {
+  const site = 'academy', label = 'language + theme in the intro';
+  const { doc, intro } = await load(SITES.academy.path);
+  await sleep(500);
+  intro.querySelector('[data-action="lang"]').click();
+  await sleep(300);
+  const enterText = intro.querySelector('[data-action="enter"]').textContent.trim();
+  record(site, label, 'language switches to English', doc.documentElement.lang === 'en' && /academy/i.test(enterText), enterText);
+  const before = doc.documentElement.dataset.theme || '';
+  intro.querySelector('[data-action="theme"]').click();
+  await sleep(100);
+  record(site, label, 'theme switches', (doc.documentElement.dataset.theme || '') !== before, `${before} → ${doc.documentElement.dataset.theme}`);
+  const ready = await until(() => intro.classList.contains('ready'), 10000);
+  record(site, label, 'the intro still reaches ready', ready !== null);
+  try { localStorage.removeItem('isa-lang'); localStorage.removeItem('isa-theme'); } catch { /* storage unavailable */ }
+}
+
+const times = {};
+for (const [site, s] of Object.entries(SITES)) {
+  if (only && !only.includes(site)) continue;
+  document.getElementById('status').textContent = `running · ${site}…`;
+  times[`${site}-1280-dark`] = await normal(site, s, { w: 1280, h: 800, theme: 'dark' }, 'normal 1280 dark');
+  times[`${site}-375-light`] = await normal(site, s, { w: 375, h: 812, theme: 'light' }, 'normal 375 light');
+  await skipAndEscape(site, s);
+  await keys(site, s);
+  await links(site, s);
+  await handoff(site, s);
+  await failure(site, s);
+  if (site === 'academy') await academyControls();
+}
+frame.src = 'about:blank';
+try { localStorage.removeItem('isa-theme'); localStorage.removeItem('isa-lang'); sessionStorage.removeItem('sig-handoff'); } catch { /* storage unavailable */ }
+
+const failed = results.filter(r => !r.ok);
+const summary = { reduced, total: results.length, passed: results.length - failed.length, times: Object.fromEntries(Object.entries(times).map(([k, v]) => [k, v === null ? null : Math.round(v)])), failed, results };
+document.getElementById('status').innerHTML = failed.length
+  ? `<span class="ko">${failed.length} of ${results.length} checks FAILED</span>` : `<span class="ok">${results.length}/${results.length} checks passed</span>`;
+document.getElementById('out').textContent = JSON.stringify({ ...summary, results: undefined }, null, 2);
+console.table(failed.length ? failed : [{ all: `${results.length} checks passed`, ...summary.times }]);
+if (q.get('capture')) await fetch(`/__capture/${q.get('capture')}`, { method: 'POST', body: JSON.stringify(summary, null, 2) });
+window.introBattery = summary;
+</script>
+</html>

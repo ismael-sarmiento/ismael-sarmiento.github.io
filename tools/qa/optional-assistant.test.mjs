@@ -35,8 +35,8 @@ async function fixture(site, { failed = false, lang = 'en', delayLanguage = fals
     escapeForeignFrame: () => false, initTheme() {}, countView() {},
     setLang: () => language, detectLang: () => lang, currentLang: () => lang, onLangChange() {},
     renderSections() {}, renderForm() {}, observeReveals() {}, exportPrerenderIfAsked() {},
-    initForm: () => calls.push('form'), initConsole() {}, runIntro: async () => calls.push('intro'),
-    initFabTuck: () => calls.push('tuck'), openAcademy() {}, startLessons() {}, toggleTheme() {}, nextFact() {},
+    initForm: () => calls.push('form'), initConsole() {}, academyScene: {}, revealSite() {},
+    initFabTuck: () => calls.push('tuck'), startLessons() {}, toggleTheme() {}, nextFact() {},
     openConsole() {}, runCode() {}, debugCode() {}, stopCode() {}, resetConsole() {}, renderSamples() {}, refreshLessons() {},
     $: () => intro, $$: () => [], scrollBehavior() {}, setInterest() {},
   };
