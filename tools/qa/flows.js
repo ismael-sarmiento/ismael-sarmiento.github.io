@@ -5,7 +5,11 @@
   ok('intro closed (open the page with #main or press «Conocerme» first)', document.getElementById('intro').hidden);
   const ids = [...document.querySelectorAll('[id]')].map(e => e.id); ok('ids unique', new Set(ids).size === ids.length);
   ok('single h1 with the name for screen readers', document.querySelectorAll('h1').length === 1 && document.querySelector('h1').textContent.includes('Ismael Sarmiento'));
-  ok('four doors (CV Online, IsAcademy, IsGame, Kimera Tools)', [...document.querySelectorAll('.door h3')].map(h => h.textContent).join() === 'CV Online,IsAcademy,IsGame,Kimera Tools');
+  ok('four doors (IsProfile · CV Online, IsAcademy, IsGame, Kimera Tools)', [...document.querySelectorAll('.door h3')].map(h => h.textContent).join() === 'IsProfile · CV Online,IsAcademy,IsGame,Kimera Tools');
+  ok('door marks IsProfile, IsAcademy, IsGame, K_', [...document.querySelectorAll('.door .door-mark')].map(m => m.textContent).join() === 'IsProfile,IsAcademy,IsGame,K_');
+  ok('every page link and share URL lives on isuniverse.dev', [...document.querySelectorAll('link[rel=canonical], link[rel=alternate], meta[property="og:url"], meta[property="og:image"]')]
+    .every(el => (el.href || el.content).startsWith('https://isuniverse.dev/')));
+  ok('doors and footer use the new paths', [...document.querySelectorAll('a[href^="/"]')].every(a => !/^\/(cv|isacademy|isgame)\//.test(a.getAttribute('href'))));
   const before = document.documentElement.dataset.theme; document.querySelector('.topbar [data-action=theme]').click(); await sleep(50);
   ok('theme toggles and is remembered', before !== document.documentElement.dataset.theme && localStorage.getItem('isa-theme') === document.documentElement.dataset.theme);
   document.querySelector('.topbar [data-action=theme]').click();
@@ -19,7 +23,7 @@
     ['¿Qué es Kimera Tools?', 'Kimera Tools es su código abierto'], ['¿Qué es IsGame?', 'IsGame es el juego'], ['¿Cómo puedo contactar con él?', 'Por correo'], ['xyzzy', 'No tengo una respuesta']]) {
     ok(`Alan answers «${q}»`, (await ask(q)).innerText.includes(expected));
   }
-  ok('the CV answer offers the CV and the PDF', [...(await ask('¿Dónde veo su CV?')).querySelectorAll('[data-as-href]')].map(b => b.dataset.asHref).join(' ') === '/cv/ /cv/ismael-sarmiento-cv.pdf');
+  ok('the CV answer offers the CV and the PDF', [...(await ask('¿Dónde veo su CV?')).querySelectorAll('[data-as-href]')].map(b => b.dataset.asHref).join(' ') === '/profile/ /profile/ismael-sarmiento-cv.pdf');
   p.querySelector('.as-close').click(); await sleep(300); ok('panel closes', p.hidden);
   const lb = document.querySelector('.topbar [data-action=lang]'); lb.click(); await sleep(400);
   ok('English via ?lang=en', document.documentElement.lang === 'en' && location.search.includes('lang=en') && lb.textContent.trim() === 'ES');
@@ -29,7 +33,7 @@
   ok('bar controls share one height', new Set([...document.querySelectorAll('.tools > .btn')].filter(b => b.offsetParent).map(b => Math.round(b.getBoundingClientRect().height))).size === 1);
   ok('no horizontal overflow', document.documentElement.scrollWidth <= innerWidth);
   ok('footer: sites → contact → Privacidad → Volver arriba', [...document.querySelectorAll('.footer-links a, .footer-top')]
-    .map(a => a.textContent.trim()).join('|') === 'CV Online|IsAcademy|IsGame|WhatsApp|Correo|LinkedIn|GitHub|Privacidad|Volver arriba');
+    .map(a => a.textContent.trim()).join('|') === 'IsProfile · CV Online|IsAcademy|IsGame|WhatsApp|Correo|LinkedIn|GitHub|Privacidad|Volver arriba');
   console.log(R.join('\n'));
   return R.filter(r => r.startsWith('FAIL')).length ? 'FAILURES' : 'ALL PASS';
 })();

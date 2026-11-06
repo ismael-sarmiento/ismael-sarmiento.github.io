@@ -8,7 +8,7 @@
   iframe { border: 1px solid #999; display: block; margin-top: 12px; background: #fff; }
   .ok { color: #176b2c; } .ko { color: #b00020; font-weight: 600; }
 </style>
-<h1>Intro battery · Inicio, CV Online, IsAcademy</h1>
+<h1>Intro battery · Inicio, IsProfile, IsAcademy</h1>
 <p>Test-only (the <code>tools</code> folder is never published). Open it on the local universe server
   (<code>/tools/qa/intro.html</code>, same origin as the three sites) and wait: every site is loaded in the frame below,
   scenario by scenario. <code>?only=academy</code> limits the sites; <code>?capture=name</code> also posts the result to
@@ -25,8 +25,8 @@ const q = new URLSearchParams(location.search);
 const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const SITES = {
   inicio: { path: '/', home: '#top', deep: '#main', exit: [1400, 1600] },
-  cv: { path: '/cv/', home: '#top', deep: '#contact', exit: [1400, 1600] },
-  academy: { path: '/isacademy/', home: '#hero', deep: '#contacto', bar: '#top', exit: (q.get('academyExit') || '2000-2400').split('-').map(Number) },
+  cv: { path: '/profile/', home: '#top', deep: '#contact', exit: [1400, 1600] },
+  academy: { path: '/academy/', home: '#hero', deep: '#contacto', bar: '#top', exit: (q.get('academyExit') || '2000-2400').split('-').map(Number) },
 };
 const only = q.get('only')?.split(',');
 const frame = document.getElementById('frame');

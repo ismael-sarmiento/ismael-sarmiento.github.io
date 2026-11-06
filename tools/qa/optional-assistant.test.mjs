@@ -6,8 +6,8 @@ import { runInNewContext } from 'node:vm';
 
 const files = {
   home: new URL('../../assets/hub.js', import.meta.url),
-  cv: new URL('../../../cv/js/app.js', import.meta.url),
-  academy: new URL('../../../isacademy/js/app.js', import.meta.url),
+  cv: new URL('../../../profile/js/app.js', import.meta.url),
+  academy: new URL('../../../academy/js/app.js', import.meta.url),
 };
 const flush = async () => { for (let i = 0; i < 20; i++) await Promise.resolve(); };
 async function fixture(site, { failed = false, lang = 'en', delayLanguage = false, missingGuard = false } = {}) {
