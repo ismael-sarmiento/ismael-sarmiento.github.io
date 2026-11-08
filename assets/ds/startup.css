@@ -1,0 +1,4 @@
+/* The static page remains useful when scripting is off or startup has failed.
+   Native links and details remain available; do not offer controls that cannot act. */
+html:not(.js) button,
+html:not(.js) .lead-form { display: none !important; }

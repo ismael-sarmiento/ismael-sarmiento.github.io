@@ -1,0 +1,135 @@
+/* Ismael Sarmiento design system — the intro shared by every site (Inicio, CV Online; IsAcademy keeps its own markup
+   with the same measures). Markup: tools/build.py of each site; behaviour: /assets/ds/intro.js.
+
+   One scale for the signature everywhere: the signature viewBox is ~1401 units wide and IsAcademy's logo 1000, so
+   the signature is min(1160px, 92vw) and IsAcademy's logo min(828px, 65.7vw): the "Is" has the same size and the
+   same place on every site and every screen. Keep that ratio (1000 / 1401) if one of them changes. */
+
+/* only with JavaScript (the boot script adds .js); otherwise the page shows straight away */
+.intro { display: none; }
+.js .intro { position: fixed; inset: 0; z-index: 50; display: grid; justify-items: center; align-content: start;
+  padding: max(12vh, 72px) 24px 24px; background: var(--bg); overflow: hidden auto; }
+.js .intro[hidden] { display: none; }
+body.intro-open { overflow: hidden; }
+
+.intro:focus { outline: none; }   /* it holds the focus at rest (intro.js); its buttons keep their rings */
+.intro-top { position: absolute; top: 16px; right: 16px; display: flex; gap: 8px; align-items: center; z-index: 2; }
+.intro-stage { width: min(92vw, 1160px, 100%); text-align: center; position: relative; z-index: 1; }
+.intro-sig .sig { width: min(1160px, 92vw, 100%); margin: 0 auto; }
+/* the signature starts empty, as IsAcademy's logo: nothing flashes before it is drawn (signature.js adds .is-live) */
+.js .intro .sig:not(.is-live) .is-stroke { stroke-dasharray: 3000; stroke-dashoffset: 3000; }
+.js .intro .sig:not(.is-live) :is(.is-fill, .word, .cursor) { visibility: hidden; }
+/* coming from the intro of another site with the signature already written (intro.js, boot script): it is shown
+   complete from the first frame and the page transition keeps it in place (view-transition-name) */
+.js.sig-handoff .intro .sig .is-stroke { stroke-dashoffset: 0; }
+.js.sig-handoff .intro .sig :is(.is-fill, .word) { visibility: visible; }
+.js .intro:not([hidden]) .sig { view-transition-name: signature; }
+/* while a stored English choice is being applied the intro texts wait, so they never flash in Spanish (i18n.js) */
+.i18n-wait .intro :is(.intro-top, .intro-after, .intro-actions) { visibility: hidden; }
+
+.intro-after, .intro-actions { opacity: 0; transform: translateY(8px); transition: opacity .8s ease, transform .8s var(--ease-out); }
+.intro.after .intro-after, .intro.ready .intro-actions { opacity: 1; transform: none; }
+.intro-actions { visibility: hidden; }
+.intro.ready .intro-actions { visibility: visible; }
+.intro-tag { display: table; margin: 4px auto 0; }
+.intro-hook { font-size: clamp(16px, 2.2vw, 22px); color: var(--text-2); max-width: 52ch; margin: 22px auto 0; }
+.intro-milestones { width: min(520px, 100%); margin: 26px auto 0; }
+/* milestones: each bar fills while its milestone is on screen (a light runs at its tip); the year counts up, the
+   sentence is uncovered like ink; at the end the bars join into one gold line with a passing shine */
+.intro-segs { position: relative; display: flex; margin-bottom: 14px; }
+.intro-segs span { position: relative; flex: 1; height: 3px; margin-left: 6px; border-radius: 3px; background: var(--line); transition: margin .7s var(--ease-out), border-radius .7s ease; }
+.intro-segs span:first-child { margin-left: 0; }
+.intro-segs span.joined { margin-left: 2px; }
+.intro-segs span::after { content: ""; position: absolute; inset: 0; border-radius: inherit; background: linear-gradient(90deg, var(--gold), var(--gold-2));
+  transform: scaleX(0); transform-origin: left; }
+.intro-segs span.on::after { transform: none; transition: transform .3s var(--ease-out); }
+.intro-segs span.run::after { animation: seg-fill var(--step-ms, 1600ms) linear forwards; }
+.intro-segs span.run::before { content: ""; position: absolute; z-index: 1; top: -4px; left: 0; width: 10px; height: 11px; margin-left: -5px; border-radius: 50%;
+  background: radial-gradient(circle, var(--gold-2) 0 35%, transparent 70%); animation: seg-tip var(--step-ms, 1600ms) linear forwards; }
+@keyframes seg-fill { to { transform: scaleX(1); } }
+@keyframes seg-tip { from { left: 0; } to { left: 100%; } }
+.intro-segs.complete span { margin-left: 0; }
+.intro-segs.complete span { border-radius: 0; }
+.intro-segs.complete span:first-child { border-radius: 3px 0 0 3px; }
+.intro-segs.complete span:last-child { border-radius: 0 3px 3px 0; }
+.intro-segs.complete::after { content: ""; position: absolute; inset: -3px 0; background: linear-gradient(90deg, transparent, rgba(255, 244, 214, .9), transparent);
+  background-size: 30% 100%; background-repeat: no-repeat; animation: seg-shine 1.1s .35s var(--ease-out) both; pointer-events: none; }
+@keyframes seg-shine { from { background-position: -40% 0; } to { background-position: 140% 0; } }
+.intro-step { display: grid; justify-items: center; gap: 8px; min-height: 7.6em; align-content: start; margin: 0; color: var(--text); font-weight: 500;
+  transition: min-height var(--dur-base) var(--ease-in-out); }
+.intro-step.career-complete { min-height: 0; }
+.st-meta { display: flex; align-items: baseline; gap: 10px; font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--text-2); }
+.st-year { font-family: var(--font-mono); font-size: 14px; font-weight: 600; letter-spacing: .04em; color: var(--gold-text); font-variant-numeric: tabular-nums; }
+.st-where { font-weight: 600; color: var(--text); }
+.st-role { font-weight: 600; color: var(--text); }
+.st-ladder { position: relative; display: flex; width: min(420px, 100%); align-items: flex-start; gap: 0; margin: 3px 0 1px; font-size: 13px;
+  max-height: 80px; opacity: 1;
+  transition: opacity var(--dur-fast) ease, max-height var(--dur-base) var(--ease-in-out), margin var(--dur-base) var(--ease-in-out); }
+.intro-step.career-complete .st-ladder { opacity: 0; max-height: 0; margin: -8px 0 0; overflow: clip; pointer-events: none; }
+.st-rung { display: grid; justify-items: center; gap: 6px; flex: 1; min-width: 0; color: var(--text-2); font-weight: 600; }
+.st-rung-dot { position: relative; width: 16px; height: 16px; border: 1px solid var(--line); border-radius: 50%; background: var(--surface);
+  transition: background var(--dur-base) var(--ease-out), border-color var(--dur-base) var(--ease-out), box-shadow var(--dur-base) var(--ease-out); }
+.st-rung-label { padding: 3px 8px; border: 1px solid transparent; border-radius: 999px; line-height: 1.35;
+  transition: background var(--dur-base) var(--ease-out), color var(--dur-base) var(--ease-out), border-color var(--dur-base) var(--ease-out); }
+.st-rung.past { color: var(--gold-text); }
+.st-rung.past .st-rung-dot { border-color: var(--gold); background: var(--gold); }
+.st-rung.now { color: var(--text); }
+.st-rung.now .st-rung-dot { border-color: var(--gold); background: var(--gold-2); box-shadow: 0 0 0 4px var(--gold-glow); }
+.st-rung.now .st-rung-label { color: var(--gold-text); }
+/* Each stretch belongs to its destination: it fills once, reaches the next dot, then stays quiet. */
+.st-sep { position: absolute; top: 7px; left: calc(var(--link-start) + 8px); width: calc(100% / var(--rungs) - 16px); height: 2px; background: var(--line); }
+.st-sep::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, var(--gold), var(--gold-2)); transform: scaleX(0); transform-origin: left; }
+.st-sep.reached::after { transform: scaleX(1); }
+.intro-step.swap .st-sep.advance::after { animation: rung-link var(--dur-base) var(--ease-in-out) both; }
+@keyframes rung-link { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+.st-text { font-size: clamp(15.5px, 2vw, 18px); line-height: 1.45; max-width: 46ch; }
+.st-w { display: inline-block; }
+.intro-step.swap:not(.continuing) .st-meta { animation: step-in var(--dur-base) var(--ease-out) both; }
+.intro-step.swap:not(.continuing) .st-ladder { animation: step-in var(--dur-base) var(--stagger) var(--ease-out) both; }
+.intro-step.swap .st-rung.now .st-rung-dot { animation: rung-arrive var(--dur-base) var(--dur-base) var(--ease-out) both; }
+.intro-step.swap .st-ladder.complete .st-rung.now .st-rung-dot { animation-name: rung-finish; animation-duration: var(--dur-slow); }
+@keyframes rung-arrive { from { transform: scale(.72); box-shadow: 0 0 0 0 var(--gold-glow); } to { transform: scale(1); box-shadow: 0 0 0 4px var(--gold-glow); } }
+@keyframes rung-finish { 0% { transform: scale(.72); box-shadow: 0 0 0 0 var(--gold-glow); } 40% { transform: scale(1); box-shadow: 0 0 0 8px var(--gold-glow); } 100% { transform: scale(1); box-shadow: 0 0 0 4px var(--gold-glow); } }
+.intro-step.swap .st-w { animation: word-in .55s calc(.12s + var(--n, 0) * 45ms) var(--ease-out) both; }
+.intro-step.settled :is(.st-meta, .st-ladder, .st-rung-dot, .st-rung-label, .st-w), .intro-step.settled .st-sep::after { animation: none; transition: none; }
+@keyframes word-in { from { opacity: 0; transform: translateY(8px); filter: blur(5px); } }
+@keyframes step-in { from { opacity: 0; transform: translateY(6px); } }
+.intro-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin-top: 30px; }
+
+/* while the intro is open the hero waits; when it closes, its lines rise one after another (.stagger) */
+body.intro-open .hero .reveal.in { opacity: 0; transform: translateY(16px); }
+/* The intro traces leave before the page traces arrive: never show both drawings through the fading backdrop. */
+.intro .ds-circuit { transition: opacity var(--dur-fast) ease; }
+.intro.leaving .ds-circuit { opacity: 0; }
+.hero .ds-circuit { transition: opacity var(--dur-base) var(--ease-out); }
+body.intro-open .hero .ds-circuit, body.entering .hero .ds-circuit { opacity: 0; }
+/* the intro hands the focus to the page title (for screen readers and the keyboard): no ring on a programmatic focus */
+main h1[tabindex="-1"]:focus { outline: none; }
+
+/* the exit: the "Is" (human) flies to the seal leaving gold ink, the name (artificial) breaks into pixels */
+.intro-flyer { position: fixed; z-index: 60; margin: 0; pointer-events: none; transform-origin: 0 0; }
+.intro-flyer .sig { display: block; width: 100%; height: auto; }
+.intro-flyer .word, .intro-flyer .cursor { display: none; }
+body.entering .topbar .brand { opacity: 0; }
+
+@media (max-width: 640px) {
+  .js .intro { padding-top: max(14vh, 84px); }
+  .intro-top { left: 16px; justify-content: flex-end; flex-wrap: wrap; }
+  /* stacked actions share one width */
+  .intro-actions { flex-direction: column; align-items: center; }
+  .intro-actions .btn { width: min(280px, 100%); }
+}
+/* Short laptop windows need room for the CV milestones and actions. Keep the signature's
+   scale paired with IsAcademy's 1000 / 1401 logo; very small windows retain native scrolling. */
+@media (max-height: 740px) {
+  .js .intro { padding-top: 64px; }
+  .intro-sig .sig { width: min(1160px, 92vw, 100%, max(280px, calc((100svh - 410px) * 3.5))); }
+  .intro-hook { margin-top: 16px; }
+  .intro-milestones { margin-top: 20px; }
+  .intro-actions { margin-top: 20px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .intro-after, .intro-actions { transition: none; }
+  .intro-segs span.run::before, .intro-segs.complete::after { display: none; }
+  .intro-step :is(.st-meta, .st-ladder, .st-rung-dot, .st-rung-label, .st-w), .intro-step .st-sep::after { animation: none; transition: none; }
+}
