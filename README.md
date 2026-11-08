@@ -32,7 +32,7 @@ por todas sus webs.
 | `signature.js` | La firma: «Is» manuscrita esbozada y el resto del nombre decodificado al estilo IA |
 | `intro.js`, `intro.css` | La intro común (Inicio y CV Online): firma, papel, eslogan y botones; al entrar, la «Is» vuela al sello dejando tinta dorada y el nombre se deshace en píxeles. La misma escala que el logo de IsAcademy |
 | `fx.js` | Efectos de partículas (tinta, píxeles, destellos) compartidos con IsAcademy |
-| `contact.css`, `contact.js` | La pieza de contacto de CV Online e IsAcademy: tarjeta adaptada al tema claro u oscuro con formulario (validación, antibots y envío protegido por Cloudflare Turnstile a través del Worker `isa-forms`, que lo entrega con Resend; código en `tools/cloudflare/isa-forms.js`) y botones de WhatsApp, correo y LinkedIn |
+| `contact.css`, `contact.js` | La pieza de contacto de CV Online e IsAcademy: tarjeta adaptada al tema claro u oscuro con formulario (validación, antibots y envío protegido por Cloudflare Turnstile a través del Worker `isa-forms`, que lo entrega con Resend; código en el repo privado `panel`, `isa-forms.js`) y botones de WhatsApp, correo y LinkedIn |
 | `icons.svg` | Iconos comunes (WhatsApp, correo, LinkedIn, teléfono) como sprite: `<use href="/assets/ds/icons.svg#i-whatsapp"/>` |
 | `favicon.js` | El icono de la pestaña sigue el tema de la página en las tres webs (iconos en `assets/brand/favicon-{light,dark}`, generados con `tools/icons.py`). La imagen para compartir, los avatares «Is» y el banner de LinkedIn salen de `tools/social.py` |
 | `avatar.js`, `assistant.js`, `assistant.css` | Alan, el asistente local compartido (cada web le da su propio contenido) |
@@ -56,7 +56,6 @@ assets/hub.css, hub.js      Estilo y comportamiento de la portada
 assets/brand/               Favicons, foto, og.png (imagen al compartir)
 tools/build.py              Genera todo lo anterior desde una plantilla con los textos ES/EN
 tools/brand/og.swift        Genera las imágenes al compartir (macOS, sin dependencias)
-tools/cloudflare/           Workers de Cloudflare: isa-forms (formularios con Turnstile y Resend) e isa-panel (IsPanel)
 ```
 
 ## Desarrollo local
@@ -69,7 +68,7 @@ Para probar el universo completo, sirve una carpeta con este repositorio en la r
 
 ## IsPanel (panel privado)
 
-`tools/cloudflare/isa-panel.js` implementa el panel privado del universo: métricas agregadas de Cloudflare Web Analytics y Analytics Engine, registros de visitas detalladas con ubicación de red aproximada (30 días), bandeja de contactos y seguimiento (90 días), y resumen semanal/manual al correo del propietario. Cada fuente indica su cobertura; una ubicación no identifica a una persona. El único administrador accede con un enlace de un uso a su correo; la autorización usa el estado D1 de la migración 0004. Los Workers se publican por separado de GitHub Pages. Contratos, variables, despliegue y límites: [ISPANEL.md](tools/cloudflare/ISPANEL.md).
+El Worker `isa-panel` (código en el repo privado `panel` desde el 08/11/2026) implementa el panel privado del universo: métricas agregadas de Cloudflare Web Analytics y Analytics Engine, registros de visitas detalladas con ubicación de red aproximada (30 días), bandeja de contactos y seguimiento (90 días), y resumen semanal/manual al correo del propietario. Cada fuente indica su cobertura; una ubicación no identifica a una persona. El único administrador accede con un enlace de un uso a su correo; la autorización usa el estado D1 de la migración 0004. Los Workers se publican por separado de GitHub Pages. Contratos, variables, despliegue y límites: `ISPANEL.md` en el repo privado `panel`.
 
 ## Despliegue
 
