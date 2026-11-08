@@ -22,8 +22,9 @@
 .door p { color: var(--text-2); margin: 0; flex: 1; }
 .door-mark { display: flex; align-items: center; height: 48px; color: var(--gold); transition: transform .5s var(--ease-out); }
 .mark-is { font-family: var(--font-script); font-size: 52px; line-height: 1; -webkit-text-stroke: .5px currentColor; }
-.mark-isa { font-size: 22px; font-weight: 600; letter-spacing: -.01em; color: var(--text); }
-.mark-isa b { font-family: var(--font-script); font-weight: 400; font-size: 38px; color: var(--gold); margin-right: 1px; -webkit-text-stroke: .5px currentColor; }
+/* the cards use the same wordmark as every bar (tokens.css --brand-*, F10) */
+.mark-isa { font-size: var(--brand-name); font-weight: var(--brand-name-weight); letter-spacing: -.02em; color: var(--text); }
+.mark-isa b { font-family: var(--font-script); font-weight: 400; font-size: var(--brand-is); color: var(--gold); margin-right: 1px; -webkit-text-stroke: .5px currentColor; }
 .mark-k { font-family: var(--font-mono); font-size: 28px; font-weight: 600; color: var(--gold); }
 .mark-k i { font-style: normal; animation: k-blink 1.1s steps(1) infinite; }
 @keyframes k-blink { 50% { opacity: 0; } }

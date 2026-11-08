@@ -22,7 +22,11 @@
 /* the hero: a column of traces on the right */
 .ds-circuit--hero { right: 0; top: 0; height: 100%; width: auto; opacity: .45; --from: .3s; }
 @media (max-width: 900px) { .ds-circuit--hero { opacity: .25; } }
-@media (max-width: 640px) { .ds-circuit--hero { display: none; } .ds-circuit--intro { opacity: .35; } }   /* on phones the hero lines would cross the text */
+@media (max-width: 640px) { .ds-circuit--hero { display: none; } }   /* on phones the hero lines would cross the text */
+/* phones in portrait (F10): the full-screen slice pushed both clusters of traces off the sides, so on every site no line
+   was visible; the drawing becomes a 4:3 band at the bottom of the screen, under the content, where both clusters and
+   their nodes stay in view */
+@media (max-aspect-ratio: 1/1) { .ds-circuit--intro { inset: auto 0 0 0; height: auto; aspect-ratio: 4 / 3; opacity: .45; } }
 
 @media (prefers-reduced-motion: reduce) {
   .ds-circuit path { animation: none; stroke-dashoffset: 0; }
