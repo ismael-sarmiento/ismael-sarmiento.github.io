@@ -155,4 +155,4 @@ details[open]::details-content { block-size: auto; }
 }
 
 /* the 404 of every site: «Error 404» under the title, never a label above it (F10) */
-.nf-code { margin: 4px 0 14px; font-family: var(--font-mono); font-size: 13px; letter-spacing: .08em; color: var(--text-2); }
+.nf-code { margin: 4px 0 14px; font-family: var(--font-sans); font-size: 13px; font-variant-numeric: tabular-nums; letter-spacing: .08em; color: var(--text-2); }

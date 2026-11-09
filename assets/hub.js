@@ -16,7 +16,7 @@ async function initAlan() {
   const data = JSON.parse(node.textContent);
   const cfg = lang => ({ ...data[lang].assistant, match: faqMatcher(data[lang].faq) });
   // pages of the universe open here; WhatsApp, LinkedIn and GitHub open beside it
-  const go = href => (/^https?:/.test(href) && !href.startsWith(location.origin) ? window.open(href, '_blank', 'noopener') : (location.href = href));
+  const go = href => (/^https?:/.test(href) && !href.startsWith(location.origin) ? window.open(href, '_blank', 'noopener,noreferrer') : (location.href = href));
   const alan = createAssistant({ ...cfg(i18n.lang()), onAction: ({ href }) => { if (href) go(href); } });
   i18n.onChange(lang => alan.refresh(cfg(lang)));
   // never on top of the intro
