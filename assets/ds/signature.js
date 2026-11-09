@@ -28,7 +28,11 @@ export function signatureSVG(id, word) {
 export function fitSignature(svg) {
   const word = svg.querySelector('.word');
   const w = word.getComputedTextLength();
-  if (w) svg.setAttribute('viewBox', `0 0 ${Math.ceil(WORD_X + w + 30)} 330`);
+  if (w) {
+    const units = Math.ceil(WORD_X + w + 30);
+    svg.setAttribute('viewBox', `0 0 ${units} 330`);
+    svg.style.width = `min(100%, calc(min(1160px, 92vw) * ${units} / 1401))`;
+  }
 }
 
 function animate(svg, duration, step) {
@@ -55,6 +59,8 @@ export function skipSignature(svg) {
   svg.querySelector('.word').textContent = svg.dataset.word;
   svg.querySelector('.cursor').setAttribute('opacity', '0');
   svg.classList.add('is-live');
+  // Skipping bypasses playSignature, including its font-ready sizing step.
+  void document.fonts.ready.then(() => fitSignature(svg));
 }
 
 export async function playSignature(svg) {

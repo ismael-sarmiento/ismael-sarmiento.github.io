@@ -146,9 +146,7 @@ details[open]::details-content { block-size: auto; }
 @media (max-width: 640px) {
   .section { padding: 64px 0; }
   .topbar-row { gap: 6px 8px; }
-  .tools { gap: 6px; } .tools .btn-icon { min-width: 40px; padding: 8px; }
-}
-@media (max-width: 420px) {
+  .tools { gap: 6px; } .tools .btn-icon { min-width: 44px; padding: 8px; }
 }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
