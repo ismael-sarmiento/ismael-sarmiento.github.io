@@ -34,7 +34,7 @@ h2 { font-size: clamp(28px, 4vw, 42px); margin-bottom: 16px; }
 .btn-primary { background: var(--gold); border-color: var(--gold); color: var(--on-gold); }
 .btn-primary:hover { background: var(--gold-2); border-color: var(--gold-2); box-shadow: 0 8px 22px rgba(200, 149, 63, .32); }
 .btn-lg { min-height: 52px; padding: 14px 24px; font-size: 16px; }
-.btn-sm { min-height: 40px; padding: 8px 14px; font-size: 14px; }
+.btn-sm { min-height: 44px; padding: 10px 14px; font-size: 14px; }   /* 44 px: the touch minimum of the kit (F10) */
 .btn-icon { min-width: 44px; padding: 10px 12px; }
 .btn[aria-pressed="true"] { border-color: var(--gold); background: rgba(200, 149, 63, .14); }
 /* calls to action end in an arrow that nudges forward */
@@ -59,6 +59,12 @@ h2 { font-size: clamp(28px, 4vw, 42px); margin-bottom: 16px; }
 .chips li:has(> a) { padding: 0; border: 0; background: none; }
 .chips li, .chips a { white-space: nowrap; }
 .chips a { display: inline-block; }
+
+
+/* the select of every site (F10): no system arrow (different on each OS), the same gold chevron drawn in CSS */
+select.ds-select, .ds-form select { appearance: none; -webkit-appearance: none; padding-right: 40px; background-repeat: no-repeat;
+  background-image: linear-gradient(45deg, transparent 50%, var(--gold-text) 50%), linear-gradient(135deg, var(--gold-text) 50%, transparent 50%);
+  background-position: calc(100% - 20px) 52%, calc(100% - 15px) 52%; background-size: 5px 5px, 5px 5px; }
 
 /* ===================== 3. Top bar and brand ===================== */
 /* glass bar, a soft shadow once the page scrolls and a thin reading-progress line */
