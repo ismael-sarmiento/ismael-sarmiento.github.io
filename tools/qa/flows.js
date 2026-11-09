@@ -5,7 +5,7 @@
   ok('intro closed (open the page with #main or press «Conocerme» first)', document.getElementById('intro').hidden);
   const ids = [...document.querySelectorAll('[id]')].map(e => e.id); ok('ids unique', new Set(ids).size === ids.length);
   ok('single h1 with the name for screen readers', document.querySelectorAll('h1').length === 1 && document.querySelector('h1').textContent.includes('Ismael Sarmiento'));
-  ok('four doors (IsProfile · CV Online, IsAcademy, IsGame, Kimera Tools)', [...document.querySelectorAll('.door h3')].map(h => h.textContent).join() === 'IsProfile · CV Online,IsAcademy,IsGame,Kimera Tools');
+  ok('four doors (IsProfile, IsAcademy, IsGame, Kimera Tools)', [...document.querySelectorAll('.door h3')].map(h => h.textContent).join() === 'IsProfile,IsAcademy,IsGame,Kimera Tools');
   ok('door marks IsProfile, IsAcademy, IsGame, K_', [...document.querySelectorAll('.door .door-mark')].map(m => m.textContent).join() === 'IsProfile,IsAcademy,IsGame,K_');
   ok('every page link and share URL lives on isuniverse.dev', [...document.querySelectorAll('link[rel=canonical], link[rel=alternate], meta[property="og:url"], meta[property="og:image"]')]
     .every(el => (el.href || el.content).startsWith('https://isuniverse.dev/')));
@@ -33,7 +33,7 @@
   ok('bar controls share one height', new Set([...document.querySelectorAll('.tools > .btn')].filter(b => b.offsetParent).map(b => Math.round(b.getBoundingClientRect().height))).size === 1);
   ok('no horizontal overflow', document.documentElement.scrollWidth <= innerWidth);
   ok('footer: sites → contact → Privacidad → Volver arriba', [...document.querySelectorAll('.footer-links a, .footer-top')]
-    .map(a => a.textContent.trim()).join('|') === 'IsProfile · CV Online|IsAcademy|IsGame|WhatsApp|Correo|LinkedIn|GitHub|Privacidad|Volver arriba');
+    .map(a => a.textContent.trim()).join('|') === 'IsProfile|IsAcademy|IsGame|WhatsApp|Correo|LinkedIn|GitHub|Privacidad|Volver arriba');
   console.log(R.join('\n'));
   return R.filter(r => r.startsWith('FAIL')).length ? 'FAILURES' : 'ALL PASS';
 })();

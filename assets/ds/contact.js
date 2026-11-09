@@ -1,4 +1,4 @@
-// The contact form shared by CV Online and IsAcademy (styles: /assets/ds/contact.css): validation in the visitor's
+// The contact form shared by IsProfile and IsAcademy (styles: /assets/ds/contact.css): validation in the visitor's
 // language, an invisible field that catches bots, an invisible Cloudflare Turnstile check and delivery through the
 // isa-forms Worker (source: isa-forms.js in the private repo panel), which verifies the check and mails Ismael with Resend.
 // No address is written in the page. Each site writes its own fields and decides what the email he receives says

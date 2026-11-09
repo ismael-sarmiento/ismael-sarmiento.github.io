@@ -3,7 +3,7 @@
 > *Home page of Ismael Sarmiento and the shared design system of his sites. Spanish and English.*
 
 Portada de **Ismael Sarmiento**, Head of Data Management en Savana y fundador de IsAcademy: quién es y cuatro puertas,
-**IsProfile · CV Online**, **IsAcademy**, **IsGame** y **Kimera Tools**. Este repositorio es además el dueño del **sistema de diseño compartido**
+**IsProfile**, **IsAcademy**, **IsGame** y **Kimera Tools**. Este repositorio es además el dueño del **sistema de diseño compartido**
 por todas sus webs.
 
 - **Web:** https://isuniverse.dev/ (español) · [versión en inglés](https://isuniverse.dev/?lang=en)
@@ -15,7 +15,7 @@ por todas sus webs.
 | Dirección | Repositorio | Qué es |
 |---|---|---|
 | `/` (inglés: `?lang=en`) | `ismael-sarmiento.github.io` (este) | Portada y sistema de diseño compartido |
-| `/profile/` (inglés: `?lang=en`) | [`profile`](https://github.com/ismael-sarmiento/profile) | IsProfile · CV Online |
+| `/profile/` (inglés: `?lang=en`) | [`profile`](https://github.com/ismael-sarmiento/profile) | IsProfile |
 | `/academy/` | [`academy`](https://github.com/ismael-sarmiento/academy) | IsAcademy, academia online |
 | `/game/` | [`game`](https://github.com/ismael-sarmiento/game) | IsGame, el juego de IsAcademy |
 | `/cv/`, `/isacademy/`, `/isgame/` | [`cv`](https://github.com/ismael-sarmiento/cv), [`isacademy`](https://github.com/ismael-sarmiento/isacademy), [`isgame`](https://github.com/ismael-sarmiento/isgame) | Direcciones antiguas: solo redirigen a las nuevas (carteles y QR). **No se borran.** |
@@ -30,13 +30,13 @@ por todas sus webs.
 | `ds.js` | Tema compartido entre webs, aparición al hacer scroll, barra superior y luz que sigue al puntero |
 | `i18n.js` | Idiomas: un solo botón ES/EN, `?lang=en` en la URL y la elección compartida entre webs |
 | `signature.js` | La firma: «Is» manuscrita esbozada y el resto del nombre decodificado al estilo IA |
-| `intro.js`, `intro.css` | La intro común (Inicio y CV Online): firma, papel, eslogan y botones; al entrar, la «Is» vuela al sello dejando tinta dorada y el nombre se deshace en píxeles. La misma escala que el logo de IsAcademy |
+| `intro.js`, `intro.css` | La intro común (Inicio y IsProfile): firma, papel, eslogan y botones; al entrar, la «Is» vuela al sello dejando tinta dorada y el nombre se deshace en píxeles. La misma escala que el logo de IsAcademy |
 | `fx.js` | Efectos de partículas (tinta, píxeles, destellos) compartidos con IsAcademy |
-| `contact.css`, `contact.js` | La pieza de contacto de CV Online e IsAcademy: tarjeta adaptada al tema claro u oscuro con formulario (validación, antibots y envío protegido por Cloudflare Turnstile a través del Worker `isa-forms`, que lo entrega con Resend; código en el repo privado `panel`, `isa-forms.js`) y botones de WhatsApp, correo y LinkedIn |
+| `contact.css`, `contact.js` | La pieza de contacto de IsProfile e IsAcademy: tarjeta adaptada al tema claro u oscuro con formulario (validación, antibots y envío protegido por Cloudflare Turnstile a través del Worker `isa-forms`, que lo entrega con Resend; código en el repo privado `panel`, `isa-forms.js`) y botones de WhatsApp, correo y LinkedIn |
 | `icons.svg` | Iconos comunes (WhatsApp, correo, LinkedIn, teléfono) como sprite: `<use href="/assets/ds/icons.svg#i-whatsapp"/>` |
 | `favicon.js` | El icono de la pestaña sigue el tema de la página en las tres webs (iconos en `assets/brand/favicon-{light,dark}`, generados con `tools/icons.py`). La imagen para compartir, los avatares «Is» y el banner de LinkedIn salen de `tools/social.py` |
 | `avatar.js`, `assistant.js`, `assistant.css` | Alan, el asistente local compartido (cada web le da su propio contenido) |
-| `circuit.css` | Las líneas de circuito de la marca (las mismas de la intro de IsAcademy) en las intros y cabeceras de Inicio y CV Online |
+| `circuit.css` | Las líneas de circuito de la marca (las mismas de la intro de IsAcademy) en las intros y cabeceras de Inicio y IsProfile |
 | `portrait.css` | La foto redonda común (Inicio, IsAcademy): aro dorado que se dibuja al aparecer y brillo al pasar el ratón |
 | `views.js` | Una señal por carga de página para IsPanel, sin cookies ni identificadores persistentes; respeta Do Not Track y GPC. El Worker puede conservar la IP y el contexto de conexión disponible durante 30 días, según el [aviso de privacidad](https://ismael-sarmiento.github.io/privacy/) |
 | `fonts/` | Space Grotesk y Allura, servidas desde el propio dominio |

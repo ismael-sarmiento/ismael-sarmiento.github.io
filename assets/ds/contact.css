@@ -1,4 +1,4 @@
-/* Ismael Sarmiento design system — the contact piece shared by CV Online and IsAcademy: a theme-aware card with the
+/* Ismael Sarmiento design system — the contact piece shared by IsProfile and IsAcademy: a theme-aware card with the
    form (validation and delivery: /assets/ds/contact.js) and a row of direct ways in (WhatsApp, email, LinkedIn) drawn
    from the icon sprite /assets/ds/icons.svg. Each site writes its own fields; the look and the behaviour are one. */
 .contact-card { position: relative; text-align: center; border-radius: var(--radius-lg); padding: 64px 32px; color: var(--text);

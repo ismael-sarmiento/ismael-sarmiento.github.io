@@ -1,4 +1,4 @@
-// Portada (Inicio): design-system behaviour, languages (?lang=en, as in IsAcademy), the intro shared with CV Online and
+// Portada (Inicio): design-system behaviour, languages (?lang=en, as in IsAcademy), the intro shared with IsProfile and
 // Alan, the assistant of every site, fed with the public story of this page (tools/build.py → #alan-data).
 import { initDesignSystem } from '/assets/ds/ds.js';
 import { createI18n } from '/assets/ds/i18n.js';

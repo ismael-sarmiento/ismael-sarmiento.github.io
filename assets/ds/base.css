@@ -123,7 +123,7 @@ h2 { font-size: clamp(28px, 4vw, 42px); margin-bottom: 16px; }
 .stagger > .reveal:nth-child(6) { --d: calc(var(--stagger) * 5); }
 .stagger > .reveal:nth-child(7) { --d: calc(var(--stagger) * 6); }
 .stagger > .reveal:nth-child(n+8) { --d: calc(var(--stagger) * 7); }
-/* moving between the portada, CV Online and IsAcademy (same origin) is a soft cross-fade, not a cut */
+/* moving between the portada, IsProfile and IsAcademy (same origin) is a soft cross-fade, not a cut */
 @media (prefers-reduced-motion: no-preference) {
   @view-transition { navigation: auto; }
   ::view-transition-old(root), ::view-transition-new(root) { animation-duration: var(--dur-base); animation-timing-function: var(--ease-out); }

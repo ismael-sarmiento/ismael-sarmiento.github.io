@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Writes the tab icons shared by every site (Inicio, CV Online, IsAcademy): the "Is" monogram in brand gold on cream
+"""Writes the tab icons shared by every site (Inicio, IsProfile, IsAcademy): the "Is" monogram in brand gold on cream
 (light theme) or on night (dark theme), as SVG and as 32 px PNG (Safari), from assets/brand/is-monogram.svg.
 
   assets/brand/favicon-light.svg · favicon-light-32.png

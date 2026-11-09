@@ -1,4 +1,4 @@
-// The one intro of every site of Ismael Sarmiento (Inicio, CV Online, IsAcademy). This module owns what every intro
+// The one intro of every site of Ismael Sarmiento (Inicio, IsProfile, IsAcademy). This module owns what every intro
 // shares: its states (.after: the hook is shown; .ready: the actions are shown), the focus boundary, the keys (Escape
 // jumps to the end and then closes; Enter closes once ready), "Saltar intro", the safety net, reduced motion, the end
 // state and the start-up failure. Every visit: the home anchor (#top) is the start of the page; deep links (#section)
@@ -15,7 +15,7 @@
 //   scene.play(intro, cancelled)   async entrance; checks cancelled() after every wait and stops when it is true
 //   scene.complete(intro)          the drawing finished at once (Saltar intro, Escape, reduced motion)
 //   scene.exit(intro, end)         async exit; calls end() at the moment the page is handed over
-//   scene.handoff                  true only for the signature: it accepts the hand-off between Inicio and CV Online
+//   scene.handoff                  true only for the signature: it accepts the hand-off between Inicio and IsProfile
 //   onSettle()                     called once when the intro ends normally (never after a start-up failure)
 //
 // A milestone written as «2017 · Autana — Primeros pasos en datos y analítica» shows its year (counting up from the
@@ -34,7 +34,7 @@ const settled = anim => anim.finished.catch(() => {});
 // the box of a piece of text as the browser lays it out (same metrics for the svg glyph and the seal in the bar)
 const textBox = el => { const r = document.createRange(); r.selectNodeContents(el); return r.getBoundingClientRect(); };
 
-// hand-off between intros (Inicio → CV Online): leaving through a link of the intro once the signature is written
+// hand-off between intros (Inicio → IsProfile): leaving through a link of the intro once the signature is written
 // leaves a mark for 4 s; the next intro shows the signature complete (the boot script adds .sig-handoff before the
 // first paint) and the page transition keeps it in place instead of drawing it again
 const HANDOFF = 'sig-handoff';
@@ -45,7 +45,7 @@ const takeHandoff = () => {
 };
 const leaveHandoff = () => { try { sessionStorage.setItem(HANDOFF, String(Date.now())); } catch { /* storage unavailable */ } };
 
-// The default scene (Inicio, CV Online): the signature is written; on the way out the "Is" flies to the seal.
+// The default scene (Inicio, IsProfile): the signature is written; on the way out the "Is" flies to the seal.
 const signatureScene = {
   handoff: true,
   async play(intro, cancelled) {
@@ -354,7 +354,7 @@ export function initIntro({ i18n, steps = null, stepMs = 1600, scene = signature
   if (reducedMotion()) { finish(); rest(); return { close: safeClose }; }
   (async () => {
     // drawn on every visit; only a visitor who has just seen the signature written in the intro of another site
-    // (Inicio → CV Online) finds it complete, carried over by the page transition
+    // (Inicio → IsProfile) finds it complete, carried over by the page transition
     if (handoff && scene.handoff) scene.complete(intro);
     else await scene.play(intro, () => done || closing || intro.hidden);
     if (done) return;
