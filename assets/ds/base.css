@@ -155,3 +155,6 @@ details[open]::details-content { block-size: auto; }
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
   .js .reveal { opacity: 1; transform: none; }
 }
+
+/* the 404 of every site: «Error 404» under the title, never a label above it (F10) */
+.nf-code { margin: 4px 0 14px; font-family: var(--font-mono); font-size: 13px; letter-spacing: .08em; color: var(--text-2); }

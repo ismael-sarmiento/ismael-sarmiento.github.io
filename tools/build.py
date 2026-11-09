@@ -403,7 +403,6 @@ def home():
       {CIRCUIT_HERO}
       <div class="container hero-inner stagger">
         <div class="hero-text stagger">
-          {T('eyebrow', 'p', 'eyebrow reveal')}
           <h1 class="hero-title reveal"><span class="sr-only">Ismael Sarmiento · </span>{T('lead')}</h1>
           {T('about.title', 'h2', 'about-title reveal')}
           {T('about.0', 'p', 'about reveal')}
@@ -475,8 +474,8 @@ def not_found():
 <body>
   {topbar()}
   <main id="main" class="container nf">
-    <p class="eyebrow">404</p>
     {T('nf.title', 'h1')}
+    <p class="nf-code">Error 404</p>
     {T('nf.lead', 'p', 'lead')}
     <p class="nf-actions"><a class="btn btn-primary btn-arrow" {A('href', 'homeHref')}>{T('nf.home')}</a><a class="btn" {A('href', 'door.0.href')}>IsProfile</a><a class="btn" {A('href', 'door.1.href')}>IsAcademy</a></p>
   </main>
