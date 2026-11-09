@@ -89,7 +89,7 @@ TEXT['privacy.3.body'] = ('GitHub Pages sirve las webs. Cloudflare proporciona p
 TEXT['privacy.4.title'] = ('Caducidad y copias', 'Expiry and copies')
 TEXT['privacy.4.body'] = ('Los registros caducados dejan de estar disponibles en el panel y una limpieza diaria elimina las filas. Las copias de recuperación de Cloudflare pueden conservarlas durante una ventana adicional (7 días en Free o 30 en Paid). Los correos de solicitudes e informes, logs de proveedores y métricas agregadas tienen un ciclo separado; los plazos del panel no los borran automáticamente. Los metadatos de informes se conservan 30 días y las huellas de enlaces de acceso hasta su caducidad. No se vende esta información.', 'Expired records become unavailable in the panel and daily cleanup removes the rows. Cloudflare recovery copies may retain them for an additional window (7 days on Free or 30 on Paid). Request emails, reports, provider logs and aggregate metrics have a separate lifecycle; panel retention does not automatically delete them. Report metadata is kept for 30 days and login-link fingerprints until expiry. This information is not sold.')
 TEXT['privacy.5.title'] = ('Tus derechos y más información', 'Your rights and more information')
-TEXT['privacy.5.body'] = ('Puedes solicitar acceso, rectificación, supresión, limitación, oposición y portabilidad cuando corresponda, y retirar tu consentimiento, escribiendo al correo anterior. Si consideras que tus derechos no se atienden, puedes acudir a la <a href="https://www.aepd.es/">AEPD</a>. Consulta también <a href="https://www.cloudflare.com/privacypolicy/">Cloudflare</a>, <a href="https://www.cloudflare.com/turnstile-privacy-policy/">Turnstile</a>, <a href="https://resend.com/legal/privacy-policy">Resend</a> y <a href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement">GitHub</a>.', 'You can request access, correction, deletion, restriction, objection and portability where applicable, and withdraw consent, by emailing the address above. If you believe your rights have not been respected, you may contact the <a href="https://www.aepd.es/">AEPD</a>. See also <a href="https://www.cloudflare.com/privacypolicy/">Cloudflare</a>, <a href="https://www.cloudflare.com/turnstile-privacy-policy/">Turnstile</a>, <a href="https://resend.com/legal/privacy-policy">Resend</a> and <a href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement">GitHub</a>.')
+TEXT['privacy.5.body'] = ('Puedes solicitar acceso, rectificación, supresión, limitación, oposición y portabilidad cuando corresponda, y retirar tu consentimiento, escribiendo al correo anterior. Si consideras que tus derechos no se atienden, puedes acudir a la <a href="https://www.aepd.es/" rel="noopener noreferrer">AEPD</a>. Consulta también <a href="https://www.cloudflare.com/privacypolicy/" rel="noopener noreferrer">Cloudflare</a>, <a href="https://www.cloudflare.com/turnstile-privacy-policy/" rel="noopener noreferrer">Turnstile</a>, <a href="https://resend.com/legal/privacy-policy" rel="noopener noreferrer">Resend</a> y <a href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement" rel="noopener noreferrer">GitHub</a>.', 'You can request access, correction, deletion, restriction, objection and portability where applicable, and withdraw consent, by emailing the address above. If you believe your rights have not been respected, you may contact the <a href="https://www.aepd.es/" rel="noopener noreferrer">AEPD</a>. See also <a href="https://www.cloudflare.com/privacypolicy/" rel="noopener noreferrer">Cloudflare</a>, <a href="https://www.cloudflare.com/turnstile-privacy-policy/" rel="noopener noreferrer">Turnstile</a>, <a href="https://resend.com/legal/privacy-policy" rel="noopener noreferrer">Resend</a> and <a href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement" rel="noopener noreferrer">GitHub</a>.')
 TEXT['photo.linkedin'] = ('Ver el perfil de Ismael Sarmiento en LinkedIn (se abre en una pestaña nueva)', 'View Ismael Sarmiento’s LinkedIn profile (opens in a new tab)')
 ES = {k: v[0] for k, v in TEXT.items()}
 EN = {k: v[1] for k, v in TEXT.items()}
@@ -347,10 +347,10 @@ def footer():
         <a {A('href', 'door.0.href')}>IsProfile</a>
         <a {A('href', 'door.1.href')}>IsAcademy</a>
         <a {A('href', 'door.2.href')}>IsGame</a>
-        <a {A('href', 'waHref')} rel="noopener">WhatsApp</a>
+        <a {A('href', 'waHref')} rel="noopener noreferrer">WhatsApp</a>
         <a href="mailto:{EMAIL}">{T('mail')}</a>
-        <a href="{LINKEDIN}" rel="noopener me">LinkedIn</a>
-        <a href="{GITHUB}" rel="noopener me">GitHub</a>
+        <a href="{LINKEDIN}" rel="noopener noreferrer me">LinkedIn</a>
+        <a href="{GITHUB}" rel="noopener noreferrer me">GitHub</a>
         <a {A('href', 'privacy.href')}>{T('privacy.label')}</a>
       </nav>
       <a class="footer-top" href="#top">{T('top')}</a>
@@ -382,7 +382,7 @@ def home():
   <script type="application/ld+json">{json.dumps(PERSON, ensure_ascii=False)}</script>'''
     doors = ''
     for i, (name, href_key, fixed, mark) in enumerate(DOORS):
-        href = f'href="{fixed}" rel="noopener"' if fixed else A('href', href_key)
+        href = f'href="{fixed}" rel="noopener noreferrer"' if fixed else A('href', href_key)
         doors += f'''
           <a class="card door reveal" {href}>
             <h3 class="door-title">{mark}</h3>
