@@ -1,4 +1,4 @@
-/* Ismael Sarmiento design system — the intro shared by every site (Inicio, CV Online; IsAcademy keeps its own markup
+/* Ismael Sarmiento design system — the intro shared by every site (Inicio, IsProfile; IsAcademy keeps its own markup
    with the same measures). Markup: tools/build.py of each site; behaviour: /assets/ds/intro.js.
 
    One scale for the signature everywhere: the signature viewBox is ~1401 units wide and IsAcademy's logo 1000, so

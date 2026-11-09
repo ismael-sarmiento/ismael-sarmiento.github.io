@@ -1,6 +1,6 @@
 /* Ismael Sarmiento design system — the circuit lines of the brand, the same traces as IsAcademy's intro: gold traces
-   that draw themselves and nodes that light up when their trace arrives. Used by the intros of Inicio and CV Online
-   (top right and bottom left, like IsAcademy) and by the heroes of Inicio and CV Online (right side).
+   that draw themselves and nodes that light up when their trace arrives. Used by the intros of Inicio and IsProfile
+   (top right and bottom left, like IsAcademy) and by the heroes of Inicio and IsProfile (right side).
 
    <svg class="ds-circuit ds-circuit--intro" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice">
      <path pathLength="1" d="…"/><circle …/> …   (one node after each trace) </svg> */

@@ -1,4 +1,4 @@
-// Lightweight particle FX shared by every site (IsAcademy's opening, the intro exit of Inicio and CV Online):
+// Lightweight particle FX shared by every site (IsAcademy's opening, the intro exit of Inicio and IsProfile):
 // discreet glints, gold ink drops (the human "Is") and digital pixels (the artificial word).
 import { reducedMotion } from './ds.js';
 

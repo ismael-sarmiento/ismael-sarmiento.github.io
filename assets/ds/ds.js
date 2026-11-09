@@ -1,4 +1,4 @@
-// Ismael Sarmiento design system — behaviour shared by the portada and CV Online (same as IsAcademy).
+// Ismael Sarmiento design system — behaviour shared by the portada and IsProfile (same as IsAcademy).
 // Theme (and the tab icon that follows it), reveal on scroll, top bar shadow + reading progress and the card spotlight.
 import { syncFavicon } from './favicon.js';
 import { escapeForeignFrame } from './frame-guard.js';

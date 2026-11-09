@@ -14,13 +14,19 @@
 /* the portrait is the shared component (/assets/ds/portrait.css) */
 .hero-photo { --portrait-size: 208px; }
 
-/* the four doors: CV Online, IsAcademy, IsGame, Kimera Tools (4 columns, 2×2 on tablets, 1 on phones) */
+/* the four doors: IsProfile, IsAcademy, IsGame, Kimera Tools (4 columns, 2×2 on tablets, 1 on phones) */
 .doors { padding: 8px 0 96px; }
 .door-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px; }
 .door { display: flex; flex-direction: column; gap: 10px; text-decoration: none; color: var(--text); min-height: 260px; overflow: hidden; }
 .door h3 { font-size: 24px; }
+/* the card title is the wordmark itself, 1.2 × the bar (same proportions, tokens.css --brand-*) */
+.door-title { display: flex; align-items: baseline; gap: 10px; min-height: 48px; margin: 0; }
+.door .mark-isa { --brand-is: 46px; --brand-name: 24px; }
+.door-name { font-size: 24px; font-weight: 600; letter-spacing: -.01em; color: var(--text); }
+/* Kimera's «K_» has no tall script «Is»: 9px more on top puts its name on the same baseline as the other titles (measured) */
+.door-title:has(.mark-k) { padding-top: 9px; }
 .door p { color: var(--text-2); margin: 0; flex: 1; }
-.door-mark { display: flex; align-items: center; height: 48px; color: var(--gold); transition: transform .5s var(--ease-out); }
+.door-mark { display: inline-flex; align-items: baseline; color: var(--gold); transition: transform .5s var(--ease-out); }
 .mark-is { font-family: var(--font-script); font-size: 52px; line-height: 1; -webkit-text-stroke: .5px currentColor; }
 /* the cards use the same wordmark as every bar (tokens.css --brand-*, F10) */
 .mark-isa { font-size: var(--brand-name); font-weight: var(--brand-name-weight); letter-spacing: -.02em; color: var(--text); }

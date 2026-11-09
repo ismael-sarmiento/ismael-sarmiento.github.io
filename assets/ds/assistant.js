@@ -51,6 +51,18 @@ export function createAssistant(cfg) {
   // at the foot of the page the button steps aside: it never covers the footer links
   const foot = document.querySelector('.footer');
   if (foot) new IntersectionObserver(([en]) => fab.classList.toggle('fab-away', en.isIntersecting)).observe(foot);
+  // on phones the button steps aside while the visitor reads down the page and comes back when scrolling up or after a
+  // short pause (F10): it never covers the text being read; the open panel is never affected
+  if (isPhone()) {
+    let lastY = scrollY, rest = 0;
+    addEventListener('scroll', () => {
+      const y = scrollY, down = y > lastY + 6, up = y < lastY - 6;
+      if (down && panel.hidden) fab.classList.add('fab-reading');
+      if (up) fab.classList.remove('fab-reading');
+      if (down || up) lastY = y;
+      clearTimeout(rest); rest = setTimeout(() => fab.classList.remove('fab-reading'), 900);
+    }, { passive: true });
+  }
   fab.innerHTML = `<span class="as-avatar">${avatarSVG('fab')}</span><span class="fab-label"></span>`;
   const panel = document.createElement('section');
   panel.id = 'assistantPanel';
