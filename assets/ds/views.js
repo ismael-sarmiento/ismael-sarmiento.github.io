@@ -1,15 +1,15 @@
 // One page signal for the private panel (IsPanel). Only the path, referring origin and browser language are sent by
 // this script. The Worker may separately retain Cloudflare network context when detailed traffic is enabled.
 // No cookie, browser storage or persistent visitor identifier; Do Not Track and Global Privacy Control are respected.
-// Only on the published site (isuniverse.dev), once per document, and never under /game/ or the old /isgame/
-// (IsGame promises no analytics).
+// Only on the published site (isuniverse.dev) and once per document. IsGame (/game/) is counted like every other site
+// (F11); the old /isgame/ only redirects to /game/, so it is never counted (the visit would count twice).
 const HIT = 'https://isa-forms.ismaelantonio-professional.workers.dev/hit';
 let counted = false;
 
 export function countView() {
   try {
     if (counted || location.hostname !== 'isuniverse.dev' || navigator.webdriver) return;
-    if (/^\/(?:game|isgame)\//.test(location.pathname)) return;
+    if (/^\/isgame(?:\/|$)/.test(location.pathname)) return;
     if (navigator.doNotTrack === '1' || navigator.globalPrivacyControl) return;
     let referrer = '';
     try {
