@@ -22,17 +22,18 @@
 /* the card title is the wordmark itself, 1.2 × the bar (same proportions, tokens.css --brand-*) */
 .door-title { display: flex; align-items: baseline; gap: 10px; min-height: 48px; margin: 0; }
 .door .mark-isa { --brand-is: 46px; --brand-name: 24px; }
-.door-name { font-size: 24px; font-weight: 600; letter-spacing: -.01em; color: var(--text); }
-/* Kimera's «K_» has no tall script «Is»: 9px more on top puts its name on the same baseline as the other titles (measured) */
-.door-title:has(.mark-k) { padding-top: 9px; }
 .door p { color: var(--text-2); margin: 0; flex: 1; }
 .door-mark { display: inline-flex; align-items: baseline; color: var(--gold); transition: transform .5s var(--ease-out); }
 .mark-is { font-family: var(--font-script); font-size: 52px; line-height: 1; -webkit-text-stroke: .5px currentColor; }
 /* the cards use the same wordmark as every bar (tokens.css --brand-*, F10) */
 .mark-isa { font-size: var(--brand-name); font-weight: var(--brand-name-weight); letter-spacing: -.02em; color: var(--text); }
 .mark-isa b { font-family: var(--font-script); font-weight: 400; font-size: var(--brand-is); color: var(--gold); margin-right: 1px; -webkit-text-stroke: .5px currentColor; }
-.mark-k { font-family: var(--font-mono); font-size: 28px; font-weight: 600; color: var(--gold); }
-.mark-k i { font-style: normal; animation: k-blink 1.1s steps(1) infinite; }
+/* the «K» is shorter than the script «Is»: 7px more on top puts Kimera on the same baseline as the other cards (measured) */
+.door-title:has(.mark-k) { padding: 7px 0 11px; }
+/* Kimera Tools is ONE wordmark like «IsProfile» (F10, owner): its gold monospace «K» takes the place of the script
+   «Is», the rest is the same name style, and the terminal cursor blinks after it (hidden from screen readers) */
+.mark-k b { font-family: var(--font-mono); font-weight: 600; font-size: 30px; color: var(--gold); -webkit-text-stroke: 0; margin-right: 0; }
+.mark-k i { font-family: var(--font-mono); font-style: normal; font-weight: 600; color: var(--gold); margin-left: 2px; animation: k-blink 1.1s steps(1) infinite; }
 @keyframes k-blink { 50% { opacity: 0; } }
 .door:hover .door-mark { transform: translateX(4px) rotate(-2deg); }
 .btn-link { color: var(--gold-text); font-weight: 600; font-size: 15px; display: inline-flex; gap: 8px; }
