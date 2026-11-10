@@ -30,7 +30,7 @@ por todas sus webs.
 | `ds.js` | Tema compartido entre webs, aparición al hacer scroll, barra superior y luz que sigue al puntero |
 | `i18n.js` | Idiomas: un solo botón ES/EN, `?lang=en` en la URL y la elección compartida entre webs |
 | `signature.js` | La firma: «Is» manuscrita esbozada y el resto del nombre decodificado al estilo IA |
-| `intro.js`, `intro.css` | La intro común (Inicio y IsProfile): firma, papel, eslogan y botones; al entrar, la «Is» vuela al sello dejando tinta dorada y el nombre se deshace en píxeles. La misma escala que el logo de IsAcademy |
+| `intro.js`, `intro.css` | Entrada común con escenas de Inicio, IsProfile, IsAcademy e IsGame: firma, papel, eslogan y botones; cada sitio conserva su salida propia y la misma escala de marca |
 | `fx.js` | Efectos de partículas (tinta, píxeles, destellos) compartidos con IsAcademy |
 | `contact.css`, `contact.js` | La pieza de contacto de IsProfile e IsAcademy: tarjeta adaptada al tema claro u oscuro con formulario (validación, antibots y envío protegido por Cloudflare Turnstile a través del Worker `isa-forms`, que lo entrega con Resend; código en el repo privado `panel`, `isa-forms.js`) y botones de WhatsApp, correo y LinkedIn |
 | `icons.svg` | Iconos comunes (WhatsApp, correo, LinkedIn, teléfono) como sprite: `<use href="/assets/ds/icons.svg#i-whatsapp"/>` |
@@ -41,7 +41,7 @@ por todas sus webs.
 | `views.js` | Una señal por carga de página para IsPanel, sin cookies ni identificadores persistentes; respeta Do Not Track y GPC. El Worker puede conservar la IP y el contexto de conexión disponible durante 30 días, según el [aviso de privacidad](https://ismael-sarmiento.github.io/privacy/) |
 | `fonts/` | Space Grotesk y Allura, servidas desde el propio dominio |
 
-Las tres webs viven en el mismo dominio, así que cargan estos ficheros con rutas absolutas (`/assets/ds/…`).
+Portada, IsProfile, IsAcademy e IsGame viven en el mismo dominio y cargan estas piezas con rutas absolutas (`/assets/ds/…`). IsPanel consume recursos compartidos; IsBusiness mantiene una copia sin identidad personal ni contador.
 Un cambio de marca se hace aquí una sola vez.
 
 ## Estructura
@@ -64,7 +64,9 @@ tools/brand/og.swift        Genera las imágenes al compartir (macOS, sin depend
 python3 tools/build.py 20261014a   # la versión evita mezclas de caché en el navegador
 ```
 
-Para probar el universo completo, sirve una carpeta con este repositorio en la raíz, `cv/` y `isacademy/`.
+Para probar el universo completo, sirve una carpeta temporal con enlaces a los ficheros de este repositorio en la raíz, y a `profile/`, `academy/` y `game/` como subcarpetas. Desde la raíz del workspace: `python3 kit/tools/serve_nostore.py CARPETA_TEMPORAL 8804`. Las carpetas antiguas solo redirigen y no sustituyen a los checkouts actuales.
+
+El cambio de idioma conserva el idioma anterior ante un fallo HTTP, permite reintentar y descarta respuestas antiguas. Su estado accesible se presenta en la barra. `node --test tools/qa/*.test.mjs` incluye cinco regresiones de diccionarios (32 pruebas en total).
 
 ## IsPanel (panel privado)
 
@@ -73,6 +75,6 @@ El Worker `isa-panel` (código en el repo privado `panel` desde el 08/11/2026) i
 ## Despliegue
 
 GitHub Pages publica la rama `main` desde la raíz en cada cambio. Publica primero los cambios de `assets/ds/`,
-porque el CV y la academia dependen de ellos.
+porque IsProfile, IsAcademy e IsGame dependen de ellos. La preparación local no autoriza publicar; el procedimiento del workspace está en `PUBLICAR.md`.
 
 © Ismael Sarmiento. Todos los derechos reservados.

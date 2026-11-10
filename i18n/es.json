@@ -4,6 +4,7 @@
 "skip": "Ir al contenido",
 "langLabel": "Cambiar a inglés",
 "langShort": "EN",
+"language.error": "No hemos podido cargar el idioma. Vuelve a intentarlo con el botón de idioma.",
 "theme": "Cambiar modo claro / oscuro",
 "homeHref": "/",
 "eyebrow": "Datos · IA · Educación",

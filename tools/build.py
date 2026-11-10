@@ -33,6 +33,7 @@ TEXT = {
     'skip': ('Ir al contenido', 'Skip to content'),
     'langLabel': ('Cambiar a inglés', 'Switch to Spanish'),
     'langShort': ('EN', 'ES'),
+    'language.error': ('No hemos podido cargar el idioma. Vuelve a intentarlo con el botón de idioma.', 'We could not load the language. Please try the language button again.'),
     'theme': ('Cambiar modo claro / oscuro', 'Toggle light / dark mode'),
     'homeHref': ('/', '/?lang=en'),
     'eyebrow': ('Datos · IA · Educación', 'Data · AI · Education'),
@@ -335,6 +336,7 @@ def topbar():
       <a class="brand" href="/" {A('href', 'homeHref').replace('href="/" ', '')} aria-label="Ismael Sarmiento"><span class="brand-is" aria-hidden="true">Is</span><span class="brand-name" aria-hidden="true">mael Sarmiento</span></a>
       <div class="tools">{toggles()}</div>
     </div>
+    {T('language.error', 'p', 'language-status container', ' id="languageStatus" role="status" hidden')}
   </header>'''
 
 

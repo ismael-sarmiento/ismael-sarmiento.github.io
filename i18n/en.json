@@ -4,6 +4,7 @@
 "skip": "Skip to content",
 "langLabel": "Switch to Spanish",
 "langShort": "ES",
+"language.error": "We could not load the language. Please try the language button again.",
 "theme": "Toggle light / dark mode",
 "homeHref": "/?lang=en",
 "eyebrow": "Data · AI · Education",
