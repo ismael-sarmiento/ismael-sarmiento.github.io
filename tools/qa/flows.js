@@ -5,8 +5,8 @@
   ok('intro closed (open the page with #main or press «Conocerme» first)', document.getElementById('intro').hidden);
   const ids = [...document.querySelectorAll('[id]')].map(e => e.id); ok('ids unique', new Set(ids).size === ids.length);
   ok('single h1 with the name for screen readers', document.querySelectorAll('h1').length === 1 && document.querySelector('h1').textContent.includes('Ismael Sarmiento'));
-  ok('four doors (IsProfile, IsAcademy, IsGame, Kimera Tools)', [...document.querySelectorAll('.door h3')].map(h => h.textContent.replace('K_', '')).join() === 'IsProfile,IsAcademy,IsGame,Kimera Tools');
-  ok('door marks IsProfile, IsAcademy, IsGame, K_', [...document.querySelectorAll('.door .door-mark')].map(m => m.textContent).join() === 'IsProfile,IsAcademy,IsGame,K_');
+  ok('four doors (IsProfile, IsAcademy, IsGame, Kimera Tools)', [...document.querySelectorAll('.door h3')].map(h => h.textContent.replace(/_$/, '')).join() === 'IsProfile,IsAcademy,IsGame,Kimera Tools');
+  ok('door marks IsProfile, IsAcademy, IsGame, Kimera Tools (one wordmark each)', [...document.querySelectorAll('.door .door-mark')].map(m => m.textContent.replace(/_$/, '')).join() === 'IsProfile,IsAcademy,IsGame,Kimera Tools');
   ok('every page link and share URL lives on isuniverse.dev', [...document.querySelectorAll('link[rel=canonical], link[rel=alternate], meta[property="og:url"], meta[property="og:image"]')]
     .every(el => (el.href || el.content).startsWith('https://isuniverse.dev/')));
   ok('doors and footer use the new paths', [...document.querySelectorAll('a[href^="/"]')].every(a => !/^\/(cv|isacademy|isgame)\//.test(a.getAttribute('href'))));

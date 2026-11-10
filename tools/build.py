@@ -99,7 +99,7 @@ EN = {k: v[1] for k, v in TEXT.items()}
 DOORS = [('IsProfile', 'door.0.href', None, '<span class="door-mark mark-isa"><b>Is</b>Profile</span>'),
          ('IsAcademy', 'door.1.href', None, '<span class="door-mark mark-isa"><b>Is</b>Academy</span>'),
          ('IsGame', 'door.2.href', None, '<span class="door-mark mark-isa"><b>Is</b>Game</span>'),
-         ('Kimera Tools', None, 'https://github.com/kimera-tools', '<span class="door-mark mark-k" aria-hidden="true">K<i>_</i></span><span class="door-name">Kimera Tools</span>')]
+         ('Kimera Tools', None, 'https://github.com/kimera-tools', '<span class="door-mark mark-isa mark-k"><b>K</b>imera Tools<i aria-hidden="true">_</i></span>')]
 
 # Alan on Inicio: the same assistant as IsProfile and IsAcademy (/assets/ds/assistant.js), fed with the public story of
 # this page. Answers shared with the CV FAQ keep its wording (cv/data/content.json); nothing here is new information.
