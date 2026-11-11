@@ -451,19 +451,30 @@ def privacy():
 </html>'''
 
 
+LEGACY_PAGES = {
+    'cv/index.html': ('/profile/', 'IsProfile'),
+    'cv/index_en.html': ('/profile/?lang=en', 'IsProfile (English)'),
+    'isacademy/index.html': ('/academy/', 'IsAcademy'),
+    'isgame/index.html': ('/game/', 'IsGame'),
+    'stopbullyn/index.html': ('https://demos.isuniverse.dev/stopbullying/', 'Stopbullying'),
+    'bussiness/index.html': ('/business/', 'IsBusiness'),
+}
+
+
 def redirect(target, title):
-    """An old address of the CV: tell browsers and crawlers where it lives now."""
+    """Point old landing pages to their current, fixed destinations."""
+    canonical = SITE + target if target.startswith('/') else target
     return f'''<!doctype html>
 <html lang="es">
 <head>
   <meta charset="utf-8">
   <title>{e(title)}</title>
   <meta name="robots" content="noindex">
-  <link rel="canonical" href="{SITE}{target}">
-  <meta http-equiv="refresh" content="0; url={target}">
+  <link rel="canonical" href="{e(canonical)}">
+  <meta http-equiv="refresh" content="0; url={e(target)}">
 </head>
 <body>
-  <p><a href="{target}">{e(title)}: {SITE}{target}</a></p>
+  <p><a href="{e(target)}">{e(title)}: {e(canonical)}</a></p>
 </body>
 </html>
 '''
@@ -502,6 +513,8 @@ if __name__ == '__main__':
     write('index_en.html', redirect('/profile/?lang=en', 'IsProfile (English)'))
     write('articles/index.html', redirect('/profile/', 'IsProfile'))
     write('articles/index_en.html', redirect('/profile/?lang=en', 'IsProfile (English)'))
+    for page, (target, title) in LEGACY_PAGES.items():
+        write(page, redirect(target, title))
     write('robots.txt', f'User-agent: *\nAllow: /\n\nSitemap: {SITE}/sitemap.xml\n')
     write('sitemap.xml', f'''<?xml version="1.0" encoding="UTF-8"?>
 <sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">

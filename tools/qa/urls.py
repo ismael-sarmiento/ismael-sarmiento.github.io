@@ -14,22 +14,32 @@ import json
 import pathlib
 import re
 import sys
+from urllib.parse import urljoin, urlsplit
 
 HUB = pathlib.Path(__file__).resolve().parents[2]
 BASE = HUB.parent
 SITE = 'https://isuniverse.dev'
 # repository folder → served path; the old ones only redirect
-NEW = {'ismael-sarmiento.github.io': '', 'profile': 'profile', 'academy': 'academy', 'game': 'game'}
+NEW = {'ismael-sarmiento.github.io': '', 'profile': 'profile', 'academy': 'academy', 'game': 'game', 'business': 'business'}
 OLD = {'cv': 'profile', 'isacademy': 'academy', 'isgame': 'game'}
 SKIP = {  # never published (Jekyll exclude) or third-party
     'ismael-sarmiento.github.io': ('AGENTS.md', 'README.md', 'tools/'),
     'profile': ('AGENTS.md', 'README.md', 'docs/', 'tools/', 'data/', 'articles/_template/'),
     'academy': ('AGENTS.md', 'README.md', 'tools/', 'assets/brand/print/README.md', 'assets/fonts/README.md'),
     'game': ('vendor/', 'tools/', 'worker/'),
+    'business': ('AGENTS.md', 'README.md', 'tools/', 'qa/'),
 }
 ALLOW = {  # names the old address on purpose (never a link a visitor follows)
     'ismael-sarmiento.github.io/assets/ds/views.js': 'explains that the old /isgame/ is never counted either',
     'game/AGENTS.md': 'names the portada repository and the old /isgame/ that only redirects',
+}
+LEGACY_PAGES = {
+    'cv/index.html': '/profile/',
+    'cv/index_en.html': '/profile/?lang=en',
+    'isacademy/index.html': '/academy/',
+    'isgame/index.html': '/game/',
+    'stopbullyn/index.html': 'https://demos.isuniverse.dev/stopbullying/',
+    'bussiness/index.html': '/business/',
 }
 TEXT = {'.html', '.js', '.css', '.json', '.xml', '.txt', '.md', '.webmanifest', '.svg'}
 OLD_PATH = re.compile(r'(?<![\w.-])/(?:cv|isacademy|isgame)/')
@@ -70,12 +80,19 @@ for repo, served in NEW.items():
         if path.suffix == '.html':
             for m in re.finditer(r'<link rel="(?:canonical|alternate)"[^>]*href="([^"]+)"|<meta property="og:(?:url|image)" content="([^"]+)"', text):
                 url = m.group(1) or m.group(2); counts['share'] += 1
-                if not url.startswith(SITE + '/'):
+                if not url.startswith(SITE + '/') and not (repo == HUB.name and LEGACY_PAGES.get(rel) == url):
                     problems.append(f'share address off the domain in {where}: {url}')
             for m in re.finditer(r'(?:href|src)="(/[^"]*)"', text):
                 counts['links'] += 1
                 if not resolves(m.group(1)):
                     problems.append(f'broken link in {where}: {m.group(1)}')
+            if repo == 'business':
+                for href in re.findall(r'(?:href|src)="([^"]+)"', text):
+                    if href.startswith(('./', '../')):
+                        target = urlsplit(urljoin(f'{SITE}/business/{rel}', href))
+                        counts['links'] += 1
+                        if target.netloc != 'isuniverse.dev' or not target.path.startswith('/business/') or not resolves(target.path):
+                            problems.append(f'broken Business relative link in {where}: {href}')
         if path.suffix == '.xml' and 'sitemap' in rel:
             for url in re.findall(r'<loc>([^<]+)</loc>|href="([^"]+)"', text):
                 url = url[0] or url[1]; counts['share'] += 1
@@ -93,7 +110,14 @@ for repo, served in NEW.items():
                         problems.append(f'broken i18n link in {where}: {key} = {node}')
             walk(json.loads(text))
 
+for rel, target in LEGACY_PAGES.items():
+    path = HUB / rel
+    if not path.is_file() or f'content="0; url={target}"' not in path.read_text(encoding='utf-8'):
+        problems.append(f'{rel} is missing its compatibility redirect to {target}')
+
 for repo, new in OLD.items():
+    if not (BASE / repo / '.git').exists():
+        continue  # the compatibility pages above are also checked after retirement
     for page in ('index.html', '404.html'):
         text = (BASE / repo / page).read_text(encoding='utf-8')
         if f"replace(/^\\/{repo}(?=\\/|$)/, '/{new}')" not in text or f'href="{SITE}/{new}/"' not in text:

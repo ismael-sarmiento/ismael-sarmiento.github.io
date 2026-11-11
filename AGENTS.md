@@ -7,8 +7,7 @@ Global roots (L0):
 - Codex: `~/.codex/AGENTS.md`
 
 Sibling sites on the same origin (`https://isuniverse.dev`): IsProfile (`profile`, served at `/profile/`),
-IsAcademy (`academy`, `/academy/`) and IsGame (`game`, `/game/`). The old repositories `cv`, `isacademy` and `isgame` only
-redirect their old addresses (posters and QR codes point there): never delete them or their redirect pages.
+IsAcademy (`academy`, `/academy/`), IsGame (`game`, `/game/`) and IsBusiness (`business`, `/business/` after the Pages cutover). The build generates fallback landing pages for the old addresses. Keep the archived repositories until their deep links, PDFs and redirects have been covered and retirement is approved.
 
 ## Purpose
 
