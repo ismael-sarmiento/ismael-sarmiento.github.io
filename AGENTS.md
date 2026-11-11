@@ -20,7 +20,7 @@ protocols apply (Plan al Milímetro before each task, close-out recap after).
 
 - Static site for GitHub Pages; the only build step is `tools/build.py <version>`. Never edit generated files by hand
   (`index.html`, `en/index.html`, `404.html`, redirects, `robots.txt`, sitemaps).
-- `assets/ds/` is shared: a change there affects the portada, IsProfile, IsAcademy and IsGame; IsPanel also consumes shared resources. Check affected consumers (light and dark, 360 px to desktop) and publish this repository first. IsBusiness keeps its own identity-stripped copy without the counter; review applicable fixes there as well.
+- `assets/ds/` is shared: a change there affects the portada, IsProfile, IsAcademy and IsGame; IsPanel also consumes shared resources. Check affected consumers (light and dark, 360 px to desktop) and publish this repository first. IsBusiness keeps its own identity-stripped copy and sends its page-view signal to `https://stats.isuniverse.dev/hit`; review applicable fixes there as well.
 - Colours only through `tokens.css`; IsAcademy loads it too and adds only its own console and opening colours.
 - The theme key `isa-theme` is shared by every site on the origin; keep it.
 - Every text exists in Spanish and English; Spanish is the default.
