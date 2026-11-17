@@ -67,6 +67,7 @@ export function rememberReadingPosition() {
 
 function stored() { try { return localStorage.getItem(THEME_KEY); } catch { return null; } }
 function store(v) { try { localStorage.setItem(THEME_KEY, v); } catch { /* storage unavailable */ } }
+function forget() { try { localStorage.removeItem(THEME_KEY); } catch { /* storage unavailable */ } }
 
 export function isDark() {
   const forced = document.documentElement.dataset.theme;
@@ -75,17 +76,26 @@ export function isDark() {
 export function onThemeChange(fn) { themeListeners.push(fn); }
 const notify = () => { syncFavicon(); themeListeners.forEach(fn => fn(isDark())); };
 
+// The button shows the opposite of what is on screen. Choosing the system's own scheme forgets the choice, so the
+// site follows the system again; any other choice is remembered, even if the system later changes to match it
+// (Modern Web Guidance, dark-mode-toggle). Another tab of the universe that changes the theme updates this one.
+function applyTheme(choice) {
+  if (choice === 'light' || choice === 'dark') document.documentElement.dataset.theme = choice;
+  else delete document.documentElement.dataset.theme;
+  notify();
+}
 export function initTheme() {
   const s = stored();
   if (s === 'light' || s === 'dark') document.documentElement.dataset.theme = s;
   syncFavicon();
   media.addEventListener('change', notify);
+  addEventListener('storage', e => { if (e.key === THEME_KEY || e.key === null) applyTheme(stored()); });
   document.addEventListener('click', e => {
     if (!e.target.closest('[data-action="theme"]')) return;
     const next = isDark() ? 'light' : 'dark';
-    document.documentElement.dataset.theme = next;
-    store(next);
-    notify();
+    const system = media.matches ? 'dark' : 'light';
+    if (next === system) forget(); else store(next);
+    applyTheme(next === system ? null : next);
   });
 }
 

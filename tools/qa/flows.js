@@ -10,9 +10,14 @@
   ok('every page link and share URL lives on isuniverse.dev', [...document.querySelectorAll('link[rel=canonical], link[rel=alternate], meta[property="og:url"], meta[property="og:image"]')]
     .every(el => (el.href || el.content).startsWith('https://isuniverse.dev/')));
   ok('doors and footer use the new paths', [...document.querySelectorAll('a[href^="/"]')].every(a => !/^\/(cv|isacademy|isgame)\//.test(a.getAttribute('href'))));
-  const before = document.documentElement.dataset.theme; document.querySelector('.topbar [data-action=theme]').click(); await sleep(50);
-  ok('theme toggles and is remembered', before !== document.documentElement.dataset.theme && localStorage.getItem('isa-theme') === document.documentElement.dataset.theme);
-  document.querySelector('.topbar [data-action=theme]').click();
+  // the shared theme button (/assets/ds/ds.js): first press = the other scheme, remembered; second press = back to
+  // the system scheme, forgotten (Modern Web Guidance, dark-mode-toggle)
+  localStorage.removeItem('isa-theme'); delete document.documentElement.dataset.theme;
+  const systemTheme = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  document.querySelector('.topbar [data-action=theme]').click(); await sleep(50);
+  ok('theme toggles and is remembered', document.documentElement.dataset.theme !== systemTheme && localStorage.getItem('isa-theme') === document.documentElement.dataset.theme);
+  document.querySelector('.topbar [data-action=theme]').click(); await sleep(50);
+  ok('pressing again follows the system and forgets the choice', !document.documentElement.dataset.theme && localStorage.getItem('isa-theme') === null);
   // Alan: floating button, four suggestions, answers with their buttons
   document.querySelector('.assistant-fab').click(); await sleep(500);
   const p = document.getElementById('assistantPanel'); ok('Alan opens with four suggestions', !p.hidden && p.querySelectorAll('.chip').length === 4);

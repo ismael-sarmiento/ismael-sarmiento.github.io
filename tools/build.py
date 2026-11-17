@@ -209,9 +209,15 @@ BOOT += '\n' + (ROOT / 'assets/ds/startup.js').read_text()
 MODULES = ['/assets/ds/ds.js', '/assets/ds/frame-guard.js', '/assets/ds/views.js', '/assets/ds/favicon.js', '/assets/ds/i18n.js', '/assets/ds/signature.js', '/assets/ds/fx.js', '/assets/ds/intro.js',
            '/assets/ds/avatar.js', '/assets/ds/assistant.js', '/assets/hub.js']
 IMPORT_MAP = json.dumps({'imports': {m: f'{m}?v={VERSION}' for m in MODULES}}, separators=(',', ':'))
+# Prefetch (HTML only, no script runs, so no visit is counted) of a same-origin page when the visitor is about to open
+# it (hover or touch start: «moderate»). Not PDFs, downloads, nofollow or new-tab links. Chrome and Edge; elsewhere
+# nothing happens. Modern Web Guidance: improve-next-page-load-performance. Same rule in every site of the universe.
+SPECULATION = json.dumps({'prefetch': [{'where': {'and': [{'href_matches': '/*'}, {'not': {'href_matches': '/*.pdf'}},
+                         {'not': {'selector_matches': '[download], [rel~="nofollow"], [target="_blank"]'}}]}, 'eagerness': 'moderate'}]},
+                         separators=(',', ':'))
 sha = lambda s: base64.b64encode(hashlib.sha256(s.encode()).digest()).decode()
 CSP = ("default-src 'self'; script-src 'self' https://static.cloudflareinsights.com "
-       f"'sha256-{sha(BOOT)}' 'sha256-{sha(IMPORT_MAP)}'; style-src 'self'; img-src 'self' data:; font-src 'self'; "
+       f"'sha256-{sha(BOOT)}' 'sha256-{sha(IMPORT_MAP)}' 'sha256-{sha(SPECULATION)}'; style-src 'self'; img-src 'self' data:; font-src 'self'; "
        "connect-src 'self' https://cloudflareinsights.com https://isa-forms.ismaelantonio-professional.workers.dev; object-src 'none'; base-uri 'none'; form-action 'none'")
 WORD, WX = 'mael Sarmiento', 296
 SIG = f'''<svg class="sig" viewBox="0 0 {WX + len(WORD) * 78} 330" data-word="{WORD}" aria-hidden="true" focusable="false">
@@ -266,7 +272,9 @@ def head(title, description, extra=''):
   <title>{e(title)}</title>
   <meta name="description" content="{e(description)}">
   <meta name="author" content="Ismael Sarmiento">
-  <meta name="theme-color" content="#0b1026">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#fbf7ef" media="(prefers-color-scheme: light)" data-theme-color="light">
+  <meta name="theme-color" content="#0b1026" media="(prefers-color-scheme: dark)" data-theme-color="dark">
   {extra}
   <link rel="icon" href="/assets/brand/favicon-light.svg" type="image/svg+xml" media="(prefers-color-scheme: light)" data-theme-icon="light">
   <link rel="icon" href="/assets/brand/favicon-dark.svg" type="image/svg+xml" media="(prefers-color-scheme: dark)" data-theme-icon="dark">
@@ -285,6 +293,7 @@ def head(title, description, extra=''):
   <link rel="stylesheet" href="/assets/ds/circuit.css?v={VERSION}">
   <link rel="stylesheet" href="/assets/hub.css?v={VERSION}">
   <script type="importmap">{IMPORT_MAP}</script>
+  <script type="speculationrules">{SPECULATION}</script>
   <script type="module" data-startup-entry src="/assets/hub.js?v={VERSION}"></script>
 </head>'''
 
