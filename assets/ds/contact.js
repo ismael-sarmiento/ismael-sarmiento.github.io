@@ -82,7 +82,7 @@ function humanCheck(form) {
   const ready = async () => {
     const turnstile = await loadTurnstile();
     widget ??= turnstile.render(box, {
-      sitekey: SITE_KEY, execution: 'execute', retry: 'never',
+      sitekey: SITE_KEY, action: 'contact', execution: 'execute', retry: 'never',
       callback: token => settle(true, token),
       'error-callback': () => { settle(false, new Error('turnstile')); return true; },
     });
